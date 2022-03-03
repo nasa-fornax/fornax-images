@@ -124,7 +124,6 @@ RUN mamba install --quiet --yes \
     jupyter-matplotlib \
     jupyter_firefly_extensions && \
     jupyter lab build --dev-build=False --minimize=False && \
-    /tmp/github_repos/install-git-hosted.sh && \
     jupyter serverextension enable --py jupyter_firefly_extensions && \
     conda clean --all -f -y && \
     fix-permissions $CONDA_DIR && \
