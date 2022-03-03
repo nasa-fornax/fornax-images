@@ -1,0 +1,5 @@
+envs_dirs:
+  - /home/jovyan/my-conda-envs/
+channels:
+  - conda-forge
+  - astropy
