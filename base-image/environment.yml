@@ -1,0 +1,16 @@
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - jupyterlab
+  - dask
+  - jupytext
+  - dask-labextension
+  - pip
+  - pip:
+      - opencv-python
+      - jupyterlab-git
+      - oss-pasarela
+      - jupyterlab-bxplorer
+      - jupyterlab-s3-browser
+      

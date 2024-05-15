@@ -1,0 +1,6 @@
+vim
+nano
+fuse
+bzip2
+git
+curl
