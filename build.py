@@ -12,6 +12,7 @@ import argparse
 import glob
 import subprocess
 import os
+import re
 import json
 import time
 import logging
@@ -19,7 +20,7 @@ import sys
 
     
 
-def build_images(image, dryrun, build_args, update_lock, lock_file):
+def build_images(image, dryrun, build_args, update_lock):
     """call 'docker build' on each element in images
 
     Parameters
@@ -32,8 +33,6 @@ def build_images(image, dryrun, build_args, update_lock, lock_file):
         extra build arguments.
     update_lock: bool
         update lock file?
-    lock_file: str
-        name of the lock file
         
     """    
     
@@ -63,8 +62,11 @@ def build_images(image, dryrun, build_args, update_lock, lock_file):
     logging.debug('\t' + (' '.join(cmd)))
     
     if not dryrun:
-        if update_lock and os.path.exists(f'{image}/{lock_file}'):
-            os.system(f'rm {image}/{lock_file}')
+        if update_lock and len(glob.glob(f'{image}/conda-*-lock.yml')):
+            # If update_lock, remove the old ones so the build does
+            # not use them
+            # TODO: handle individual files separately
+            os.system(f'rm {image}/conda-*-lock.yml')
             
         out = subprocess.call(cmd)
         if out: 
@@ -74,22 +76,55 @@ def build_images(image, dryrun, build_args, update_lock, lock_file):
     # update lock-file?
     if update_lock:
         logging.debug(f'Updating the lock file for {image}')
+        envfiles = [
+            env for env in glob.glob(f'{image}/conda-*.yml') if 'lock' not in env
+        ]
+        for env in envfiles:
+            match = re.match(rf'{image}/conda-(.*).yml', env)
+            if match:
+                env_name = match[1]
+            else:
+                env_name = 'base'
+        # first create an env file
         cmd = [
             'docker', 'run', '--rm', 
             f'fornax/{image}:latest',
-            'mamba', 'env', 'export', '-f', f'{image}/{lock_file}'
+            'mamba', 'env', 'export', '-n', env_name
         ]
         logging.debug('\t' + (' '.join(cmd)))
 
         if not dryrun:
+            out = subprocess.check_output(cmd)
+            with open(f'{image}/tmp-{env_name}-lock.yml', 'wb') as fp:
+                fp.write(out)
+
+        # then call conda-lock on it
+        # conda-lock -f tmp.yml -p linux-64 --lockfile tmp-lock.yml
+        cmd = [
+            'conda-lock', '-f', f'{image}/tmp-{env_name}-lock.yml',
+            '-p', 'linux-64', '--lockfile', f'{image}/conda-{env_name}-lock.yml'
+        ]
+        logging.debug('\t' + (' '.join(cmd)))
+        if not dryrun:
             out = subprocess.call(cmd)
+            if out: 
+                logging.error('\tError encountered.')
+                sys.exit(1)
+            os.system(f'rm {image}/tmp-{env_name}-lock.yml')
+
+        # Now generate the packages-list.txt file that contain the list for reference
+        cmd = [sys.executable, 'generate-package-list.py', f'{image}/conda-{env_name}-lock.yml']
+        logging.debug('\t' + (' '.join(cmd)))
+        if not dryrun:
+            out = subprocess.check_output(cmd)
+            with open(f'{image}/packages.txt', 'wb') as fp:
+                fp.write(out)
 
 if __name__ == '__main__':
 
     ap = argparse.ArgumentParser()
     ap.add_argument('--dryrun', action='store_true', default=False)
-    ap.add_argument('--update-lock', action='store_true', help='update lock file', default=False)
-    ap.add_argument('--lock_file', type=str, help='name of the lock file', default='environment-lock.yml')
+    ap.add_argument('--update-lock', action='store_true', help='update conda lock file', default=False)
     ap.add_argument('image', help='image to build')
     ap.add_argument('--build-args', nargs='*', help='Extra arguments passed to docker build')
     args = ap.parse_args()
@@ -99,4 +134,4 @@ if __name__ == '__main__':
                         datefmt='%Y-%m-%d|%H:%M:%S')
     logging.getLogger().setLevel(logging.DEBUG)
 
-    build_images(args.image, args.dryrun, args.build_args, args.update_lock, args.lock_file)
+    build_images(args.image, args.dryrun, args.build_args, args.update_lock)

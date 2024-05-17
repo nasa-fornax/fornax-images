@@ -4,3 +4,4 @@ fuse
 bzip2
 git
 curl
+zip
