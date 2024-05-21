@@ -41,6 +41,7 @@ RUN mamba install conda-lock \
  && cd build && bash /opt/scripts/conda-env-install.sh
 
 # reset user and location
+RUN rm -r $HOME/build $HOME/work /tmp/*
 USER ${NB_USER}
 WORKDIR ${HOME}
 
@@ -61,3 +62,17 @@ ONBUILD USER $NB_USER
 ONBUILD COPY --chown=$NB_USER:$NB_USER conda-*yml $HOME/build/
 ONBUILD RUN cd build && bash /opt/scripts/conda-env-install.sh
 # ----------------------- #
+
+# Any other postBuild scripts #
+ONBUILD COPY --chown=$NB_USER:$NB_USER postBuild* $HOME/build/
+ONBUILD RUN cd build \
+ ; for script in `ls postBuild*`; do \
+ echo "Found script ${script} ..." \
+ && chmod +x $script \
+ && ./$script \
+ ; done
+# --------------------------- #
+
+ONBUILD RUN rm -r $HOME/build
+ONBUILD USER ${NB_USER}
+ONBUILD WORKDIR ${HOME}
