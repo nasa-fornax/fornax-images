@@ -31,13 +31,13 @@ The recommonded workflow is therefore like this:
 - Define the libraries requirement from some conda environment `{env}` in `conda-{env}.yml`.
 - Build the image with `python build.py {image-name} --update-lock`.
 - This will generate: `conda-{env}-lock.yml` and `packages.txt`. Both these should be kept under
-verson control. The next time the image is built with `python build.py {image-name}`, the lock
-file will be used inside Dockerfile to reproduce the exact build.
+version control. The next time the image is built with `python build.py {image-name}`, the lock
+file will be used inside the Dockerfile to reproduce the exact build.
 
 # The image
 - `base_image`: is the base image that all other images should start from. It contains jupyter and the basic tools needed for deployment in the fornax project.
 
 - `tractor`: Main Astro image that was used for the demo. It contains tractor and other general useful tools.
 
-- `heasoft`: high energy image containing heasoft.
+- `heasoft`: high energy image containing heasoft (TODO).
 
