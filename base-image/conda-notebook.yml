@@ -2,13 +2,16 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
+  - python==3.11
   - jupyterlab
   - jupytext
   - dask
   - dask-labextension
   - numpy
   - scipy
+  - pandas
   - scikit-learn
+  - scikit-image
   - astropy
   - astropy-healpix
   - ccdproc
@@ -18,6 +21,9 @@ dependencies:
   - specutils
   - pyvo
   - astroquery
+  - statsmodels
+  - tqdm
+  - seaborn
   - pip
   - pip:
       - specreduce

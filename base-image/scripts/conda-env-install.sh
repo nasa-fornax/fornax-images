@@ -13,10 +13,10 @@ for envfile in `ls conda-*.yml | grep -v lock`; do
         conda-lock install --name ${env} $LOCKFILE
     elif test -f $ENVFILE; then
         echo "Found $ENVFILE, using it ..."
-        mamba env create -n ${env} -f $ENVFILE
+        mamba env update -n ${env} -f $ENVFILE
     elif [[ "$env"=="$CONDA_ENV" ]]; then
         echo "Defaulting to basic env ..." 
-        mamba create --name $env python=3.11 jupyterlab
+        mamba update --name $env python=3.11 jupyterlab
     fi
 done
 

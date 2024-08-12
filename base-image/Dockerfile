@@ -18,7 +18,7 @@ ENV CONDA_ENV=notebook
 # to ${CONDA_DIR}/etc but not to /etc
 ENV DASK_ROOT_CONFIG=${CONDA_DIR}/etc
 
-
+RUN mkdir -p build
 USER root
 
 # Install OS packages and then clean up
@@ -51,9 +51,10 @@ ENV PATH=$CONDA_DIR/envs/$CONDA_ENV/bin:$PATH
 
 
 # Install OS packages and then clean up
+ONBUILD RUN mkdir -p build
 ONBUILD USER root
 ONBUILD COPY --chown=$NB_USER:$NB_USER apt.txt* $HOME/build/
-ONBUILD RUN cd build && bash /opt/scripts/apt-install.sh
+ONBUILD RUN mkdir -p build && cd build && bash /opt/scripts/apt-install.sh
 ONBUILD USER $NB_USER
 # ------------------------------------ #
 

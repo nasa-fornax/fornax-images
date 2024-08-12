@@ -1,4 +1,0 @@
-build-essential
-gcc
-make
-gfortran
