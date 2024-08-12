@@ -1,5 +1,6 @@
 vim
 nano
+emacs
 fuse
 bzip2
 git

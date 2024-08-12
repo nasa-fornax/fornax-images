@@ -4,7 +4,7 @@
 
 Description:
 ------------
-A python script for building docker images on sciserver.
+A python script for building docker images on fornax.
 
 """
 
@@ -85,39 +85,41 @@ def build_images(image, dryrun, build_args, update_lock):
                 env_name = match[1]
             else:
                 env_name = 'base'
-        # first create an env file
-        cmd = [
-            'docker', 'run', '--rm', 
-            f'fornax/{image}:latest',
-            'mamba', 'env', 'export', '-n', env_name,
-        ]
-        logging.debug('\t' + (' '.join(cmd)))
-
-        if not dryrun:
-            out = subprocess.check_output(cmd)
-            with open(f'{image}/tmp-{env_name}-lock.yml', 'wb') as fp:
-                fp.write(out)
-
-        # then call conda-lock on it
-        # conda-lock -f tmp.yml -p linux-64 --lockfile tmp-lock.yml
-        cmd = [
-            'conda-lock', '-f', f'{image}/tmp-{env_name}-lock.yml',
-            '-p', 'linux-64', '--lockfile', f'{image}/conda-{env_name}-lock.yml'
-        ]
-        logging.debug('\t' + (' '.join(cmd)))
-        if not dryrun:
-            out = subprocess.call(cmd)
-            if out: 
-                logging.error('\tError encountered.')
-                sys.exit(1)
-            os.system(f'rm {image}/tmp-{env_name}-lock.yml')
-
-        # Now generate the packages-list.txt file that contains the list for reference
-        logging.debug('Generating list of packages to pacakges.txt')
-        generate_package_list(
-            lock_file=f'{image}/conda-{env_name}-lock.yml',
-            out_file=f'{image}/packages.txt'
-        )
+            # first create an env file
+            cmd = [
+                'docker', 'run', '--rm', 
+                f'fornax/{image}:latest',
+                'mamba', 'env', 'export', '-n', env_name,
+            ]
+            logging.debug('\t' + (' '.join(cmd)))
+    
+            if not dryrun:
+                out = subprocess.check_output(cmd)
+                with open(f'{image}/tmp-{env_name}-lock.yml', 'wb') as fp:
+                    fp.write(out)
+    
+            # then call conda-lock on it
+            # conda-lock -f tmp.yml -p linux-64 --lockfile tmp-lock.yml
+            cmd = [
+                'conda-lock', '-f', f'{image}/tmp-{env_name}-lock.yml',
+                '-p', 'linux-64', '--lockfile', f'{image}/conda-{env_name}-lock.yml'
+            ]
+            logging.debug('\t' + (' '.join(cmd)))
+            if not dryrun:
+                out = subprocess.call(cmd)
+                if out: 
+                    logging.error('\tError encountered.')
+                    sys.exit(1)
+                os.system(f'rm {image}/tmp-{env_name}-lock.yml')
+    
+            # Now generate the packages-list.txt file that contains the list for reference
+            packages_file = f'{image}/packages-{env_name}.txt'
+            logging.debug(f'Generating list of packages to {packages_file}')
+            if not dryrun:
+                generate_package_list(
+                    lock_file=f'{image}/conda-{env_name}-lock.yml',
+                    out_file=packages_file
+                )
 
 def _parse_package_url(line):
     """

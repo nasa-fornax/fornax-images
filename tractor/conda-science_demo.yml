@@ -20,6 +20,7 @@ dependencies:
   - netpbm
   - acstools
   - astropy
+  - pyvo
   - astroquery
   - boto3
   - firefly-client
