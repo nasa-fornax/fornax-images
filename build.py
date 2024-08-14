@@ -56,7 +56,7 @@ def build_images(image, dryrun, build_args, update_lock):
     # build the image #
     logging.debug(f'\tBuilding {image}')
     cmd = [
-        'docker', 'build', '--network=host', '-t', 
+        'docker', 'build', '--network=host', '--progress=plain', '-t', 
         f'fornax/{image}:latest'
     ] + extra_args + [f'./{image}']
     logging.debug('\t' + (' '.join(cmd)))
@@ -95,8 +95,15 @@ def build_images(image, dryrun, build_args, update_lock):
     
             if not dryrun:
                 out = subprocess.check_output(cmd)
-                with open(f'{image}/tmp-{env_name}-lock.yml', 'wb') as fp:
-                    fp.write(out)
+                lines = []
+                include = False
+                for line in out.decode().split('\n'):
+                    if 'name:' in line:
+                        include = True
+                    if include:
+                        lines.append(line)
+                with open(f'{image}/tmp-{env_name}-lock.yml', 'w') as fp:
+                    fp.write('\n'.join(lines))
     
             # then call conda-lock on it
             # conda-lock -f tmp.yml -p linux-64 --lockfile tmp-lock.yml

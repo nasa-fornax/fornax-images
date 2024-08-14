@@ -4,6 +4,8 @@ channels:
 dependencies:
   - python==3.11
   - jupyterlab
+  - notebook
+  - ipykernel
   - jupytext
   - dask
   - dask-labextension
@@ -29,6 +31,5 @@ dependencies:
       - specreduce
       - jupyterlab-git
       - jupyterlab-myst
-      - jupyterlab-bxplorer
-      - jupyterlab-s3-browser
+      #- jupyterlab-s3-browser
       

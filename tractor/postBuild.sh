@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pythonenv=science_demo
+pythonenv=notebook
 astrometry_commit=fbca48e
 tractor_commit=cdb8200
 

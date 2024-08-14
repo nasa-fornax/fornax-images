@@ -16,7 +16,11 @@ for envfile in `ls conda-*.yml | grep -v lock`; do
         mamba env update -n ${env} -f $ENVFILE
     elif [[ "$env"=="$CONDA_ENV" ]]; then
         echo "Defaulting to basic env ..." 
-        mamba update --name $env python=3.11 jupyterlab
+        mamba create --name $env python=3.11 jupyterlab
+    fi
+    if [ "$env" != "notebook" ]; then
+        mamba install ipykernel -n $env
+        mamba run -n $env python -m ipykernel install --sys-prefix --name $env
     fi
 done
 

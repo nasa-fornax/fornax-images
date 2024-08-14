@@ -1,4 +1,4 @@
-FROM quay.io/jupyter/base-notebook:2024-05-16
+FROM quay.io/jupyter/base-notebook:2024-08-12
 
 LABEL org.opencontainers.image.source=https://github.com/fornax-navo/fornax-images
 LABEL org.opencontainers.image.ref.name="Fornax Base Image"
@@ -18,27 +18,36 @@ ENV CONDA_ENV=notebook
 # to ${CONDA_DIR}/etc but not to /etc
 ENV DASK_ROOT_CONFIG=${CONDA_DIR}/etc
 
-RUN mkdir -p build
+# COPY the current content to $HOME/build
+RUN mkdir -p $HOME/build/
+COPY --chown=$NB_USER:$NB_USER apt* conda*yml postBuild* $HOME/build/
+COPY --chown=$NB_USER:$NB_USER overrides.json $HOME/build/
+
 USER root
 
 # Install OS packages and then clean up
 COPY --chown=$NB_USER:$NB_USER scripts /opt/scripts
-COPY --chown=$NB_USER:$NB_USER apt.txt* $HOME/build/
 # Read apt.txt line by line, and execute apt-get install for each line
 RUN cd build && bash /opt/scripts/apt-install.sh
 
 
-# update start.sh (user as ENTRYPOINT) to a simple one
-RUN printf "#!/bin/bash -l\n\nexec \"\$@\"" > /usr/local/bin/start.sh \
- && chmod +x /usr/local/bin/start.sh
-CMD ["/bin/bash"]
-
 
 USER $NB_USER
 # setup conda environments
-COPY --chown=$NB_USER:$NB_USER conda-*yml $HOME/build/
 RUN mamba install conda-lock \
  && cd build && bash /opt/scripts/conda-env-install.sh
+
+# Change dispaly name of the default kernel
+RUN mamba run -n $CONDA_ENV python -m ipykernel install --sys-prefix --display-name "$CONDA_ENV"
+
+# Any other postBuild scripts #
+RUN cd $HOME/build \
+ ; for script in `ls postBuild*`; do \
+ echo "Found script ${script} ..." \
+ && chmod +x $script \
+ && ./$script \
+ ; done
+# --------------------------- #
 
 # reset user and location
 RUN rm -r $HOME/build $HOME/work /tmp/*
@@ -51,21 +60,19 @@ ENV PATH=$CONDA_DIR/envs/$CONDA_ENV/bin:$PATH
 
 
 # Install OS packages and then clean up
-ONBUILD RUN mkdir -p build
+ONBUILD RUN mkdir -p $HOME/build
+ONBUILD COPY --chown=$NB_USER:$NB_USER apt* conda*yml postBuild* $HOME/build/
 ONBUILD USER root
-ONBUILD COPY --chown=$NB_USER:$NB_USER apt.txt* $HOME/build/
 ONBUILD RUN mkdir -p build && cd build && bash /opt/scripts/apt-install.sh
 ONBUILD USER $NB_USER
 # ------------------------------------ #
 
 
 # setup conda environments
-ONBUILD COPY --chown=$NB_USER:$NB_USER conda-*yml $HOME/build/
 ONBUILD RUN cd build && bash /opt/scripts/conda-env-install.sh
 # ----------------------- #
 
 # Any other postBuild scripts #
-ONBUILD COPY --chown=$NB_USER:$NB_USER postBuild* $HOME/build/
 ONBUILD RUN cd build \
  ; for script in `ls postBuild*`; do \
  echo "Found script ${script} ..." \
