@@ -55,7 +55,7 @@ USER ${NB_USER}
 WORKDIR ${HOME}
 
 # Make $CONDA_ENV default
-RUN printf "\nif ! [ -z \$CONDA_ENV ]; then\n  conda activate \$CONDA_ENV\nfi\n" >> $HOME/.bashrc
+RUN printf "\nif ! [ -z \$CONDA_ENV ]; then\n  conda activate \$CONDA_ENV\nfi\n" >> /etc/bash.bashrc
 ENV PATH=$CONDA_DIR/envs/$CONDA_ENV/bin:$PATH
 
 
