@@ -1,4 +1,4 @@
-name: science_demo
+name: notebook
 channels:
   - conda-forge
   - nodefaults
@@ -35,4 +35,4 @@ dependencies:
   - scikit-image
   - statsmodels
   - tqdm
-prefix: /opt/conda/envs/science_demo
+prefix: /opt/conda/envs/notebook
