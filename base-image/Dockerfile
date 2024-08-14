@@ -2,7 +2,7 @@ FROM quay.io/jupyter/base-notebook:2024-08-12
 
 LABEL org.opencontainers.image.source=https://github.com/fornax-navo/fornax-images
 LABEL org.opencontainers.image.ref.name="Fornax Base Image"
-LABEL org.opencontainers.image.version=0.1
+LABEL org.opencontainers.image.version=0.2
 LABEL maintainer="Fornax Project"
 
 # clear the jupyter stack from base
