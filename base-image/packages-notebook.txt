@@ -28,7 +28,7 @@ asttokens==2.4.1
 async-lru==2.0.4
 attrs==24.2.0
 aws-c-auth==0.7.25
-aws-c-cal==0.7.2
+aws-c-cal==0.7.3
 aws-c-common==0.9.25
 aws-c-compression==0.2.18
 aws-c-event-stream==0.4.2

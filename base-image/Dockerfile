@@ -25,6 +25,9 @@ COPY --chown=$NB_USER:$NB_USER overrides.json $HOME/build/
 
 USER root
 
+# Make /opt/ user writeable so it can be used by postBuild scripts
+RUN fix-permissions /opt/
+
 # Install OS packages and then clean up
 COPY --chown=$NB_USER:$NB_USER scripts /opt/scripts
 # Read apt.txt line by line, and execute apt-get install for each line
@@ -49,14 +52,19 @@ RUN cd $HOME/build \
  ; done
 # --------------------------- #
 
+# Make $CONDA_ENV default; do it at the global level
+# because ~/.bashrc is not loaded when user space is mounted
+USER root
+ENV PATH=$CONDA_DIR/envs/$CONDA_ENV/bin:$PATH
+RUN cat $HOME/.bashrc >> /etc/bash.bashrc \
+ && printf "\nconda activate \$CONDA_ENV\n" >> /etc/bash.bashrc \
+ && printf "" > $HOME/.bashrc
+USER $NB_USER
+
+
 # reset user and location
 RUN rm -r $HOME/build $HOME/work /tmp/*
-USER ${NB_USER}
 WORKDIR ${HOME}
-
-# Make $CONDA_ENV default
-RUN printf "\nif ! [ -z \$CONDA_ENV ]; then\n  conda activate \$CONDA_ENV\nfi\n" >> /etc/bash.bashrc
-ENV PATH=$CONDA_DIR/envs/$CONDA_ENV/bin:$PATH
 
 
 # Install OS packages and then clean up
