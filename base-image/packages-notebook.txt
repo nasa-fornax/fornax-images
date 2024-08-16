@@ -131,7 +131,7 @@ imagecodecs==2024.6.1
 imageio==2.34.2
 importlib-metadata==8.2.0
 importlib_metadata==8.2.0
-importlib_resources==6.4.0
+importlib_resources==6.4.2
 ipykernel==6.29.5
 ipython==8.26.0
 isoduration==20.11.0
@@ -253,7 +253,7 @@ lz4-c==1.9.4
 lzo==2.10
 markdown-it-py==3.0.0
 markupsafe==2.1.5
-matplotlib-base==3.9.1
+matplotlib-base==3.9.2
 matplotlib-inline==0.1.7
 mdit-py-plugins==0.4.1
 mdurl==0.1.2

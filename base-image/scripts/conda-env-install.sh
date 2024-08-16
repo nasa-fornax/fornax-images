@@ -19,8 +19,8 @@ for envfile in `ls conda-*.yml | grep -v lock`; do
         mamba create --name $env python=3.11 jupyterlab
     fi
     if [ "$env" != "notebook" ]; then
-        mamba install ipykernel -n $env
-        mamba run -n $env python -m ipykernel install --sys-prefix --name $env
+        mamba install -n $env ipykernel
+        mamba run -n $env python -m ipykernel install --name $env --prefix $CONDA_DIR/envs/notebook
     fi
 done
 

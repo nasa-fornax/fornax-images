@@ -13,7 +13,7 @@
 version: 1
 metadata:
   content_hash:
-    linux-64: d092121de70efb995343eed7a5b782f6ccbe59be459a633f189f4e487f4d0524
+    linux-64: 46f1324661d875acee5cc3fff3bf3a5bf3b5d8cd58520c76a1572746bfbd0a60
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -1966,16 +1966,16 @@ package:
   category: main
   optional: false
 - name: importlib_resources
-  version: 6.4.0
+  version: 6.4.2
   manager: conda
   platform: linux-64
   dependencies:
     python: '>=3.8'
     zipp: '>=3.1.0'
-  url: https://conda.anaconda.org/conda-forge/noarch/importlib_resources-6.4.0-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/importlib_resources-6.4.2-pyhd8ed1ab_0.conda
   hash:
-    md5: c5d3907ad8bd7bf557521a1833cf7e6d
-    sha256: c6ae80c0beaeabb342c5b041f19669992ae6e937dbec56ced766cb035900f9de
+    md5: ff64113bd700cf0f892ebf4b223e56aa
+    sha256: 1304c2ff6c1879628c13a0713fd070192910d1a250a2366e91208ceda1b6d2bf
   category: main
   optional: false
 - name: ipykernel
@@ -3840,7 +3840,7 @@ package:
   category: main
   optional: false
 - name: matplotlib-base
-  version: 3.9.1
+  version: 3.9.2
   manager: conda
   platform: linux-64
   dependencies:
@@ -3862,10 +3862,10 @@ package:
     python_abi: 3.11.*
     qhull: '>=2020.2,<2020.3.0a0'
     tk: '>=8.6.13,<8.7.0a0'
-  url: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.9.1-py311h74b4f7c_2.conda
+  url: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.9.2-py311h74b4f7c_0.conda
   hash:
-    md5: e4a26e6bd32d4af38492ba68caaa16d1
-    sha256: d35b8a68d6d803d4977ccf3354abe14a0d1037c06f7519701c0c3247265d489a
+    md5: de8e36c9792f14eed7e11e672f03fbf0
+    sha256: a914061120a15618dacefc7268fca6c2e77631c801f58a5771f40f77ed200943
   category: main
   optional: false
 - name: matplotlib-inline

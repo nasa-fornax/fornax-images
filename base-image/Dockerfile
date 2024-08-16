@@ -29,7 +29,7 @@ USER root
 RUN fix-permissions /opt/
 
 # Install OS packages and then clean up
-COPY --chown=$NB_USER:$NB_USER scripts /opt/scripts
+COPY --chown=$NB_USER:$NB_USER scripts/*.sh /opt/scripts/
 # Read apt.txt line by line, and execute apt-get install for each line
 RUN cd build && bash /opt/scripts/apt-install.sh
 
