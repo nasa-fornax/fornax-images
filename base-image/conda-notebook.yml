@@ -1,0 +1,35 @@
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python==3.11
+  - jupyterlab
+  - notebook
+  - ipykernel
+  - jupytext
+  - dask
+  - dask-labextension
+  - numpy
+  - scipy
+  - pandas
+  - scikit-learn
+  - scikit-image
+  - astropy
+  - astropy-healpix
+  - ccdproc
+  - photutils
+  - regions
+  - reproject
+  - specutils
+  - pyvo
+  - astroquery
+  - statsmodels
+  - tqdm
+  - seaborn
+  - pip
+  - pip:
+      - specreduce
+      - jupyterlab-git
+      - jupyterlab-myst
+      #- jupyterlab-s3-browser
+      

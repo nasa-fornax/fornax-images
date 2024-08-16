@@ -1,0 +1,38 @@
+name: notebook
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.11
+  - numpy
+  - pandas
+  - scipy
+  - pyarrow
+  - swig
+  - ipykernel
+  - cairo
+  - cython
+  - "ceres-solver<2.2.0"
+  - pkg-config
+  - setuptools
+  - wcslib
+  - libjpeg-turbo
+  - netpbm
+  - acstools
+  - astropy
+  - pyvo
+  - astroquery
+  - boto3
+  - firefly-client
+  - hpgeom
+  - lightkurve
+  - matplotlib
+  - seaborn
+  - mpld3
+  - seaborn
+  - reproject
+  - s3fs
+  - scikit-image
+  - statsmodels
+  - tqdm
+prefix: /opt/conda/envs/notebook

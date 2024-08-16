@@ -1,0 +1,11 @@
+g++
+libncurses-dev
+libreadline-dev
+make
+ncurses-dev
+perl-modules
+tcsh
+wget
+xorg-dev
+libcurl4
+libssl3
