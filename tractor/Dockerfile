@@ -7,6 +7,7 @@ ARG IMAGE_TAG=latest
 ARG REPOSITORY=fornax-core/images
 FROM ghcr.io/${REPOSITORY}/base_image:${BASE_IMAGE_TAG}
 
+
 LABEL org.opencontainers.image.ref.name="Fornax Default Astrophysics"
 LABEL gov.nasa.smce.fornax.jupyterhub.base_image="${BASE_IMAGE_TAG}"
 LABEL gov.nasa.smce.fornax.jupyterhub.image="${IMAGE_TAG}"
