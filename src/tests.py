@@ -330,16 +330,20 @@ class TestTagger(unittest.TestCase):
         tagger.tag("repo", "release", "source_tag")
         self.assertEqual(
             ran,
-            [('docker pull ghcr.io/repo/base_image:source_tag', 1000),
-             ('docker tag ghcr.io/repo/base_image:source_tag '
-              'ghcr.io/repo/base_image:release',
-              500),
-             ('docker push ghcr.io/repo/base_image:release', 1000),
-             ('docker pull ghcr.io/repo/tractor:source_tag', 1000),
-             ('docker tag ghcr.io/repo/tractor:source_tag ghcr.io/repo/tractor:release',
-              500),
-             ('docker push ghcr.io/repo/tractor:release', 1000),
-             ]
+            [
+                ("docker pull ghcr.io/repo/base_image:source_tag", 1000),
+                (
+                    "docker tag ghcr.io/repo/base_image:source_tag ghcr.io/repo/base_image:release",
+                    500,
+                ),
+                ("docker push ghcr.io/repo/base_image:release", 1000),
+                ("docker pull ghcr.io/repo/tractor:source_tag", 1000),
+                (
+                    "docker tag ghcr.io/repo/tractor:source_tag ghcr.io/repo/tractor:release",
+                    500,
+                ),
+                ("docker push ghcr.io/repo/tractor:release", 1000),
+            ],
         )
 
 

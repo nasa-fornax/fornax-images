@@ -11,7 +11,7 @@ import sys
 order = (
     "base_image",
     "tractor",
-#    "heasoft", # reenable heasoft once we have it packaged
+    #    "heasoft", # reenable heasoft once we have it packaged
 )
 
 
