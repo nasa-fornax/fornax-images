@@ -1,10 +1,6 @@
 name: Maybe generate Docker images
 
 on: [ push ]
-#  push:
-#    paths: ['base_image/**', 'tractor/**', 'heasoft/**']
-#  pull_request:
-#    paths: ['base_image/**', 'tractor/**', 'heasoft/**']
 
 env:
   REGISTRY: ghcr.io
@@ -39,7 +35,7 @@ jobs:
       - uses: tchupp/actions-detect-directory-changes@v1
         id: directory-changes
         with:
-          included-paths: "base_image,tractor,heasoft"
+          included-paths: ""
           included-extensions: ""
           if-these-paths-change-return-all-included-paths: ""
 

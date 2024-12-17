@@ -330,19 +330,20 @@ class TestTagger(unittest.TestCase):
         tagger.tag("repo", "release", "source_tag")
         self.assertEqual(
             ran,
-            [('docker pull ghcr.io/repo/base_image:source_tag', 1000),
-             ('docker tag ghcr.io/repo/base_image:source_tag '
-              'ghcr.io/repo/base_image:release',
-              500),
-             ('docker push ghcr.io/repo/base_image:release', 1000),
-             ('docker pull ghcr.io/repo/tractor:source_tag', 1000),
-             ('docker tag ghcr.io/repo/tractor:source_tag ghcr.io/repo/tractor:release',
-              500),
-             ('docker push ghcr.io/repo/tractor:release', 1000),
-             ('docker pull ghcr.io/repo/heasoft:source_tag', 1000),
-             ('docker tag ghcr.io/repo/heasoft:source_tag ghcr.io/repo/heasoft:release',
-              500),
-             ('docker push ghcr.io/repo/heasoft:release', 1000)]
+            [
+                ("docker pull ghcr.io/repo/base_image:source_tag", 1000),
+                (
+                    "docker tag ghcr.io/repo/base_image:source_tag ghcr.io/repo/base_image:release",
+                    500,
+                ),
+                ("docker push ghcr.io/repo/base_image:release", 1000),
+                ("docker pull ghcr.io/repo/tractor:source_tag", 1000),
+                (
+                    "docker tag ghcr.io/repo/tractor:source_tag ghcr.io/repo/tractor:release",
+                    500,
+                ),
+                ("docker push ghcr.io/repo/tractor:release", 1000),
+            ],
         )
 
 
@@ -362,7 +363,7 @@ class TestNeeder(unittest.TestCase):
 
         needer.run = run
         result = needer.needs("repo", "token", "[]", "main")
-        self.assertEqual(result, ["base_image", "tractor", "heasoft"])
+        self.assertEqual(result, ["base_image", "tractor"])
 
     def test_needs_one_due_to_no_tag(self):
         logger = DummyLogger()
@@ -371,20 +372,20 @@ class TestNeeder(unittest.TestCase):
         class DummyProcessResult:
             stdout = '{"tags": ["main"]}'
 
-        class HeasoftDummyProcessResult:
+        class TractorDummyProcessResult:
             stdout = '{"tags": []}'
 
         def run(command, timeout, capture_output=True):
             ran.append((command, timeout))
-            if len(ran) <= 2:
+            if len(ran) <= 1:
                 return DummyProcessResult
-            return HeasoftDummyProcessResult
+            return TractorDummyProcessResult
 
         needer = neededimages.Needer(logger)
 
         needer.run = run
         result = needer.needs("repo", "token", "[]", "main")
-        self.assertEqual(result, ["heasoft"])
+        self.assertEqual(result, ["tractor"])
 
     def test_needs_one_due_to_dirchange(self):
         logger = DummyLogger()
@@ -400,8 +401,8 @@ class TestNeeder(unittest.TestCase):
         needer = neededimages.Needer(logger)
 
         needer.run = run
-        result = needer.needs("repo", "token", '["heasoft"]', "main")
-        self.assertEqual(result, ["heasoft"])
+        result = needer.needs("repo", "token", '["tractor"]', "main")
+        self.assertEqual(result, ["tractor"])
 
 
 if __name__ == "__main__":
