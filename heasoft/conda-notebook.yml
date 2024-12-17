@@ -1,0 +1,15 @@
+name: notebook
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy>1.6
+  - astropy>=4.0
+  - matplotlib
+  - ipykernel
+  - pip
+  - pip:
+    - astroquery
+prefix: /opt/conda/envs/notebook

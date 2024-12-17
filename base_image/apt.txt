@@ -1,0 +1,14 @@
+fonts-liberation
+pandoc
+vim
+nano
+emacs-nox
+fuse
+bzip2
+git
+curl
+zip
+build-essential
+gcc
+make
+gfortran
