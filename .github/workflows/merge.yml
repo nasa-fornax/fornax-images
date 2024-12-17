@@ -1,0 +1,70 @@
+name: Docker Image CI
+
+on: [ push, pull_request ]
+#  push:
+#    paths: ['base_image/**', 'tractor/**', 'heasoft/**']
+#  pull_request:
+#    paths: ['base_image/**', 'tractor/**', 'heasoft/**']
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+
+  build-and-push-images:
+
+    runs-on: ubuntu-latest
+
+    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in
+    # this job.
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    steps:
+      - name: Debug Event Payload
+        env:
+          EVENT_PAYLOAD: ${{ toJson(github.event) }}
+        run: echo "$EVENT_PAYLOAD"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Git branch name
+        id: git-branch-name
+        run: echo "${{ github.head_ref || github.ref_name }}"
+
+      - uses: tchupp/actions-detect-directory-changes@v1
+        id: directory-changes
+        with:
+          included-paths: "base_image,tractor,heasoft"
+          included-extensions: ""
+          if-these-paths-change-return-all-included-paths: ""
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        id: setup_python
+        with:
+          python-version: '3.12'
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Maybe build and push Docker images to GHCR
+        id: push
+        env:
+          DIR_CHANGES: ${{ steps.directory-changes.outputs.changed }}
+        run: |
+           echo "$DIR_CHANGES"
+           export GHCR_TOKEN=$(echo ${{ secrets.GITHUB_TOKEN }} | base64)
+           export NEEDED="$(python src/neededimages.py "${{ github.repository }}" "$GHCR_TOKEN" "$DIR_CHANGES" "${{ github.head_ref || github.ref_name }}")"
+           echo "$NEEDED"
+           if [ ! -z "$NEEDED" ]; then
+             python src/buildimages.py "${{ github.repository }}" "${{ github.head_ref || github.ref_name }}" --push --images $NEEDED
+           fi
