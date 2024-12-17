@@ -1,6 +1,6 @@
-name: Docker Image CI
+name: Maybe generate Docker images
 
-on: [ push, pull_request ]
+on: [ push ]
 #  push:
 #    paths: ['base_image/**', 'tractor/**', 'heasoft/**']
 #  pull_request:
