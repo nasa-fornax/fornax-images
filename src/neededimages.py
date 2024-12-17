@@ -25,7 +25,11 @@ class Needer(Base):
                     500,
                     capture_output=True,
                 )
-                tags = json.loads(result.stdout)["tags"]
+                struct = json.loads(result.stdout)
+                if not struct:
+                    needed.append(image_name)
+                    continue
+                tags = struct.get("tags", [])
                 if (image_name in images_changed) or (not branch in tags):
                     needed.append(image_name)
             except subprocess.CalledProcessError:
