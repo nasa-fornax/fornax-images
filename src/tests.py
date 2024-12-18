@@ -417,6 +417,27 @@ class TestNeeder(unittest.TestCase):
         result = needer.needs("repo", "token", '["tractor"]', "main")
         self.assertEqual(result, ["tractor"])
 
+    def test_needs_all_due_to_baseimage_change(self):
+        logger = DummyLogger()
+        ran = []
+
+        class BaseImageProcessResult:
+            stdout = '{"tags": ["main"]}'
+
+        class TractorDummyProcessResult:
+            stdout = '{"tags": ["main"]}'
+
+        def run(command, timeout, capture_output=True):
+            ran.append((command, timeout))
+            if len(ran) <= 1:
+                return BaseImageProcessResult
+            return TractorDummyProcessResult
+            
+        needer = neededimages.Needer(logger)
+
+        needer.run = run
+        result = needer.needs("repo", "token", '["base_image"]', "main")
+        self.assertEqual(result, ["base_image", "tractor"])
 
 if __name__ == "__main__":
     unittest.main()
