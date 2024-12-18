@@ -94,6 +94,7 @@ class Builder(Base):
             os.unlink(lockfile)
 
     def update_lockfiles(self, path, repository, tag):
+        tag = tag.rsplit(":", 1)[1]
         self.out(f"Updating the lock files for {path}")
         envfiles = glob.glob(f"{path}/conda-*.yml")
         envfiles = [
@@ -167,7 +168,11 @@ def main(
     tobuild = builder.builds_necessary(repository, tag, images)
 
     # parent dir of the dir of this file (root of this checkout)
-    root = os.path.dirname(os.path.dirname(__file__))
+    here = __file__
+    if not here.startswith(os.path.sep):
+        here = os.path.join(os.getcwd(), here)
+
+    root = os.path.dirname(os.path.dirname(here))
     builder.chdir(root)  # indirection for testing sanity
 
     for dockerdir, tag in tobuild:
@@ -184,6 +189,9 @@ def main(
 
 
 if __name__ == "__main__":
+    if not sys.version_info >= (3, 12):
+        print("This script requires Python 3.12 or better")
+        sys.exit(1)
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "repository", help="GH repository name (e.g. 'fornax-core/images')"
@@ -201,7 +209,7 @@ if __name__ == "__main__":
     ap.add_argument(
         "--update-lock",
         action="store_true",
-        help="update conda lock files",
+        help="update conda lock files (meant to be used when run locally to update conda lock files in local directories. A suitable command might be 'python3.12 buildimages.py nasa-fornax/fornax-images test --update-lock')",
         default=False,
     )
     ap.add_argument(

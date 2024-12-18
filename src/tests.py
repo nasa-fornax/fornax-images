@@ -307,7 +307,7 @@ class TestBuilder(unittest.TestCase):
                 pathlib.Path(fn).touch()
             builder = self._makeOne()
             builder.run = run
-            builder.update_lockfiles(tmpdir, "repo_name", "tag")
+            builder.update_lockfiles(tmpdir, "repo_name", "main:tag")
             with open(os.path.join(tmpdir, "conda-a-lock.yml"), "r") as f:
                 result = f.read()
             self.assertEqual(len(builder.logger.messages), 1)
