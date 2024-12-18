@@ -8,16 +8,24 @@ doesn't need to compile every time).
 
 It also includes three GitHub workflows:
 
-- A workflow which will build images related to the branch being checked into
-  (e.g. "main").
+- A workflow which will build images for tractor and base_image to the branch
+  being checked into (e.g. "base_image:main" or "tractor:main"), when anything
+  in "tractor" or "base_image" changes.  It also pushes the resulting images
+  into the container registry of this repository.
 
 - A workflow that runs on release that tags the latest "main" image with the
-  release tag and a symbolic rolling tag "stable".
+  release tag and a symbolic rolling tag named "stable".
 
-- A workflow that runs the tests of the building and tagging machinery.
+- A workflow that runs the tests of the building and tagging machinery (when
+  anything in "src" changes).
 
 For each image built, it is pushed to the GitHub container registry associated
 with this repostory.
+
+See the "Packages" link on the right hand side of the main repository page for
+a list of images in the container registry.
+
+See the "Actions" tab of the repository to see the results of each workflow.
 
 NB: The code in this directory has only been tested with Python3.11 and better.
 
