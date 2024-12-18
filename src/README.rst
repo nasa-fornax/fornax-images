@@ -19,7 +19,7 @@ It also includes three GitHub workflows:
 For each image built, it is pushed to the GitHub container registry associated
 with this repostory.
 
-NB: The code in this directory requires Python3.12 or better.
+NB: The code in this directory has only been tested with Python3.11 and better.
 
 Notable Changes and Questions
 =============================

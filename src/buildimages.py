@@ -19,9 +19,6 @@ class Base:
     # this class only exists (instead of module-level functions) to make unit
     # testing less painful; it is also used by "release.py"
     def __init__(self, logger):
-        if not sys.version_info >= (3, 12):
-            print("Scripts requires Python 3.12 or better")
-            sys.exit(1)
         self.logger = logger
 
     def out(self, msg, severity=logging.INFO):
@@ -196,7 +193,7 @@ if __name__ == "__main__":
     ap.add_argument(
         "repository", help="GH repository name (e.g. 'fornax-core/images')"
     )
-    ap.add_argument("tag", help="CR tag name (e.g. 'branch-name')")
+    ap.add_argument("tag", help="Container registry tag name (e.g. 'mybranch')")
     ap.add_argument(
         "--push",
         action="store_true",
@@ -209,7 +206,7 @@ if __name__ == "__main__":
     ap.add_argument(
         "--update-lock",
         action="store_true",
-        help="update conda lock files (meant to be used when run locally to update conda lock files in local directories. A suitable command might be 'python3.12 buildimages.py nasa-fornax/fornax-images test --update-lock')",
+        help="Update conda lock files. Meant to be used when run to update conda lock files in local directories. A suitable command might be 'python3 src/buildimages.py nasa-fornax/fornax-images mybranch --update-lock'",
         default=False,
     )
     ap.add_argument(
