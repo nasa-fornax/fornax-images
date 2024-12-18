@@ -19,6 +19,9 @@ class Base:
     # this class only exists (instead of module-level functions) to make unit
     # testing less painful; it is also used by "release.py"
     def __init__(self, logger):
+        if not sys.version_info >= (3, 12):
+            print("Scripts requires Python 3.12 or better")
+            sys.exit(1)
         self.logger = logger
 
     def out(self, msg, severity=logging.INFO):
@@ -189,9 +192,6 @@ def main(
 
 
 if __name__ == "__main__":
-    if not sys.version_info >= (3, 12):
-        print("This script requires Python 3.12 or better")
-        sys.exit(1)
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "repository", help="GH repository name (e.g. 'fornax-core/images')"

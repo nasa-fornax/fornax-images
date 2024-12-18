@@ -14,7 +14,7 @@ class Needer(Base):
         images_changed = set()
         for image_name in order:
             for fn in dirs_changed:
-                if fn.startswith(image_name):
+                if f"{fn}/".startswith(f"{image_name}/"):
                     images_changed.add(image_name)
         needed = []
         for image_name in order:
@@ -32,6 +32,10 @@ class Needer(Base):
                 tags = struct.get("tags", [])
                 if (image_name in images_changed) or (not branch in tags):
                     needed.append(image_name)
+                else:
+                    # when base image changes, we rebuild all images
+                    if "base_image" in needed:
+                        needed.append(image_name)
             except subprocess.CalledProcessError:
                 needed.append(image_name)
 
