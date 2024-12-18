@@ -171,7 +171,7 @@ def main(
     here = __file__
     if not here.startswith(os.path.sep):
         here = os.path.join(os.getcwd(), here)
-        
+
     root = os.path.dirname(os.path.dirname(here))
     builder.chdir(root)  # indirection for testing sanity
 

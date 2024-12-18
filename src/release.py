@@ -10,10 +10,12 @@ class Tagger(Base):
         for name in order:
             source = f"ghcr.io/{repository}/{name}:{source_tag}"
             self.run(f"docker pull {source}", 1000)
+
             releasetarget = f"ghcr.io/{repository}/{name}:{release_name}"
             releasetagcommand = f"docker tag {source} {releasetarget}"
             self.out(self.run(releasetagcommand, 500))
             self.out(self.run(f"docker push {releasetarget}", 1000))
+
             symbolictarget = f"ghcr.io/{repository}/{name}:{symbolic_tag}"
             symbolictagcommand = f"docker tag {source} {symbolictarget}"
             self.out(self.run(symbolictagcommand, 500))
