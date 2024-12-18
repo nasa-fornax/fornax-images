@@ -1,8 +1,10 @@
 New Fornax Images Repo (alpha)
 ==============================
 
-This repo houses Dockerfiles and supporting files for the "base_image",
-"tractor", and "heasoft" images within subdirectories of this repo.
+This repo houses Dockerfiles and supporting files for the "base_image", and
+"tractor" images within subdirectories of this repo.  (It also houses heasoft,
+but that is currently disabled until we can package it in such a way that it
+doesn't need to compile every time).
 
 It also includes three GitHub workflows:
 
@@ -22,7 +24,7 @@ Notable Changes and Questions
 
 - Instead of image names like ``fornax_images:base-image-XYZ``, and
   ``fornax_images:heasoft-XYZ``, we produce images like ``base_image:XYZ`` and
-  ``heasoft:XYZ`` as it is easy enough to do when we use the GitHub container
+  ``tractor:XYZ`` as it is easy enough to do when we use the GitHub container
   registry, and it's more "normal".
 
 - All of the logic to build and push (or not build or push) exists within
