@@ -6,16 +6,18 @@ from buildimages import order
 
 
 class Tagger(Base):
-    def tag(self, repository, release_name, source_tag):
+    def tag(self, repository, release_name, source_tag, symbolic_tag):
         for name in order:
             source = f"ghcr.io/{repository}/{name}:{source_tag}"
             self.run(f"docker pull {source}", 1000)
-            target = f"ghcr.io/{repository}/{name}:{release_name}"
-            tagcommand = f"docker tag {source} {target}"
-            result = self.run(tagcommand, 500)
-            self.out(result)
-            result = self.run(f"docker push {target}", 1000)
-            self.out(result)
+            releasetarget = f"ghcr.io/{repository}/{name}:{release_name}"
+            releasetagcommand = f"docker tag {source} {releasetarget}"
+            self.out(self.run(releasetagcommand, 500))
+            self.out(self.run(f"docker push {releasetarget}", 1000))
+            symbolictarget = f"ghcr.io/{repository}/{name}:{symbolic_tag}"
+            symbolictagcommand = f"docker tag {source} {symbolictarget}"
+            self.out(self.run(symbolictagcommand, 500))
+            self.out(self.run(f"docker push {symbolictarget}", 1000))
 
 
 if __name__ == "__main__":
@@ -29,6 +31,11 @@ if __name__ == "__main__":
         help="CR source tag name (e.g. 'main')",
         default="main",
     )
+    ap.add_argument(
+        "--symbolic_tag",
+        help="CR symbolic target tag name (e.g. 'stable')",
+        default="stable",
+    )
     logging.basicConfig(
         format="%(asctime)s|%(levelname)5s| %(message)s",
         datefmt="%Y-%m-%d|%H:%M:%S",
@@ -37,4 +44,9 @@ if __name__ == "__main__":
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     tagger = Tagger(logger)
-    tagger.tag(args.repository, args.release_name, args.source_tag)
+    tagger.tag(
+        args.repository,
+        args.release_name,
+        args.source_tag,
+        args.symbolic_tag
+    )
