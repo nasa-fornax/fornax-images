@@ -40,7 +40,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Tag main images with a release tag
+      - name: Tag main images with release tags
         id: push
         run: |
            python src/release.py "${{ github.repository }}" "${{ github.event.release.tag_name }}"  
