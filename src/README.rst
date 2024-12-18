@@ -9,9 +9,11 @@ doesn't need to compile every time).
 It also includes three GitHub workflows:
 
 - A workflow which will build images related to the branch being checked into
-  (e.g. "dev" or "main").
+  (e.g. "main").
+
 - A workflow that runs on release that tags the latest "main" image with the
-  release tag.
+  release tag and a symbolic rolling tag "stable".
+
 - A workflow that runs the tests of the building and tagging machinery.
 
 For each image built, it is pushed to the GitHub container registry associated
