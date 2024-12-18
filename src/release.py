@@ -45,8 +45,5 @@ if __name__ == "__main__":
     logger.setLevel(logging.INFO)
     tagger = Tagger(logger)
     tagger.tag(
-        args.repository,
-        args.release_name,
-        args.source_tag,
-        args.symbolic_tag
+        args.repository, args.release_name, args.source_tag, args.symbolic_tag
     )
