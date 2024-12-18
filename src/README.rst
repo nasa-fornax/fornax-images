@@ -13,6 +13,10 @@ It also includes three GitHub workflows:
   in "tractor" or "base_image" changes.  It also pushes the resulting images
   into the container registry of this repository.
 
+  NB: when "base_image" changes, "tractor" will also be rebuilt against the new
+  base_image related to the branch.  However, if only "tractor" changes,
+  "base_image" is not rebuilt.
+
 - A workflow that runs on release that tags the latest "main" image with the
   release tag and a symbolic rolling tag named "stable".
 
