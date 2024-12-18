@@ -56,11 +56,9 @@ Notable Changes and Questions
   all "main" images as released using the release tag name supplied plus a
   symbolic "stable" tag.
 
-- ``src/buildimages.py`` can be run standalone from any machine that is logged
-  in to a GitHub account with an API token that permitted to create "packages"
-  using ``docker login`` .  In this mode, all images will be built and pushed
-  the same as if a release was made, although a GitHub release will not
-  actually be made.
+- ``src/buildimages.py`` can be run standalone from any machine.  It can only
+  push images if it is logged in to a GitHub account with an API token that
+  permitted to create "packages" using ``docker login`` .
 
 - There are several other Dockerfiles in the older GitLab fornax-images repo.
   They seemed at a quick glance unrelated to the others because they didn't use
