@@ -6,6 +6,7 @@ import subprocess
 from buildimages import order
 from buildimages import Base
 
+base_images = ('base_image',)
 
 class Needer(Base):
     def needs(self, repository, gh_token, dirs_changed, branch):
@@ -33,8 +34,8 @@ class Needer(Base):
                 if (image_name in images_changed) or (not branch in tags):
                     needed.append(image_name)
                 else:
-                    # when base image changes, we rebuild all images
-                    if "base_image" in needed:
+                    # when a base image changes, we rebuild all images
+                    if any([x in needed for x in base_images]):
                         needed.append(image_name)
             except subprocess.CalledProcessError:
                 needed.append(image_name)
