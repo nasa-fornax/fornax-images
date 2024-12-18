@@ -52,8 +52,8 @@ Notable Changes and Questions
 - The event that fires off the worfklow that produces the images is currently a
   a push or pull request event.  It happens on every push for every branch.
 
-- The event that creates "imagename:v0.1.1" tags is a release event.  It tags
-  all "main" images as released using the release tag name supplied plus a
+- The event that creates "imagename:v0.1.1" tags is a GitHub release event.  It
+  tags all "main" images as released using the release tag name supplied plus a
   symbolic "stable" tag.
 
 - ``src/buildimages.py`` can be run standalone from any machine.  It can only
