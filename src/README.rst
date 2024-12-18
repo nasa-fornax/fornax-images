@@ -2,7 +2,7 @@ New Fornax Images Repo (alpha)
 ==============================
 
 This repo houses Dockerfiles and supporting files for the "base_image", and
-"tractor" images within subdirectories of this repo.  (It also houses heasoft,
+"tractor" images within subdirectories of its root.  (It also houses heasoft,
 but that is currently disabled until we can package it in such a way that it
 doesn't need to compile every time).
 
