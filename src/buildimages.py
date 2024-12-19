@@ -44,9 +44,7 @@ class Builder(Base):
         repository,
         path,
         tag,
-        no_cache=False,
         build_args=None,
-        plain=False,
         build_pars=None,
     ):
         extra_args = []
@@ -71,10 +69,6 @@ class Builder(Base):
             nameandval = f"{name}={val}"
             extra_args.append(f"--build-arg {nameandval}")
 
-        if no_cache:
-            extra_args.append("--no-cache=true")
-        if plain:
-            extra_args.append("--progress=plain")
         if build_pars:
             extra_args.append(build_pars)
         extra_args = " ".join(extra_args)
@@ -155,16 +149,20 @@ def main(
     tag=None,
     do_push=False,
     update_lock=False,
-    no_cache=False,
     no_build=False,
     build_args=None,
     images=order,
-    plain=False,
     build_pars=None
 ):
     if no_build and do_push:
         builder.out(
             "--no-build and --do-push cannot be used together", logging.ERROR
+        )
+        raise SystemExit(2)
+    
+    if build_pars is not None and ('--tag' in build_pars or '--build-arg' in build_pars):
+        builder.out(
+            "--tag and --build-arg cannot be passed in build-pars", logging.ERROR
         )
         raise SystemExit(2)
 
@@ -184,7 +182,7 @@ def main(
             if update_lock:
                 builder.remove_lockfiles(dockerdir)
             builder.build(
-                repository, dockerdir, tag, no_cache, build_args, plain=plain, build_pars=build_pars
+                repository, dockerdir, tag, build_args, build_pars=build_pars
             )
         if update_lock:
             builder.update_lockfiles(dockerdir, repository, tag)
@@ -214,12 +212,6 @@ if __name__ == "__main__":
         default=False,
     )
     ap.add_argument(
-        "--no-cache",
-        action="store_true",
-        help="pass --no-cache to docker build",
-        default=False,
-    )
-    ap.add_argument(
         "--no-build",
         action="store_true",
         help="don't actually build images (incompatible with --push)",
@@ -239,15 +231,9 @@ if __name__ == "__main__":
         default=order,
     )
     ap.add_argument(
-        "--plain",
-        action="store_true",
-        help="Use plain progress output when running docker build",
-        default=False,
-    )
-    ap.add_argument(
         "--build-pars",
         help="Arguments to be passed directly to `docker build`",
-        default="",
+        default=None,
     )
 
     args = ap.parse_args()
@@ -270,10 +256,8 @@ if __name__ == "__main__":
         args.tag,
         args.push,
         args.update_lock,
-        args.no_cache,
         args.no_build,
         args.build_args,
         args.images,
-        args.plain,
         args.build_pars,
     )

@@ -29,9 +29,9 @@ class DummyBuilder:
         self.logged.append(msg)
 
     def build(
-        self, repository, dockerdir, tags, no_cache, build_args, plain=False, build_pars=None,
+        self, repository, dockerdir, tags, build_args, build_pars=None,
     ):
-        self.builds.append((repository, dockerdir, tags, no_cache, build_args))
+        self.builds.append((repository, dockerdir, tags, build_args, build_pars))
 
     def remove_lockfiles(self, dockerdir):
         self.removed_lockfiles.append(dockerdir)
@@ -59,6 +59,32 @@ class TestMain(unittest.TestCase):
             )
         self.assertEqual(
             builder.logged, ["--no-build and --do-push cannot be used together"]
+        )
+    
+    def test_conflicting_build_pars_tag(self):
+        builder = DummyBuilder()
+        with self.assertRaises(SystemExit):
+            buildimages.main(
+                builder,
+                "repo_name",
+                "release_tag",
+                build_pars="--tag"
+            )
+        self.assertEqual(
+            builder.logged, ["--tag and --build-arg cannot be passed in build-pars"]
+        )
+    
+    def test_conflicting_build_pars_arg(self):
+        builder = DummyBuilder()
+        with self.assertRaises(SystemExit):
+            buildimages.main(
+                builder,
+                "repo_name",
+                "release_tag",
+                build_pars="--build-arg"
+            )
+        self.assertEqual(
+            builder.logged, ["--tag and --build-arg cannot be passed in build-pars"]
         )
 
     def test_main_nobuild(self):
@@ -93,7 +119,7 @@ class TestMain(unittest.TestCase):
         )
         self.assertEqual(builder.removed_lockfiles, ["a"])
         self.assertEqual(
-            builder.builds, [("repo_name", "a", "tag", False, None)]
+            builder.builds, [("repo_name", "a", "tag", None, None)]
         )
         self.assertEqual(builder.updated_lockfiles, [("a", "repo_name", "tag")])
         self.assertEqual(builder.pushed, [])
@@ -111,7 +137,7 @@ class TestMain(unittest.TestCase):
         )
         self.assertEqual(builder.removed_lockfiles, [])
         self.assertEqual(
-            builder.builds, [("repo_name", "a", "tag", False, None)]
+            builder.builds, [("repo_name", "a", "tag", None, None)]
         )
         self.assertEqual(builder.updated_lockfiles, [])
         self.assertEqual(builder.pushed, ["tag"])
@@ -238,7 +264,33 @@ class TestBuilder(unittest.TestCase):
 
         builder.run = run
         builder.build(
-            "repo_name", "path", "a:main", no_cache=True, build_args=["n=1"]
+            "repo_name", "path", "a:main", build_args=["n=1"]
+        )
+        self.assertEqual(
+            ran,
+            [
+                (
+                    "docker build "
+                    "--build-arg n=1 "
+                    "--build-arg REPOSITORY=repo_name "
+                    "--build-arg BASE_IMAGE_TAG=main "
+                    "--build-arg IMAGE_TAG=main "
+                    "--tag a:main path",
+                    10000,
+                ),
+            ],
+        )
+    
+    def test_build_pars(self):
+        builder = self._makeOne()
+        ran = []
+
+        def run(command, timeout):
+            ran.append((command, timeout))
+
+        builder.run = run
+        builder.build(
+            "repo_name", "path", "a:main", build_args=["n=1"], build_pars="--no-cache=true --network=host"
         )
         self.assertEqual(
             ran,
@@ -250,6 +302,7 @@ class TestBuilder(unittest.TestCase):
                     "--build-arg BASE_IMAGE_TAG=main "
                     "--build-arg IMAGE_TAG=main "
                     "--no-cache=true "
+                    "--network=host "
                     "--tag a:main path",
                     10000,
                 ),
@@ -268,7 +321,6 @@ class TestBuilder(unittest.TestCase):
             "repo_name",
             "path",
             "a:main",
-            no_cache=True,
             build_args=["n=1", "REPOSITORY=another"],
         )
         self.assertEqual(
@@ -279,7 +331,6 @@ class TestBuilder(unittest.TestCase):
                     "--build-arg REPOSITORY=another "
                     "--build-arg BASE_IMAGE_TAG=main "
                     "--build-arg IMAGE_TAG=main "
-                    "--no-cache=true "
                     "--tag a:main path",
                     10000,
                 ),
