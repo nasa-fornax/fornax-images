@@ -47,6 +47,7 @@ class Builder(Base):
         no_cache=False,
         build_args=None,
         plain=False,
+        build_pars=None,
     ):
         extra_args = []
         # cope with forks of the repository (see tractor/heasoft Dockerfiles) by
@@ -74,6 +75,8 @@ class Builder(Base):
             extra_args.append("--no-cache=true")
         if plain:
             extra_args.append("--progress=plain")
+        if build_pars:
+            extra_args.append(build_pars)
         extra_args = " ".join(extra_args)
         buildcommand = f"docker build {extra_args} --tag {tag} {path}"
         self.out(f"Building {path} via '{buildcommand}'")
@@ -157,6 +160,7 @@ def main(
     build_args=None,
     images=order,
     plain=False,
+    build_pars=None
 ):
     if no_build and do_push:
         builder.out(
@@ -180,7 +184,7 @@ def main(
             if update_lock:
                 builder.remove_lockfiles(dockerdir)
             builder.build(
-                repository, dockerdir, tag, no_cache, build_args, plain=plain
+                repository, dockerdir, tag, no_cache, build_args, plain=plain, build_pars=build_pars
             )
         if update_lock:
             builder.update_lockfiles(dockerdir, repository, tag)
@@ -240,6 +244,11 @@ if __name__ == "__main__":
         help="Use plain progress output when running docker build",
         default=False,
     )
+    ap.add_argument(
+        "--build-pars",
+        help="Arguments to be passed directly to `docker build`",
+        default="",
+    )
 
     args = ap.parse_args()
 
@@ -266,4 +275,5 @@ if __name__ == "__main__":
         args.build_args,
         args.images,
         args.plain,
+        args.build_pars,
     )

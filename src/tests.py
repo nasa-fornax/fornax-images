@@ -29,7 +29,7 @@ class DummyBuilder:
         self.logged.append(msg)
 
     def build(
-        self, repository, dockerdir, tags, no_cache, build_args, plain=False
+        self, repository, dockerdir, tags, no_cache, build_args, plain=False, build_pars=None,
     ):
         self.builds.append((repository, dockerdir, tags, no_cache, build_args))
 
