@@ -1,6 +1,6 @@
-ARG NOTEBOOK_TAG=2024-08-12
-FROM quay.io/jupyter/base-notebook:$NOTEBOOK_TAG as base
-FROM quay.io/jupyter/docker-stacks-foundation:$NOTEBOOK_TAG
+ARG BASE_TAG=2024-08-12
+FROM quay.io/jupyter/base-notebook:$BASE_TAG as base
+FROM quay.io/jupyter/docker-stacks-foundation:$BASE_TAG
 
 ARG IMAGE_TAG=latest
 LABEL gov.nasa.smce.fornax.jupyterhub.image="${IMAGE_TAG}"

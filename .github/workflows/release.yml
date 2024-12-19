@@ -1,4 +1,4 @@
-name: Tag dev images as stable
+name: Tag released images
 
 on:
   release:
@@ -10,7 +10,6 @@ env:
 jobs:
 
   build-and-push-images:
-
     runs-on: ubuntu-latest
 
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in
@@ -23,6 +22,11 @@ jobs:
       id-token: write
 
     steps:
+
+      - name: Debug Event Payload
+        env:
+          EVENT_PAYLOAD: ${{ toJson(github.event) }}
+        run: echo "$EVENT_PAYLOAD"
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,4 +47,6 @@ jobs:
       - name: Tag main images with release tags
         id: push
         run: |
-           python src/release.py "${{ github.repository }}" "${{ github.event.release.tag_name }}"  
+          python scripts/build.py --debug --no-build  --repository "${{ github.repository }}" \
+              --tag "${{ github.event.release.target_commitish }}" \
+              --release "${{ github.event.release.tag_name }}" stable
