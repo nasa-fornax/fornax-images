@@ -48,7 +48,7 @@ class Builder(Base):
         build_args=None,
         plain=False,
     ):
-        extra_args = []
+        extra_args = ["--network=host"]
         # cope with forks of the repository (see tractor/heasoft Dockerfiles) by
         # setting a build arg
         build_args = build_args or []

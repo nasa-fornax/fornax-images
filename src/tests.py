@@ -76,7 +76,8 @@ class TestMain(unittest.TestCase):
         self.assertEqual(builder.builds, [])
         self.assertEqual(builder.updated_lockfiles, [])
         self.assertEqual(
-            builder.chdirs, [os.path.dirname(os.path.dirname(__file__))]
+            builder.chdirs,
+            [os.path.realpath(os.path.dirname(os.path.dirname(__file__)))]
         )
         self.assertEqual(builder.pushed, [])
 
@@ -245,6 +246,7 @@ class TestBuilder(unittest.TestCase):
             [
                 (
                     "docker build "
+                    "--network=host "
                     "--build-arg n=1 "
                     "--build-arg REPOSITORY=repo_name "
                     "--build-arg BASE_IMAGE_TAG=main "
@@ -275,7 +277,9 @@ class TestBuilder(unittest.TestCase):
             ran,
             [
                 (
-                    "docker build --build-arg n=1 "
+                    "docker build "
+                    "--network=host "
+                    "--build-arg n=1 "
                     "--build-arg REPOSITORY=another "
                     "--build-arg BASE_IMAGE_TAG=main "
                     "--build-arg IMAGE_TAG=main "
