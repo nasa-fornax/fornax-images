@@ -1,0 +1,29 @@
+name: Run buildimages tests
+
+on:
+  push:
+    paths: ['src/**']
+  pull_request:
+    paths: ['src/**']
+
+jobs:
+
+  run-tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        id: setup_python
+        with:
+          python-version: '3.12'
+
+      - name: Run builder tests
+        id: test
+        run: |
+           python3 src/tests.py

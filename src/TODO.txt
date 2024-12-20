@@ -1,0 +1,20 @@
+- Optimize by avoiding various image builds if their directories haven't
+  changed.
+
+Questions
+---------
+
+- What is your process for generating and checking in the conda lockfiles?  I
+  suppose it's a run of build.py done locally.  Are we trying to capture the
+  state of things after a generic conda update of all packages that's implied
+  by conda-env-install's mamba env update?  At what point does it not update
+  such that QA can be done? (answer: manual)
+
+- My presumpution about a "release" was that we would generate all of the
+  images (base_image, tractor, and heasoft) together, and they would all have
+  the same version tag.  Tractor and heasoft would depend on the base image
+  with the same version.  This isn't how things work on GitLab currently.
+  (answer: use push trigger for dev, release trigger for stable)
+
+- dpkg pkg for Heasoft? (answer: abdu is developing a conda pkg)
+
