@@ -102,7 +102,9 @@ class TestMain(unittest.TestCase):
         self.assertEqual(builder.builds, [])
         self.assertEqual(builder.updated_lockfiles, [])
         self.assertEqual(
-            builder.chdirs, [os.path.dirname(os.path.dirname(__file__))]
+            builder.chdirs, [
+                os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
+            ]
         )
         self.assertEqual(builder.pushed, [])
 
