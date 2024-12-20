@@ -58,7 +58,7 @@ class TestMain(unittest.TestCase):
                 do_push=True,
             )
         self.assertEqual(
-            builder.logged, ["--no-build and --do-push cannot be used together"]
+            builder.logged, ["--no-build and --push cannot be used together"]
         )
     
     def test_conflicting_build_pars_tag(self):

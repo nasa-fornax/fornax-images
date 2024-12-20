@@ -156,7 +156,7 @@ def main(
 ):
     if no_build and do_push:
         builder.out(
-            "--no-build and --do-push cannot be used together", logging.ERROR
+            "--no-build and --push cannot be used together", logging.ERROR
         )
         raise SystemExit(2)
     
