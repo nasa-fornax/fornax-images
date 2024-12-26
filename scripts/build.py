@@ -9,7 +9,7 @@ import json
 
 IMAGE_ORDER = (
     'base_image',
-    'tractor',
+    'astro-default',
     #'heasoft'
 )
 
@@ -81,7 +81,7 @@ class Builder:
         repo: str
             repository name
         image: str
-            path to the image folder (e.g. tractor or heasoft)
+            path to the image folder (e.g. astro-default or heasoft)
         tag: str
             a tag name for the image
         build_args: list
@@ -206,7 +206,7 @@ class Builder:
         Parameters
         ----------
         image: str
-            path to the image folder (e.g. tractor or heasoft)
+            path to the image folder (e.g. astro-default or heasoft)
         tag: str
             a tag name for the image of the form: repo:tag
         extra_args: str
@@ -246,7 +246,7 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
 
     ap.add_argument('images', nargs='*',
-        help="Image names to build separated by spaces e.g. 'base_image tractor'")
+        help="Image names to build separated by spaces e.g. 'base_image astro-default'")
 
     ap.add_argument('--tag',
         help="Container registry tag name (e.g. 'mybranch'). Default is current git branch")

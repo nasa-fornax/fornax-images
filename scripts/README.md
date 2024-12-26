@@ -7,13 +7,13 @@ others start from.
 It also includes three GitHub workflows:
 
 - `image-build.yml`: build images whose code has changed in a push commit. The images
- will be tagged with branch name (e.g. `base_image:fix-issue-1` or `tractor-fix-issue-34`).
+ will be tagged with branch name (e.g. `base_image:fix-issue-1` or `astro-default:fix-issue-34`).
  The images will be built and pushed to the container registry of the repo.
 
  This happens for every GitHub branch, not just "main".
 
-  NB: when "base_image" changes, "tractor" will **not** be rebuilt against the new
-  base_image unless files change in that image itself.
+  NB: when `base_image` changes, its dependencies will **not** be rebuilt against the new
+  `base_image` unless files change in that image itself.
 
 - `release.yml`: runs on a release, and it tags the image from which the release is
  coming from (typically main) with a release tag and symbolic tag named 'stable'.
@@ -37,7 +37,7 @@ NB: The code in this directory has only been tested with Python3.11 and better.
 
 - Instead of image names like `fornax_images:base-image-XYZ`, and
   `fornax_images:heasoft-XYZ`, we produce images like `base_image:XYZ` and
-  `tractor:XYZ` as it is easy enough to do when we use the GitHub container
+  `astro-default:XYZ` as it is easy enough to do when we use the GitHub container
   registry, and it's more "normal".
 
 - All of the logic to build and push (or not build or push) exists within
