@@ -251,9 +251,13 @@ if __name__ == '__main__':
     ap.add_argument('--tag',
         help="Container registry tag name (e.g. 'mybranch'). Default is current git branch")
 
+    ap.add_argument('--registry',
+        help='Container registry name (e.g. ghcr.io)',
+        default='ghcr.io')
+
     ap.add_argument('--repository',
-        help="GH repository name (e.g. 'fornax-core/images')",
-        default='fornax-images')
+        help="GH repository name (e.g. 'nasa-fornax/fornax-images')",
+        default='nasa-fornax/fornax-images')
 
     ap.add_argument('--push', action='store_true',
         help='After building, push to container registry',
@@ -291,6 +295,7 @@ if __name__ == '__main__':
     dryrun = args.dryrun
     debug = args.debug
     images = args.images
+    registry = args.registry
     repo = args.repository
     tag = args.tag
     push = args.push
@@ -318,12 +323,14 @@ if __name__ == '__main__':
         out = builder.run('git branch --show-current', timeout=100, capture_output=True)
         if out is not None:
             tag = out.stdout.strip()
+        # if out is None, we are in --dryrun mode, add a dummy tag
         tag = 'no-tag' if out is None else out.stdout.strip()
     
     # some logging:
     builder.out('Builder initialized ..', logging.DEBUG)
     builder.out('+++ INPUT +++', logging.DEBUG)
     builder.out(f'images: {images}', logging.DEBUG)
+    builder.out(f'registry: {registry}', logging.DEBUG)
     builder.out(f'repository: {repo}', logging.DEBUG)
     builder.out(f'tag: {tag}', logging.DEBUG)
     builder.out(f'push: {push}', logging.DEBUG)
@@ -344,7 +351,7 @@ if __name__ == '__main__':
     for image in to_build:
         builder.out(f'Working on: {image}', logging.DEBUG)
 
-        full_tag = f'ghcr.io/{repo}/{image}:{tag}'
+        full_tag = f'{registry}/{repo}/{image}:{tag}'
         
         if update_lock:
             builder.remove_lockfiles(image)

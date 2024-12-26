@@ -47,6 +47,7 @@ jobs:
       - name: Tag main images with release tags
         id: push
         run: |
-          python scripts/build.py --debug --no-build  --repository "${{ github.repository }}" \
+          python scripts/build.py --debug --no-build \
+              --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.event.release.target_commitish }}" \
               --release "${{ github.event.release.tag_name }}" stable

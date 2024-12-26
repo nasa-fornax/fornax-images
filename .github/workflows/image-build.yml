@@ -60,6 +60,7 @@ jobs:
           DIR_CHANGES: ${{ steps.directory-changes.outputs.changed }}
         run: |
            echo "DIR_CHANGES: $DIR_CHANGES"
-           python scripts/build.py --debug --repository "${{ github.repository }}" \
+           python scripts/build.py --debug \
+              --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.head_ref || github.ref_name }}" \
               --push $DIR_CHANGES
