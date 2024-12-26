@@ -1,13 +1,14 @@
-ARG BASE_TAG=2024-08-12
-FROM quay.io/jupyter/base-notebook:$BASE_TAG as base
-FROM quay.io/jupyter/docker-stacks-foundation:$BASE_TAG
-
 ARG IMAGE_TAG=latest
-LABEL gov.nasa.smce.fornax.jupyterhub.image="${IMAGE_TAG}"
-LABEL org.opencontainers.image.source=https://github.com/fornax-navo/fornax-images
-LABEL org.opencontainers.image.ref.name="Fornax Base Image"
-LABEL org.opencontainers.image.version=0.2
-LABEL maintainer="Fornax Project"
+ARG BASE_TAG=2024-08-12
+
+FROM quay.io/jupyter/base-notebook:${BASE_TAG} as base
+FROM quay.io/jupyter/docker-stacks-foundation:${BASE_TAG}
+
+
+LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
+LABEL org.opencontainers.image.description "Fornax Base Astronomy Image"
+LABEL org.opencontainers.image.authors "Fornax Project"
+
 
 # Bring some commands from jupyter/base-notebook
 # Skip the install of jupyterhub/lab etc

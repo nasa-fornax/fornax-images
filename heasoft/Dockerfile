@@ -3,10 +3,16 @@
 # files (such as conda-linux-64.lock, start) in this repo.
 # Refer to the base-image/Dockerfile for documentation.
 ARG IMAGE_TAG=latest
-ARG BASE_IMAGE_TAG=latest
-ARG REPOSITORY=fornax-core/images
+ARG BASE_TAG=$IMAGE_TAG
+ARG REPOSITORY=nasa-fornax/fornax-images
+ARG REGISTRY=ghcr.io
 
-FROM ghcr.io/${REPOSITORY}/base_image:${BASE_IMAGE_TAG}
+FROM ${REGISTRY}/${REPOSITORY}/base_image:${BASE_TAG}
+
+
+LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
+LABEL org.opencontainers.image.description "Fornax High Energy Astronomy Image"
+LABEL maintainer="Fornax Project"
 
 # set default conda env
 ENV CONDA_ENV=notebook
