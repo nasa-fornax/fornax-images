@@ -1,0 +1,43 @@
+name: image-tests
+on:
+  workflow_dispatch
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    outputs:
+      uid: ${{ steps.get-user.outputs.uid }}
+      gid: ${{ steps.get-user.outputs.gid }}
+    steps:
+      - id: get-user
+        run: |
+          echo "uid=$(id -u)" >> $GITHUB_OUTPUT
+          echo "gid=$(id -g)" >> $GITHUB_OUTPUT
+  
+  test-base_image:
+    needs: configure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Pull Image
+        run: |
+          docker pull ghcr.io/${{ github.repository }}/base_image:gitlab-migration
+          docker tag ghcr.io/${{ github.repository }}/base_image:gitlab-migration base_image
+
+      - name: Run base_image test
+        run: |
+          docker run -i --rm -v .:/home/jovyan/ \
+            -u root \
+            -e "NB_UID=${{ needs.configure.outputs.uid }}" \
+            -e "NB_GID=${{ needs.configure.outputs.gid }}" \
+            -e "CHOWN_HOME=yes" \
+            -e "CHOWN_HOME_OPTS=-R" \
+            base_image \
+            bash -c "python tests/test_base_image.py"
+      
+      - name: Run base_image jupyter-lab
+        run: |
+          cmd="docker run -i --rm base_image"
+          timeout 10 $cmd || [[ $? -eq 124 ]] && { echo "Timed out as expeced."; } || exit $?
