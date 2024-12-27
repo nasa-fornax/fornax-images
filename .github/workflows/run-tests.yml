@@ -1,6 +1,11 @@
 name: image-tests
 on:
-  workflow_dispatch
+  # call from the image build pipeline
+  workflow_call:
+    inputs:
+      images:
+        required: true
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -16,13 +21,15 @@ jobs:
         run: |
           echo "uid=$(id -u)" >> $GITHUB_OUTPUT
           echo "gid=$(id -g)" >> $GITHUB_OUTPUT
+          echo "Images passed for testing: ${{ inputs.images }}"
   
   test-images:
     needs: configure
     runs-on: ubuntu-latest
+    if: inputs.images != '[]'
     strategy:
       matrix:
-        image: [base_image, astro-default]
+        image: ${{ fromJson(inputs.images) }}
   
     steps:
       - name: Checkout repository
@@ -46,8 +53,9 @@ jobs:
             -e "CHOWN_HOME_OPTS=-R" \
             $image \
             bash -c "python tests/test_${image}.py"
-      
+    
       - name: "Run jupyter-lab: ${{ matrix.image }}"
         run: |
-          cmd="docker run -i --rm ${{ matrix.image }}"
+          image=${{ matrix.image }}
+          cmd="docker run -i --rm $image"
           timeout 10 $cmd || [[ $? -eq 124 ]] && { echo "Timed out as expeced."; } || exit $?
