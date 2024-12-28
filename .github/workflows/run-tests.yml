@@ -6,6 +6,12 @@ on:
       images:
         required: true
         type: string
+  workflow_dispatch:
+    inputs:
+      images:
+        description: 'List of images of the form: ["image-1","image-2"]'
+        required: true
+        type: string
 
 env:
   REGISTRY: ghcr.io
