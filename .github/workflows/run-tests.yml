@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       images:
-        description: 'List of images of the form: ["image-1","image-2"]'
+        description: 'Images of the form: ["image-1","image-2"]'
         required: true
         type: string
 
@@ -17,20 +17,19 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  configure:
-    runs-on: ubuntu-latest
-    outputs:
-      uid: ${{ steps.get-user.outputs.uid }}
-      gid: ${{ steps.get-user.outputs.gid }}
-    steps:
-      - id: get-user
-        run: |
-          echo "uid=$(id -u)" >> $GITHUB_OUTPUT
-          echo "gid=$(id -g)" >> $GITHUB_OUTPUT
-          echo "Images passed for testing: ${{ inputs.images }}"
+  # configure:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     uid: ${{ steps.get-user.outputs.uid }}
+  #     gid: ${{ steps.get-user.outputs.gid }}
+  #   steps:
+  #     - id: get-user
+  #       run: |
+  #         echo "uid=$(id -u)" >> $GITHUB_OUTPUT
+  #         echo "gid=$(id -g)" >> $GITHUB_OUTPUT
+  #         echo "Images passed for testing: ${{ inputs.images }}"
   
   test-images:
-    needs: configure
     runs-on: ubuntu-latest
     if: inputs.images != '[]'
     strategy:
@@ -38,6 +37,13 @@ jobs:
         image: ${{ fromJson(inputs.images) }}
   
     steps:
+      - name: Configure tests
+        id: configure
+        run: |
+          echo "uid=$(id -u)" >> $GITHUB_OUTPUT
+          echo "gid=$(id -g)" >> $GITHUB_OUTPUT
+          echo "Images passed for testing: ${{ inputs.images }}"
+  
       - name: Checkout repository
         uses: actions/checkout@v4
       
@@ -53,8 +59,8 @@ jobs:
           image=${{ matrix.image }}
           docker run -i --rm -v .:/home/jovyan/ \
             -u root \
-            -e "NB_UID=${{ needs.configure.outputs.uid }}" \
-            -e "NB_GID=${{ needs.configure.outputs.gid }}" \
+            -e "NB_UID=${{ steps.configure.outputs.uid }}" \
+            -e "NB_GID=${{ steps.configure.outputs.gid }}" \
             -e "CHOWN_HOME=yes" \
             -e "CHOWN_HOME_OPTS=-R" \
             $image \
