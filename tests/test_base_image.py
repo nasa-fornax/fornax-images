@@ -7,8 +7,10 @@ class CommonTests:
 
     def run_cmd(self, command, **runargs):
         """Run shell command"""
-        result = subprocess.run(command, shell=True, check=True, text=True,
+        result = subprocess.run(command, shell=True, check=False, text=True,
                         capture_output=True, **runargs)
+        if result.returncode != 0:
+            raise RuntimeError(result.stdout + '\n+++++\n' + result.stderr)
         return result
 
     def test_python_path(self):

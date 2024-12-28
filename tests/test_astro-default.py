@@ -19,6 +19,17 @@ class Test_astro_default(unittest.TestCase, CommonTests):
         import lsdb
         self.assertLess(version.parse(lsdb.__version__), version.parse('0.4'))
     
+    def test_notebooks_folder(self):
+        self.assertTrue(os.path.exists('/home/jovyan/notebooks'))
+        self.assertTrue(os.path.exists('/home/jovyan/notebooks/fornax-documentation'))
+        self.assertTrue(os.path.exists('/home/jovyan/notebooks/fornax-demo-notebooks'))
+    
+    def test_photometry_notebook(self):
+        os.chdir('/home/jovyan/notebooks/fornax-demo-notebooks/forced_photometry')
+        self.run_cmd('pip install -r requirements_multiband_photometry.txt')
+        self.run_cmd('jupytext --to py multiband_photometry.md')
+        self.run_cmd('python multiband_photometry.py')
+    
 
 
 if __name__ == "__main__":

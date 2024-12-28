@@ -57,14 +57,14 @@ jobs:
       - name: "Run tests inside the image: ${{ matrix.image }}"
         run: |
           image=${{ matrix.image }}
-          docker run -i --rm -v .:/home/jovyan/ \
+          docker run -i --rm -v .:/home/jovyan/repo-code \
             -u root \
             -e "NB_UID=${{ steps.configure.outputs.uid }}" \
             -e "NB_GID=${{ steps.configure.outputs.gid }}" \
             -e "CHOWN_HOME=yes" \
             -e "CHOWN_HOME_OPTS=-R" \
             $image \
-            bash -c "python tests/test_${image}.py"
+            bash -c "python repo-code/tests/test_${image}.py"
     
       - name: "Run jupyter-lab: ${{ matrix.image }}"
         run: |
