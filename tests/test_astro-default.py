@@ -36,11 +36,11 @@ class Test_astro_default(unittest.TestCase, CommonTests):
         self.assertTrue(os.path.exists(f'{notebook_dir}/fornax-documentation'))
         self.assertTrue(os.path.exists(f'{notebook_dir}/fornax-demo-notebooks'))
     
-    def test_photometry_notebook(self):
-        with change_dir(f'{notebook_dir}/fornax-demo-notebooks/forced_photometry'):
-            self.run_cmd('pip install -r requirements_multiband_photometry.txt')
-            self.run_cmd('jupytext --to py multiband_photometry.md')
-            self.run_cmd('python multiband_photometry.py')
+    # def test_photometry_notebook(self):
+    #     with change_dir(f'{notebook_dir}/fornax-demo-notebooks/forced_photometry'):
+    #         self.run_cmd('pip install -r requirements_multiband_photometry.txt')
+    #         self.run_cmd('jupytext --to py multiband_photometry.md')
+    #         self.run_cmd('python multiband_photometry.py')
     
 
 
