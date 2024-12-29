@@ -35,7 +35,8 @@ class CommonTests:
                 lines.append(line)
         with open(f"tmp-notebook-lock.yml", "w") as fp:
             fp.write("\n".join(lines))
-        result = self.run_cmd(f'diff tmp-notebook-lock.yml {image}/conda-notebook-lock.yml')
+        diff_cmd = f'diff tmp-notebook-lock.yml {os.path.dirname(__file__)}/../{image}/conda-notebook-lock.yml'
+        result = self.run_cmd(diff_cmd)
         self.assertEqual(result.stdout, '')
         self.assertEqual(result.stderr, '')
 

@@ -3,10 +3,21 @@ import subprocess
 import sys
 import os
 from packaging import version
+import contextlib
 
 sys.path.insert(0, os.getcwd())
 from test_base_image import CommonTests
 
+
+@contextlib.contextmanager
+def change_dir(destination):
+    """A context manager to change the current working directory."""
+    try:
+        current_dir = os.getcwd()
+        os.chdir(destination)
+        yield
+    finally:
+        os.chdir(current_dir)
 
 class Test_astro_default(unittest.TestCase, CommonTests):
 
@@ -25,10 +36,10 @@ class Test_astro_default(unittest.TestCase, CommonTests):
         self.assertTrue(os.path.exists('/home/jovyan/notebooks/fornax-demo-notebooks'))
     
     def test_photometry_notebook(self):
-        os.chdir('/home/jovyan/notebooks/fornax-demo-notebooks/forced_photometry')
-        self.run_cmd('pip install -r requirements_multiband_photometry.txt')
-        self.run_cmd('jupytext --to py multiband_photometry.md')
-        self.run_cmd('python multiband_photometry.py')
+        with change_dir('notebooks/fornax-demo-notebooks/forced_photometry'):
+            self.run_cmd('pip install -r requirements_multiband_photometry.txt')
+            self.run_cmd('jupytext --to py multiband_photometry.md')
+            self.run_cmd('python multiband_photometry.py')
     
 
 
