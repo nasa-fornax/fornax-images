@@ -8,6 +8,7 @@ import contextlib
 sys.path.insert(0, os.getcwd())
 from test_base_image import CommonTests
 
+notebook_dir = os.environ.get('NOTEBOOK_DIR', '/home/jovyan/notebooks')
 
 @contextlib.contextmanager
 def change_dir(destination):
@@ -31,12 +32,12 @@ class Test_astro_default(unittest.TestCase, CommonTests):
         self.assertLess(version.parse(lsdb.__version__), version.parse('0.4'))
     
     def test_notebooks_folder(self):
-        self.assertTrue(os.path.exists('/home/jovyan/notebooks'))
-        self.assertTrue(os.path.exists('/home/jovyan/notebooks/fornax-documentation'))
-        self.assertTrue(os.path.exists('/home/jovyan/notebooks/fornax-demo-notebooks'))
+        self.assertTrue(os.path.exists(notebook_dir))
+        self.assertTrue(os.path.exists(f'{notebook_dir}/fornax-documentation'))
+        self.assertTrue(os.path.exists(f'{notebook_dir}/fornax-demo-notebooks'))
     
     def test_photometry_notebook(self):
-        with change_dir('notebooks/fornax-demo-notebooks/forced_photometry'):
+        with change_dir(f'{notebook_dir}/fornax-demo-notebooks/forced_photometry'):
             self.run_cmd('pip install -r requirements_multiband_photometry.txt')
             self.run_cmd('jupytext --to py multiband_photometry.md')
             self.run_cmd('python multiband_photometry.py')

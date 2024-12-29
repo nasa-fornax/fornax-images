@@ -47,7 +47,7 @@ jobs:
           image=${{ matrix.image }}
           docker run -i --rm -v .:/opt/workspace/repo-code \
             $image \
-            bash -c "python /opt/workspace/repo-code/tests/test_${image}.py"
+            bash -c "pip install pytest; pytest -s -v /opt/workspace/repo-code/tests/test_${image}.py"
     
       - name: "Run jupyter-lab: ${{ matrix.image }}"
         run: |
