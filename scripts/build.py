@@ -197,8 +197,9 @@ class Builder:
         self.out(f"Removing the lock files for {image}")
         lockfiles = glob.glob(f"{image}/conda-*lock.yml")
         for lockfile in lockfiles:
-            self.out(f"Removing {image}/{lockfile}")
-            os.unlink(lockfile)
+            self.out(f"Removing {lockfile}")
+            cmd = f'rm -f {lockfile}'
+            result = self.run(cmd, timeout=100)
 
     def update_lockfiles(self, image, tag, extra_args=None):
         """Update the conda lock files in {image} using image {tag}
