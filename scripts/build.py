@@ -315,6 +315,7 @@ if __name__ == '__main__':
         format="%(asctime)s|%(levelname)5s| %(message)s",
         datefmt="%Y-%m-%d|%H:%M:%S",
     )
+
     logger = logging.getLogger('::Builder::')
     logger.setLevel(level=logging.DEBUG if debug else logging.INFO)
     builder = Builder(logger, dryrun=dryrun)
