@@ -23,6 +23,7 @@ dependencies:
   - seaborn
   - openvscode-server
   - jupyter-vscode-proxy
+  - pytest
   - pip
   - pip:
       - jupyterlab_execute_time
