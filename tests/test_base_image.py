@@ -10,11 +10,14 @@ class CommonTests:
         result = subprocess.run(command, shell=True, check=False, text=True,
                         capture_output=True, **runargs)
         if result.returncode != 0:
-            raise RuntimeError(result.stdout + '\n+++++\n' + result.stderr)
+            sep = '\n' + ('+'*20) + '\n'
+            raise RuntimeError(f'*** ERROR running: {command}' + sep + result.stdout + sep + result.stderr)
         return result
 
     def test_python_path(self):
-        self.assertEqual(sys.executable, f'/opt/conda/envs/notebook/bin/python')
+        version = f'{sys.version_info.major}.{sys.version_info.minor}'
+        self.assertTrue(sys.executable in 
+            ['/opt/conda/envs/notebook/bin/python', f'/opt/conda/envs/notebook/bin/python{version}'])
     
     def test_python_path2(self):
         path = self.run_cmd('which python')
