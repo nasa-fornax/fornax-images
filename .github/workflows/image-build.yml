@@ -99,6 +99,7 @@ jobs:
   test-images:
     needs: build-and-push-images
     uses: ./.github/workflows/run-tests.yml
+    secrets: inherit
     with:
       # pass the images that changed for testing
       images: ${{ needs.build-and-push-images.outputs.dir_changes }}
