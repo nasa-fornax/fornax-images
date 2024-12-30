@@ -9,7 +9,7 @@ import glob
 from io import StringIO
 
 
-sys.path.insert(0, os.getcwd())
+sys.path.insert(0, f'{os.path.dirname(__file__)}/../scripts/')
 from build import Builder
 
 
