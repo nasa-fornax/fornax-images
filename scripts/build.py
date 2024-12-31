@@ -14,13 +14,13 @@ IMAGE_ORDER = (
 )
 
 class Builder:
-    """Base class for running system commands and logging
+    """Class for managing the docker build commands
 
-    this class only exists (instead of module-level functions) to make unit
-    testing less painful; it is also used by "release.py"
+    It mainly manages the system calls and logging and keeping track
+    of globals like dryrun etc.
     """
     def __init__(self, logger, dryrun=False):
-        """Create a new TaskRunner
+        """Create a new Builder
         
         Parameters:
         -----------
@@ -48,7 +48,7 @@ class Builder:
         sys.stdout.flush()
 
     def run(self, command, timeout, **runargs):
-        """Run system command {command}
+        """Run system command {command} with a timeout
         
         Parameters:
         -----------
@@ -58,6 +58,8 @@ class Builder:
             Timeout in sec
         **runargs:
             to be passed to subprocess.run
+        
+        Returns an instance of subprocess.CompletedProcess
         
         """
         self.out(f"Running ::\n{command}")
@@ -74,7 +76,7 @@ class Builder:
         return result
     
     def build(self, repo, image, tag, build_args=None, extra_args=None):
-        """Build an image by called 'docker build'
+        """Build an image by calling 'docker build ..'
         
         Parameters:
         -----------
@@ -83,10 +85,10 @@ class Builder:
         image: str
             path to the image folder (e.g. astro-default or heasoft)
         tag: str
-            a tag name for the image
+            The full tag name for the image of the form: {registry}/{repo}/{image}:{tag-name}
         build_args: list
             A list of str arguments to be passed directly to 'docker build'. e.g.
-            'SOME_ENV=myvalue'
+            'SOME_ENV=myvalue OTHER_ENV=value'
         extra_args: str
             Extra command line arguments to be passed to 'docker build'
             e.g. '--no-cache --network=host'
@@ -139,17 +141,17 @@ class Builder:
         Parameters:
         -----------
         tag: str
-            a tag name for the image of the form: repo:tag
+             The full tag name for the image of the form: {registry}/{repo}/{image}:{tag-name}
 
         """
         if not isinstance(tag, str) or ':' not in tag:
-            raise ValueError(f'tag: {tag} is not a str the form repo:tag')
+            raise ValueError(f'tag: {tag} is not a str the form [registry]/[repo]/[image]:[tag-name]')
         push_command = f'docker push {tag}'
         self.out(f"Pushing {tag} ...")
         result = self.run(push_command, timeout=1000)
     
     def release(self, repo, source_tag, release_tags):
-        """Push the image with 'docker push'
+        """Make an image release by tagging the image with release_tags
         
         Parameters:
         -----------
@@ -187,7 +189,7 @@ class Builder:
                 self.run(command, timeout=1000)
 
     def remove_lockfiles(self, image):
-        """Remove conda lock files from image
+        """Remove conda lock files from an image
         
         Parameters
         ----------
