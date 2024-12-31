@@ -17,13 +17,14 @@ class TestBuilder(unittest.TestCase):
 
     def setUp(self):
         logger = logging.getLogger()
-        self.builder_run = Builder(logger, dryrun=False)
-        self.builder_dry = Builder(logger, dryrun=True)
-        self.logger = logger
-
         self.repo = 'some-repo'
+        self.registry = 'my-registry'
         self.tag = 'some-tag'
         self.image = 'some-image'
+
+        self.builder_run = Builder(self.repo, logger, registry=self.registry, dryrun=False)
+        self.builder_dry = Builder(self.repo, logger, registry=self.registry, dryrun=True)
+        self.logger = logger
     
     def test_run(self):
         out = self.builder_run.run('pwd', timeout=100, capture_output=True)
@@ -46,85 +47,117 @@ class TestBuilder(unittest.TestCase):
 
         out = self.builder_run.run('ls', timeout=100, capture_output=True)
         self.assertNotEqual(out, None)
+    
+    def test_get_full_tag(self):
+        full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
+        self.assertEqual(full_tag, f'{self.registry}/{self.repo}/{self.image}:{self.tag}')
+    
+    def test_check_tag(self):
+        with self.assertRaises(ValueError):
+            self.builder_dry.check_tag('repo:tag')
+        with self.assertRaises(ValueError):
+            self.builder_dry.check_tag(['repo'])
+        self.builder_dry.check_tag('tag')
+        self.logger.handlers.clear()
 
     def test_build__basic(self):
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
-            self.builder_dry.build(self.repo, self.image, self.tag)
+            self.builder_dry.build(self.image, self.tag)
             output = mock_out.getvalue().strip()
+        full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
         cmd = (f'docker build --build-arg REPOSITORY={self.repo} '
-               f'--build-arg IMAGE_TAG={self.tag} --tag some-tag {self.image}')
+               f'--build-arg REGISTRY={self.registry} '
+               f'--build-arg BASE_TAG={self.tag} --tag {full_tag} {self.image}')
         self.assertEqual(cmd, output.split('::')[-1].strip())
         self.logger.handlers.clear()
     
     def test_build__build_args_is_list(self):
         with self.assertRaises(ValueError):
-            self.builder_dry.build(self.repo, self.image, self.tag, build_args='ENV=val')
+            self.builder_dry.build(self.image, self.tag, build_args='ENV=val')
         self.logger.handlers.clear()
     
     def test_build__build_args(self):
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
-            self.builder_dry.build(self.repo, self.image, self.tag,
+            self.builder_dry.build(self.image, self.tag,
                                     build_args=['ENV=val', 'ENV2=val'])
             output = mock_out.getvalue().strip()
+        full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
         cmd = (f'docker build --build-arg ENV=val --build-arg ENV2=val '
                f'--build-arg REPOSITORY={self.repo} '
-               f'--build-arg IMAGE_TAG={self.tag} --tag some-tag {self.image}')
+               f'--build-arg REGISTRY={self.registry} '
+               f'--build-arg BASE_TAG={self.tag} --tag {full_tag} {self.image}')
         self.assertEqual(cmd, output.split('::')[-1].strip())
         self.logger.handlers.clear()
     
     def test_build__extra_args(self):
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
-            self.builder_dry.build(self.repo, self.image, self.tag,
+            self.builder_dry.build(self.image, self.tag,
                                     extra_args='--some-par')
             output = mock_out.getvalue().strip()
-        cmd = (f'docker build --build-arg REPOSITORY={self.repo} --build-arg '
-               f'IMAGE_TAG={self.tag} --some-par --tag some-tag {self.image}')
+        full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
+        cmd = (f'docker build --build-arg REPOSITORY={self.repo} '
+               f'--build-arg REGISTRY={self.registry} '
+               f'--build-arg BASE_TAG={self.tag} --some-par --tag {full_tag} {self.image}')
         self.assertEqual(cmd, output.split('::')[-1].strip())
         self.logger.handlers.clear()
 
     def test_build__push_not_str(self):
         with self.assertRaises(ValueError):
-            self.builder_dry.push(123)
+            self.builder_dry.push(self.image, 123)
         self.logger.handlers.clear()
     
     def test_build__push_wrong_format(self):
         with self.assertRaises(ValueError):
-            self.builder_dry.push(self.tag)
+            self.builder_dry.push(self.image, f'{self.image}:{self.tag}')
         self.logger.handlers.clear()
     
     def test_build__push(self):
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
-            self.builder_dry.push(f'{self.repo}:{self.tag}')
+            self.builder_dry.push(self.image, self.tag)
             output = mock_out.getvalue().strip()
-        cmd = (f'docker push {self.repo}:{self.tag}')
+        cmd = (f'docker push {self.registry}/{self.repo}/{self.image}:{self.tag}')
         self.assertEqual(cmd, output.split('::')[-1].strip())
         self.logger.handlers.clear()
     
     def test_build__release__tag_not_list(self):
         with self.assertRaises(ValueError):
-            self.builder_dry.release('repo', 'in:tag', 'out')
-
-    def test_build__release_wrong_tag(self):
+            self.builder_dry.release('tag', 'out')
+        # the following should work
+        self.builder_dry.release('tag', ['out'])
+    
+    def test_build__release__wrong_tag(self):
+        # wrong release tag
         with self.assertRaises(ValueError):
-            self.builder_dry.release('repo', 'in:tag', ['out'])
+            self.builder_dry.release('tag', ['tag:out'])
+        
+        # wrong source tag
         with self.assertRaises(ValueError):
-            self.builder_dry.release('repo', 'in', ['out:tag'])
-        self.logger.handlers.clear()
+            self.builder_dry.release('tag:in', ['tag'])
+    
+    def test_build__release__images_not_list(self):
+        with self.assertRaises(ValueError):
+            self.builder_dry.release('tag', ['out'], images='images')
+    
+    def test_build__release__images_unkown_image(self):
+        with self.assertRaises(ValueError):
+            self.builder_dry.release('tag', ['out'], images=['some_image'])
+        # the following should work
+        self.builder_dry.release('tag', ['out'], ['base_image'])
     
     def test_build__release(self):
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
-            self.builder_dry.release(f'{self.repo}', f'{self.tag}', [f'{self.tag}-out'])
+            self.builder_dry.release(f'{self.tag}', [f'{self.tag}-out'], images=['base_image'])
             output = mock_out.getvalue().strip()
-        cmd = (f'docker push {self.repo}:{self.tag}')
-        self.assertTrue(f'docker pull ghcr.io/{self.repo}/base_image:{self.tag}' in output)
-        self.assertTrue((f'docker tag ghcr.io/{self.repo}/base_image:{self.tag} '
-                         f'ghcr.io/{self.repo}/base_image:{self.tag}-out') in output)
-        self.assertTrue(f'docker push ghcr.io/{self.repo}/base_image:{self.tag}-out' in output)
+        source_tag = self.builder_dry.get_full_tag('base_image', self.tag)
+        release_tag = self.builder_dry.get_full_tag('base_image', f'{self.tag}-out')
+        self.assertTrue(f'docker pull {source_tag}' in output)
+        self.assertTrue(f'docker tag {source_tag} {release_tag}' in output)
+        self.assertTrue(f'docker push {release_tag}' in output)
         self.logger.handlers.clear()
 
     def test_remove_lockfiles(self):
@@ -160,7 +193,7 @@ class TestBuilder(unittest.TestCase):
                 pathlib.Path(fn).touch()
             _run = self.builder_dry.run
             self.builder_dry.run = run
-            self.builder_dry.update_lockfiles(tmpdir, 'main:tag')
+            self.builder_dry.update_lockfiles(tmpdir, self.tag)
             self.builder_dry.run = _run
             with open(os.path.join(tmpdir, "conda-a-lock.yml"), "r") as f:
                 result = f.read()

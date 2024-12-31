@@ -1,4 +1,3 @@
-ARG IMAGE_TAG=latest
 ARG BASE_TAG=2024-08-12
 
 FROM quay.io/jupyter/base-notebook:${BASE_TAG} as base

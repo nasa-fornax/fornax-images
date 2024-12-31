@@ -2,8 +2,7 @@
 # perform certain actions based on the presence of specific
 # files (such as conda-linux-64.lock, start) in this repo.
 # Refer to the base-image/Dockerfile for documentation.
-ARG IMAGE_TAG=latest
-ARG BASE_TAG=$IMAGE_TAG
+ARG BASE_TAG=latest
 ARG REPOSITORY=nasa-fornax/fornax-images
 ARG REGISTRY=ghcr.io
 

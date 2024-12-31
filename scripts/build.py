@@ -19,18 +19,24 @@ class Builder:
     It mainly manages the system calls and logging and keeping track
     of globals like dryrun etc.
     """
-    def __init__(self, logger, dryrun=False):
+    def __init__(self, repository, logger, registry='ghcr.io', dryrun=False):
         """Create a new Builder
         
         Parameters:
         -----------
+        repository: str
+            Repository name. e.g. nasa-fornax/fornax-images
         logger: logging.Logger
             Logging object
+        registry: str
+            Name of the docker registry. Default: ghcr.io
         dryrun: bool
             If True, print the commands without running them
         
         """
+        self.repository = repository
         self.logger = logger
+        self.registry = registry
         self.dryrun = dryrun
 
     def out(self, msg, severity=logging.INFO):
@@ -74,8 +80,28 @@ class Builder:
                 **runargs,
             )
         return result
+
+    def check_tag(self, tag):
+        """Check the tag"""
+        if not isinstance(tag, str) or ':' in tag:
+            raise ValueError(f'tag: {tag} is not a str without :')
+
+    def get_full_tag(self, image, tag):
+        """Return full tag that includes the registry and repository
+        
+        Parameters:
+        -----------
+        image: str
+            Image name (e.g. astro-default or heasoft)
+        tag: str
+            The image tag.
+        
+        """
+        self.check_tag(tag)
+        full_tag = f'{self.registry}/{self.repository}/{image}:{tag}'
+        return full_tag
     
-    def build(self, repo, image, tag, build_args=None, extra_args=None):
+    def build(self, image, tag, build_args=None, extra_args=None):
         """Build an image by calling 'docker build ..'
         
         Parameters:
@@ -83,9 +109,9 @@ class Builder:
         repo: str
             repository name
         image: str
-            path to the image folder (e.g. astro-default or heasoft)
+            The name of the image to be built (e.g. astro-default or heasoft)
         tag: str
-            The full tag name for the image of the form: {registry}/{repo}/{image}:{tag-name}
+            The image tag.
         build_args: list
             A list of str arguments to be passed directly to 'docker build'. e.g.
             'SOME_ENV=myvalue OTHER_ENV=value'
@@ -100,23 +126,25 @@ class Builder:
         build_args = build_args or []
         if not isinstance(build_args, list):
             raise ValueError(f'build_args is of type {type(build_args)}. Expected a list.')
-        full_tag = tag
         if ':' in tag:
-            tag = tag.rsplit(':', 1)[1]
+            tag = tag.split(':')[-1]
         
         # Ensure we have: name=value
         build_args = [arg.strip() for arg in build_args]
         
-        # add passed parameters to build_args
-        mapping = {
-            'REPOSITORY': repo,
-            'IMAGE_TAG': tag,
-        }
-        for key,val in mapping.items():
-            if not any([arg.startswith(f'{key}=') for arg in build_args]):
-                build_args.append(f'{key}={val}')
+        # add some defaults to build_args
+        # For base_image, the tags are external and should be updated in the Dockerfile
+        if image != 'base_image':
+            mapping = {
+                'REPOSITORY': self.repository,
+                'REGISTRY': self.registry,
+                'BASE_TAG': tag,
+            }
+            for key,val in mapping.items():
+                if not any([arg.startswith(f'{key}=') for arg in build_args]):
+                    build_args.append(f'{key}={val}')
 
-        # loop through the build_args and add them extra_args
+        # loop through the build_args and add them to cmd_args
         for arg in build_args:
             if not arg.count("=") == 1:
                 raise ValueError(
@@ -131,61 +159,78 @@ class Builder:
             cmd_args.append(extra_args)
 
         cmd_args = " ".join(cmd_args)
+        full_tag = self.get_full_tag(image, tag)
         build_cmd = f"docker build {cmd_args} --tag {full_tag} {image}"
         self.out(f"Building {image} ...")
         result = self.run(build_cmd, timeout=10000)
 
-    def push(self, tag):
+    def push(self, image, tag):
         """Push the image with 'docker push'
         
         Parameters:
         -----------
+        image: str
+            The name of Image to be pushed (e.g. astro-default or heasoft)
         tag: str
-             The full tag name for the image of the form: {registry}/{repo}/{image}:{tag-name}
+            The image tag.
 
         """
-        if not isinstance(tag, str) or ':' not in tag:
-            raise ValueError(f'tag: {tag} is not a str the form [registry]/[repo]/[image]:[tag-name]')
-        push_command = f'docker push {tag}'
-        self.out(f"Pushing {tag} ...")
+        self.check_tag(tag)
+        full_tag = self.get_full_tag(image, tag)
+        push_command = f'docker push {full_tag}'
+        self.out(f"Pushing {full_tag} ...")
         result = self.run(push_command, timeout=1000)
     
-    def release(self, repo, source_tag, release_tags):
+    def release(self, source_tag, release_tags, images=None):
         """Make an image release by tagging the image with release_tags
         
         Parameters:
         -----------
-        repo: str
-            repo name
         source_tag: str
             The tag name for the image (no repo name)
         release_tags: list
             A list of target tag names for the release (no repo name)
+        images: list or None
+            The list of images to tag for release. By default, all images
 
         """
-        if not isinstance(source_tag, str) or ':' in source_tag:
-            raise ValueError(f'source_tag: {source_tag} is expected to be a str with no repo')
+        # check the passed tags
+        self.check_tag(source_tag)
         if not isinstance(release_tags, list):
             raise ValueError(f'release_tags: {release_tags} is not a list')
         for release_tag in release_tags:
-            if not isinstance(release_tag, str) or ':' in release_tag:
-                raise ValueError(f'release_tag: {release_tag} is expected to be a str with no repo')
+            self.check_tag(release_tag)
+        
+        if images is not None and not isinstance(images, list):
+            raise ValueError(f'Expected images to be a list; got {images}')
+        
+        # get a list of images to release
+        to_release = images if images is not None else list(IMAGE_ORDER)
+        for image in to_release:
+            if image not in IMAGE_ORDER:
+                raise ValueError(f'Requested image to release {image} is unknown')
+        
         # Loop through the images
-        for image in IMAGE_ORDER:
-            sourcetag = f'ghcr.io/{repo}/{image}:{source_tag}'
+        for image in to_release:
+            full_source_tag = self.get_full_tag(image, source_tag)
+            
             # pull
-            command = f'docker pull {sourcetag}'
-            self.out(f"Pulling {sourcetag} ...")
+            command = f'docker pull {full_source_tag}'
+            self.out(f"Pulling {full_source_tag} ...")
             self.run(command, timeout=1000)
+            
+            # loog through release tags
             for release_tag in release_tags:
-                releasetag = f'ghcr.io/{repo}/{image}:{release_tag}'
+                full_release_tag = self.get_full_tag(image, release_tag)
+                
                 # tag
-                command = f'docker tag {sourcetag} {releasetag}'
-                self.out(f"Tagging {sourcetag} with {releasetag} ...")
+                command = f'docker tag {full_source_tag} {full_release_tag}'
+                self.out(f"Tagging {full_source_tag} with {full_release_tag} ...")
                 self.run(command, timeout=1000)
-                # pull
-                command = f'docker push {releasetag}'
-                self.out(f"Pushing {releasetag} ...")
+                
+                # push
+                command = f'docker push {full_release_tag}'
+                self.out(f"Pushing {full_release_tag} ...")
                 self.run(command, timeout=1000)
 
     def remove_lockfiles(self, image):
@@ -194,7 +239,7 @@ class Builder:
         Parameters
         ----------
         image: str
-            name of the image folder containing Dockerfile and lockfiles if any.
+            Image name (e.g. astro-default or heasoft)
         """
         self.out(f"Removing the lock files for {image}")
         lockfiles = glob.glob(f"{image}/conda-*lock.yml")
@@ -209,15 +254,15 @@ class Builder:
         Parameters
         ----------
         image: str
-            path to the image folder (e.g. astro-default or heasoft)
+            The name of the image to be updated (e.g. astro-default or heasoft)
         tag: str
-            a tag name for the image of the form: repo:tag
+            The image tag.
         extra_args: str
             Extra command line arguments to be passed to 'docker run'
             e.g. '--network=host'
+
         """
-        if not isinstance(tag, str) or ':' not in tag:
-            raise ValueError(f'tag: {tag} is not a str the form repo:tag')
+        self.check_tag(tag)
 
         extra_args = extra_args or ''
         if not isinstance(extra_args, str):
@@ -299,7 +344,7 @@ if __name__ == '__main__':
     debug = args.debug
     images = args.images
     registry = args.registry
-    repo = args.repository
+    repository = args.repository
     tag = args.tag
     push = args.push
     release = args.release
@@ -320,7 +365,7 @@ if __name__ == '__main__':
 
     logger = logging.getLogger('::Builder::')
     logger.setLevel(level=logging.DEBUG if debug else logging.INFO)
-    builder = Builder(logger, dryrun=dryrun)
+    builder = Builder(repository, logger, dryrun=dryrun, registry=registry)
 
     # get current branch name as default tag
     if (len(images) or release is not None) and tag is None:
@@ -335,7 +380,7 @@ if __name__ == '__main__':
     builder.out('+++ INPUT +++', logging.DEBUG)
     builder.out(f'images: {images}', logging.DEBUG)
     builder.out(f'registry: {registry}', logging.DEBUG)
-    builder.out(f'repository: {repo}', logging.DEBUG)
+    builder.out(f'repository: {repository}', logging.DEBUG)
     builder.out(f'tag: {tag}', logging.DEBUG)
     builder.out(f'push: {push}', logging.DEBUG)
     builder.out(f'release: {release}', logging.DEBUG)
@@ -354,20 +399,18 @@ if __name__ == '__main__':
     builder.out(f'Images to build: {to_build}', logging.DEBUG)
     for image in to_build:
         builder.out(f'Working on: {image}', logging.DEBUG)
-
-        full_tag = f'{registry}/{repo}/{image}:{tag}'
         
         if update_lock:
             builder.remove_lockfiles(image)
         
         if not no_build:
-            builder.build(repo, image, full_tag, build_args, extra_pars)
+            builder.build(image, tag, build_args, extra_pars)
         
         if update_lock:
-            builder.update_lockfiles(image, full_tag)
+            builder.update_lockfiles(image, tag)
 
         if push:
-            builder.push(full_tag)
+            builder.push(image, tag)
         
     if release is not None:
-        builder.release(repo, tag, release)
+        builder.release(tag, release)
