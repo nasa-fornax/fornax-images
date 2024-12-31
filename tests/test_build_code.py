@@ -6,11 +6,14 @@ import os
 import pathlib
 import tempfile
 import glob
+import json
+import subprocess
 from io import StringIO
 
 
 sys.path.insert(0, f'{os.path.dirname(__file__)}/../scripts/')
 from build import TaskRunner, Builder
+from changed_images import find_changed_images
 
 class TestTaskRunner(unittest.TestCase):
 
@@ -208,6 +211,60 @@ class TestBuilder(unittest.TestCase):
             self.assertEqual(len(nowfiles), 3)
             self.assertEqual(result, "name:\nnextline")
         self.logger.handlers.clear()
+
+class TestChangedImages(unittest.TestCase):
+
+    def setUp(self):
+        logger = logging.getLogger()
+        self.runner = TaskRunner(logger, dryrun=True)
+        self.logger = logger
+
+    def test_pull_request(self):
+        pull_request_event = {
+            'event_name': 'pull_request',
+            'event': {
+                'base_ref': '7905b4edab6'
+            }
+        }
+        with patch('sys.stderr', new=StringIO()) as mock_out:
+            logging.basicConfig(level=logging.DEBUG)
+            res = find_changed_images(pull_request_event, self.runner)
+            output = mock_out.getvalue().strip()
+        base_ref = pull_request_event['event']['base_ref']
+        self.assertTrue(f'git fetch origin {base_ref}' in output)
+        self.assertTrue(f'git --no-pager diff --name-only HEAD origin/${base_ref} | xargs -n1 dirname | sort -u' in output)
+        self.assertEqual(res, [])
+        self.logger.handlers.clear()
+
+    def test_push(self):
+        push_event = {
+            'event_name': 'push',
+            'event': {
+                'before': '299390bb5c8',
+                'after': '2add5c8e038'
+            }
+        }
+        with patch('sys.stderr', new=StringIO()) as mock_out:
+            logging.basicConfig(level=logging.DEBUG)
+            res = find_changed_images(push_event, self.runner)
+            output = mock_out.getvalue().strip()
+        before = push_event['event']['before']
+        after = push_event['event']['after']
+        self.assertTrue(f'git fetch origin {before}' in output)
+        self.assertTrue(f'git --no-pager diff-tree --name-only -r {before}..{after} | xargs -n1 dirname | sort -u' in output)
+        self.assertEqual(res, [])
+        self.logger.handlers.clear()
+
+    def test_else_event(self):
+        else_event = {'event_name': 'other'}
+        with patch('sys.stderr', new=StringIO()) as mock_out:
+            logging.basicConfig(level=logging.DEBUG)
+            res = find_changed_images(else_event, self.runner)
+            output = mock_out.getvalue().strip()
+        self.assertTrue(f'git ls-files | xargs -n1 dirname | sort -u' in output)
+        self.assertEqual(res, [])
+        self.logger.handlers.clear()
+
 
 if __name__ == "__main__":
     unittest.main()

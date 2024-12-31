@@ -22,7 +22,7 @@ jobs:
       id-token: write
 
     outputs:
-      dir_changes: ${{ steps.directory-changes.outputs.changed_dirs }}
+      dir_changes: ${{ steps.changed-images.outputs.changed_dirs }}
 
     steps:
       - name: Debug Event Payload
@@ -36,40 +36,6 @@ jobs:
       - name: Git branch name
         id: git-branch-name
         run: echo "${{ github.head_ref || github.ref_name }}"
-      
-
-      - name: Directory Changes
-        id: directory-changes
-        run: |
-          case "${{ github.event_name }}" in
-            "pull_request")
-              base_ref="${GITHUB_BASE_REF}"
-
-              git fetch origin "${base_ref}"
-              changed_dirs="$(git --no-pager diff --name-only HEAD origin/${base_ref} | xargs -n1 dirname | sort -u)"
-              ;;
-
-            "push")
-              git fetch origin "${{ github.event.before }}"
-              changed_dirs="$(git --no-pager diff-tree --name-only -r ${{ github.event.before }}..${{ github.event.after }} | xargs -n1 dirname | sort -u)"
-              ;;
-
-            *)
-              changed_dirs="$(git ls-files | xargs -n1 dirname | sort -u)"
-              ;;
-          esac
-          
-          # keep only image directories
-          dirs=""
-          for dir in $changed_dirs; do
-            if [ -f $dir/Dockerfile ]; then
-              dirs="$dirs $dir"
-            fi
-          done
-          # save it in json format
-          changed_dirs=$(echo "$dirs" | jq -R -c 'gsub("\r\n";"") | split(" ") | map(select(length > 0))')
-          echo "++ changed_dirs: $changed_dirs"
-          echo "changed_dirs=$changed_dirs" >> $GITHUB_OUTPUT
 
 
       - name: Setup Python
@@ -77,6 +43,16 @@ jobs:
         id: setup_python
         with:
           python-version: '3.12'
+      
+      - name: Changed Images
+        id: changed-images
+        run: |
+          cat <<EOF > tmp_github.json
+          ${{ toJson(github) }}
+          EOF
+          changed_dirs=`python scripts/changed_images.py tmp_github.json --debug`
+          echo "changed_dirs=$changed_dirs" >> $GITHUB_OUTPUT
+
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
@@ -88,7 +64,7 @@ jobs:
       - name: Build and push images
         id: push
         env:
-          DIR_CHANGES: ${{ steps.directory-changes.outputs.changed_dirs }}
+          DIR_CHANGES: ${{ steps.changed-images.outputs.changed_dirs }}
         run: |
           echo "DIR_CHANGES: $DIR_CHANGES"
           python scripts/build.py --debug \
@@ -103,4 +79,3 @@ jobs:
     with:
       # pass the images that changed for testing
       images: ${{ needs.build-and-push-images.outputs.dir_changes }}
-
