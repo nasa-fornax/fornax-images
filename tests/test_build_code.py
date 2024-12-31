@@ -27,7 +27,7 @@ class TestBuilder(unittest.TestCase):
     
     def test_run(self):
         out = self.builder_run.run('pwd', timeout=100, capture_output=True)
-        self.assertEqual(out.stdout.strip(), os.getcwd().lower())
+        self.assertEqual(out.stdout.strip().lower(), os.getcwd().lower())
 
 
     def test_out(self):
