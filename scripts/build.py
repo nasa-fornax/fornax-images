@@ -13,30 +13,21 @@ IMAGE_ORDER = (
     #'heasoft'
 )
 
-class Builder:
-    """Class for managing the docker build commands
+class TaskRunner:
+    """Class for managing logging and system calls"""
 
-    It mainly manages the system calls and logging and keeping track
-    of globals like dryrun etc.
-    """
-    def __init__(self, repository, logger, registry='ghcr.io', dryrun=False):
-        """Create a new Builder
+    def __init__(self, logger, dryrun=False):
+        """Create a new TaskRunner
         
         Parameters:
         -----------
-        repository: str
-            Repository name. e.g. nasa-fornax/fornax-images
         logger: logging.Logger
             Logging object
-        registry: str
-            Name of the docker registry. Default: ghcr.io
         dryrun: bool
             If True, print the commands without running them
         
         """
-        self.repository = repository
         self.logger = logger
-        self.registry = registry
         self.dryrun = dryrun
 
     def out(self, msg, severity=logging.INFO):
@@ -80,6 +71,29 @@ class Builder:
                 **runargs,
             )
         return result
+
+
+class Builder(TaskRunner):
+    """Class for managing the docker build commands"""
+
+    def __init__(self, repository, logger, registry='ghcr.io', dryrun=False):
+        """Create a new Builder
+        
+        Parameters:
+        -----------
+        repository: str
+            Repository name. e.g. nasa-fornax/fornax-images
+        logger: logging.Logger
+            Logging object
+        registry: str
+            Name of the docker registry. Default: ghcr.io
+        dryrun: bool
+            If True, print the commands without running them
+        
+        """
+        super().__init__(logger, dryrun)
+        self.repository = repository
+        self.registry = registry
 
     def check_tag(self, tag):
         """Check the tag"""

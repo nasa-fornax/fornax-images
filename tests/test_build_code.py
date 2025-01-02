@@ -10,20 +10,14 @@ from io import StringIO
 
 
 sys.path.insert(0, f'{os.path.dirname(__file__)}/../scripts/')
-from build import Builder
+from build import TaskRunner, Builder
 
-
-class TestBuilder(unittest.TestCase):
+class TestTaskRunner(unittest.TestCase):
 
     def setUp(self):
         logger = logging.getLogger()
-        self.repo = 'some-repo'
-        self.registry = 'my-registry'
-        self.tag = 'some-tag'
-        self.image = 'some-image'
-
-        self.builder_run = Builder(self.repo, logger, registry=self.registry, dryrun=False)
-        self.builder_dry = Builder(self.repo, logger, registry=self.registry, dryrun=True)
+        self.builder_run = TaskRunner(logger, dryrun=False)
+        self.builder_dry = TaskRunner(logger, dryrun=True)
         self.logger = logger
     
     def test_run(self):
@@ -40,13 +34,26 @@ class TestBuilder(unittest.TestCase):
         self.assertEqual(msg, output.split(':')[-1].strip())
         self.logger.handlers.clear()
 
-    
     def test_dryrun(self):
         out = self.builder_dry.run('ls', timeout=100, capture_output=True)
         self.assertEqual(out, None)
 
         out = self.builder_run.run('ls', timeout=100, capture_output=True)
         self.assertNotEqual(out, None)
+
+
+class TestBuilder(unittest.TestCase):
+
+    def setUp(self):
+        logger = logging.getLogger()
+        self.repo = 'some-repo'
+        self.registry = 'my-registry'
+        self.tag = 'some-tag'
+        self.image = 'some-image'
+
+        self.builder_run = Builder(self.repo, logger, registry=self.registry, dryrun=False)
+        self.builder_dry = Builder(self.repo, logger, registry=self.registry, dryrun=True)
+        self.logger = logger
     
     def test_get_full_tag(self):
         full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
