@@ -1,0 +1,53 @@
+name: Tag released images
+
+on:
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+
+  build-and-push-images:
+    runs-on: ubuntu-latest
+
+    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in
+    # this job.
+    permissions:
+
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    steps:
+
+      - name: Debug Event Payload
+        env:
+          EVENT_PAYLOAD: ${{ toJson(github.event) }}
+        run: echo "$EVENT_PAYLOAD"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        id: setup_python
+        with:
+          python-version: '3.12'
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag main images with release tags
+        id: push
+        run: |
+          python scripts/build.py --debug --no-build \
+              --registry "$REGISTRY" --repository "${{ github.repository }}" \
+              --tag "${{ github.event.release.target_commitish }}" \
+              --release "${{ github.event.release.tag_name }}" stable

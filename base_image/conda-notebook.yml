@@ -1,0 +1,33 @@
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python==3.11
+  - jupyterlab==4.2.4
+  - jupyterhub==5.1.0
+  - notebook==7.2.1
+  - ipykernel
+  - ipywidgets
+  - jupytext
+  - nbgitpuller
+  - dask
+  - dask-labextension
+  - numpy<2
+  - scipy
+  - pandas
+  - astropy
+  - pyvo
+  - astroquery
+  - tqdm
+  - matplotlib
+  - seaborn
+  - openvscode-server
+  - jupyter-vscode-proxy
+  - pytest
+  - pip
+  - pip:
+      - jupyterlab_execute_time
+      - jupyter-resource-usage
+      - jupyterlab-git
+      - jupyterlab-myst
+      - jupyter_cpu_alive

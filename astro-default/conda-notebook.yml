@@ -1,0 +1,51 @@
+name: notebook
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - numpy
+  - pandas
+  - scipy
+  - pyarrow
+  - swig
+  - ipykernel
+  - cairo
+  - cython
+  - ceres-solver
+  - pkg-config
+  - setuptools
+  - wcslib
+  - libjpeg-turbo
+  - netpbm
+  - acstools
+  - pyvo
+  - boto3
+  - firefly-client
+  - hpgeom
+  - lightkurve
+  - matplotlib
+  - seaborn
+  - mpld3
+  - reproject
+  - s3fs
+  - scikit-learn
+  - scikit-image
+  - statsmodels
+  - astropy-healpix
+  - ccdproc
+  - photutils
+  - regions
+  - reproject
+  - specutils
+  - umap-learn
+  - statsmodels
+  - lsdb
+  - pip
+  - pip:
+    - specreduce
+    - astroquery>=0.4.8.dev0
+    - alerce
+    - gdown
+    - ipyaladin
+    - jupyter_firefly_extensions
+prefix: /opt/conda/envs/notebook

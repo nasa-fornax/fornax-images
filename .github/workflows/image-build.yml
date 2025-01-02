@@ -1,0 +1,81 @@
+name: Build and push images
+
+on:
+  push:
+    branches-ignore: ['releases/**']
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+
+  build-and-push-images:
+
+    runs-on: ubuntu-latest
+
+    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in
+    # this job.
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    outputs:
+      dir_changes: ${{ steps.changed-images.outputs.changed_dirs }}
+
+    steps:
+      - name: Debug Event Payload
+        env:
+          EVENT_PAYLOAD: ${{ toJson(github.event) }}
+        run: echo "$EVENT_PAYLOAD"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Git branch name
+        id: git-branch-name
+        run: echo "${{ github.head_ref || github.ref_name }}"
+
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        id: setup_python
+        with:
+          python-version: '3.12'
+      
+      - name: Changed Images
+        id: changed-images
+        run: |
+          cat <<EOF > tmp_github.json
+          ${{ toJson(github) }}
+          EOF
+          changed_dirs=`python scripts/changed_images.py tmp_github.json --debug`
+          echo "changed_dirs=$changed_dirs" >> $GITHUB_OUTPUT
+
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push images
+        id: push
+        env:
+          DIR_CHANGES: ${{ steps.changed-images.outputs.changed_dirs }}
+        run: |
+          echo "DIR_CHANGES: $DIR_CHANGES"
+          python scripts/build.py --debug \
+              --registry "$REGISTRY" --repository "${{ github.repository }}" \
+              --tag "${{ github.head_ref || github.ref_name }}" \
+              --push $DIR_CHANGES
+  
+  test-images:
+    needs: build-and-push-images
+    uses: ./.github/workflows/run-tests.yml
+    secrets: inherit
+    with:
+      # pass the images that changed for testing
+      images: ${{ needs.build-and-push-images.outputs.dir_changes }}

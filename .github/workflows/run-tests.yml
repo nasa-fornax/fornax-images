@@ -1,0 +1,63 @@
+name: image-tests
+on:
+  # call from the image build pipeline
+  workflow_call:
+    inputs:
+      images:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      images:
+        description: 'Images of the form: ["image-1","image-2"]'
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  test-images:
+    runs-on: ubuntu-latest
+    if: inputs.images != '[]'
+    strategy:
+      matrix:
+        image: ${{ fromJson(inputs.images) }}
+  
+    steps:
+      - name: Configure tests
+        id: configure
+        run: |
+          echo "uid=$(id -u)" >> $GITHUB_OUTPUT
+          echo "gid=$(id -g)" >> $GITHUB_OUTPUT
+          echo "Images passed for testing: ${{ inputs.images }}"
+  
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: "Pull Image: ${{ matrix.image }}"
+        run: |
+          tag=${{ github.head_ref || github.ref_name }}
+          image=${{ matrix.image }}
+          docker pull ghcr.io/${{ github.repository }}/$image:$tag
+          docker tag ghcr.io/${{ github.repository }}/$image:$tag $image
+
+      - name: "Run tests inside the image: ${{ matrix.image }}"
+        run: |
+          image=${{ matrix.image }}
+          docker run -i --rm -v .:/opt/workspace/repo-code \
+            $image \
+            bash -c "pytest -s -v /opt/workspace/repo-code/tests/test_${image}.py -o cache_dir=/tmp/"
+    
+      - name: "Run jupyter-lab: ${{ matrix.image }}"
+        run: |
+          image=${{ matrix.image }}
+          cmd="docker run -i --rm $image"
+          timeout 10 $cmd || [[ $? -eq 124 ]] && { echo "Timed out as expeced."; } || exit $?
