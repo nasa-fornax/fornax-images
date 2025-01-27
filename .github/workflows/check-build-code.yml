@@ -1,0 +1,25 @@
+name: Run tests for the build scripts
+
+on:
+  push:
+    branches-ignore: ['releases/**']
+    paths: ['scripts/**']
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        id: setup_python
+        with:
+          python-version: '3.12'
+
+      - name: Run builder tests
+        id: test
+        run: |
+           python3 tests/test_build_code.py
