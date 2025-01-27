@@ -51,7 +51,7 @@ class TaskRunner:
         -----------
         command: str
             Command to pass to subprocess.run()
-        timout: int
+        timeout: int
             Timeout in sec
         **runargs:
             to be passed to subprocess.run

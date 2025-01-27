@@ -51,6 +51,7 @@ jobs:
           ${{ toJson(github) }}
           EOF
           changed_dirs=`python scripts/changed_images.py tmp_github.json --debug`
+          echo "changed_dirs = ${changed_dirs}"
           echo "changed_dirs=$changed_dirs" >> $GITHUB_OUTPUT
 
 

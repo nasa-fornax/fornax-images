@@ -6,7 +6,6 @@ import os
 import pathlib
 import tempfile
 import glob
-import json
 import subprocess
 from io import StringIO
 
@@ -152,7 +151,7 @@ class TestBuilder(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.builder_dry.release('tag', ['out'], images='images')
     
-    def test_build__release__images_unkown_image(self):
+    def test_build__release__images_unknown_image(self):
         with self.assertRaises(ValueError):
             self.builder_dry.release('tag', ['out'], images=['some_image'])
         # the following should work
@@ -252,6 +251,22 @@ class TestChangedImages(unittest.TestCase):
         after = push_event['event']['after']
         self.assertTrue(f'git fetch origin {before}' in output)
         self.assertTrue(f'git --no-pager diff-tree --name-only -r {before}..{after} | xargs -n1 dirname | sort -u' in output)
+        self.assertEqual(res, [])
+        self.logger.handlers.clear()
+
+    def test_push_new(self):
+        push_event = {
+            'event_name': 'push',
+            'event': {
+                'before': '00000000000',
+                'after': '2add5c8e038'
+            }
+        }
+        with patch('sys.stderr', new=StringIO()) as mock_out:
+            logging.basicConfig(level=logging.DEBUG)
+            res = find_changed_images(push_event, self.runner)
+            output = mock_out.getvalue().strip()
+        self.assertTrue("find . -type f -name 'Dockerfile' -exec dirname {} \\;|sed 's|^\\./||'" in output)
         self.assertEqual(res, [])
         self.logger.handlers.clear()
 

@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import logging
+import glob
 
 sys.path.insert(0, f'{os.path.dirname(__file__)}')
 from build import TaskRunner
@@ -26,11 +27,18 @@ def find_changed_images(github_data:dict, runner:TaskRunner):
         before = github_data['event']['before']
         after = github_data['event']['after']
 
-        cmd = f'git fetch origin {before}'
-        out = runner.run(cmd, 500, capture_output=True)
+        # handle the case of fresh push with nothing to compare to,
+        # do all images
+        if before.strip('0') == '':
+            cmd = "find . -type f -name 'Dockerfile' -exec dirname {} \\;|sed 's|^\\./||'"
+            final_out = runner.run(cmd, 500, capture_output=True)
 
-        cmd = f'git --no-pager diff-tree --name-only -r {before}..{after} | xargs -n1 dirname | sort -u'
-        final_out = runner.run(cmd, 500, capture_output=True)
+        else:
+            cmd = f'git fetch origin {before}'
+            out = runner.run(cmd, 500, capture_output=True)
+
+            cmd = f'git --no-pager diff-tree --name-only -r {before}..{after} | xargs -n1 dirname | sort -u'
+            final_out = runner.run(cmd, 500, capture_output=True)
 
     else:
         cmd = 'git ls-files | xargs -n1 dirname | sort -u'
@@ -53,7 +61,7 @@ if __name__ == '__main__':
     
     ap = argparse.ArgumentParser()
 
-    ap.add_argument('jsonfile',
+    ap.add_argument('gitcontext',
         help="File name of the json file that contains Github action context")
     
     ap.add_argument('--dryrun', action='store_true',
@@ -68,9 +76,9 @@ if __name__ == '__main__':
     # get parameters
     dryrun = args.dryrun
     debug = args.debug
-    jsonfile = args.jsonfile
+    gitcontext = args.gitcontext
     
-    with open(args.jsonfile, "r") as file:
+    with open(args.gitcontext, "r") as file:
         data = json.load(file)
     
     logging.basicConfig(
@@ -83,7 +91,7 @@ if __name__ == '__main__':
 
     # some logging:
     runner.out('+++ INPUT +++', logging.DEBUG)
-    runner.out(f'jsonfile: {jsonfile}', logging.DEBUG)
+    runner.out(f'gitcontext: {gitcontext}', logging.DEBUG)
     runner.out(f'debug: {debug}', logging.DEBUG)
     runner.out(f'dryrun: {dryrun}', logging.DEBUG)
     runner.out(f'event_name: {data["event_name"]}', logging.DEBUG)
@@ -91,10 +99,11 @@ if __name__ == '__main__':
     
     changed_images = find_changed_images(data, runner)
     
-    # print the result in json text so it is picked up in the CI script
-    res = json.dumps(changed_images)
+    # print the result as a list
+    res = ' '.join(changed_images)
     runner.out('+++ OUTPUT +++', logging.DEBUG)
     runner.out(res)
     runner.out('++++++++++++++', logging.DEBUG)
-    # clean print so it is picked up by the CI
+    # clean print so it is picked up by the CI;
+    # Note that this print should be the ONLY print; use runner.out for everything else
     print(res)
