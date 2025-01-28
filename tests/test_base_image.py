@@ -51,7 +51,7 @@ class CommonTests:
             fp.write("\n".join(lines))
         diff_cmd = (
             f'diff tmp-notebook-lock.yml {os.path.dirname(__file__)}'
-            '/../{image}/conda-notebook-lock.yml'
+            f'/../{image}/conda-notebook-lock.yml'
         )
         result = self.run_cmd(diff_cmd)
         self.assertEqual(result.stdout, '')

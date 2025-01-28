@@ -5,7 +5,7 @@ import sys
 import logging
 
 sys.path.insert(0, f'{os.path.dirname(__file__)}')
-from build import TaskRunner  # noqa: E402
+from build import TaskRunner, IMAGE_ORDER  # noqa: E402
 
 
 def find_changed_images(github_data: dict, runner: TaskRunner):
@@ -56,7 +56,8 @@ def find_changed_images(github_data: dict, runner: TaskRunner):
 
         # keep a list of images, i.e. folders that contain Dockerfile
         changed_images = [cdir for cdir in changed_images
-                          if os.path.exists(f'{cdir}/Dockerfile')]
+                          if os.path.exists(f'{cdir}/Dockerfile')
+                          and cdir in IMAGE_ORDER]
 
     return changed_images
 
@@ -108,7 +109,7 @@ if __name__ == '__main__':
     changed_images = find_changed_images(data, runner)
 
     # print the result as a list
-    res = ' '.join(changed_images)
+    res = json.dumps(changed_images)
     runner.out('+++ OUTPUT +++', logging.DEBUG)
     runner.out(res)
     runner.out('++++++++++++++', logging.DEBUG)
