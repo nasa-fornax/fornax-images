@@ -60,4 +60,4 @@ jobs:
         run: |
           image=${{ matrix.image }}
           cmd="docker run -i --rm $image"
-          timeout 10 $cmd || [[ $? -eq 124 ]] && { echo "Timed out as expeced."; } || exit $?
+          timeout 10 $cmd || [[ $? -eq 124 ]] && { echo "Timed out as expected."; } || exit $?

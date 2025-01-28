@@ -10,29 +10,30 @@ import json
 IMAGE_ORDER = (
     'base_image',
     'astro-default',
-    #'heasoft'
+    # 'heasoft'
 )
+
 
 class TaskRunner:
     """Class for managing logging and system calls"""
 
     def __init__(self, logger, dryrun=False):
         """Create a new TaskRunner
-        
+
         Parameters:
         -----------
         logger: logging.Logger
             Logging object
         dryrun: bool
             If True, print the commands without running them
-        
+
         """
         self.logger = logger
         self.dryrun = dryrun
 
     def out(self, msg, severity=logging.INFO):
         """Log progress message
-        
+
         Parameters
         ----------
         msg: str
@@ -46,7 +47,7 @@ class TaskRunner:
 
     def run(self, command, timeout, **runargs):
         """Run system command {command} with a timeout
-        
+
         Parameters:
         -----------
         command: str
@@ -55,9 +56,9 @@ class TaskRunner:
             Timeout in sec
         **runargs:
             to be passed to subprocess.run
-        
+
         Returns an instance of subprocess.CompletedProcess
-        
+
         """
         self.out(f"Running ::\n{command}")
         result = None
@@ -78,7 +79,7 @@ class Builder(TaskRunner):
 
     def __init__(self, repository, logger, registry='ghcr.io', dryrun=False):
         """Create a new Builder
-        
+
         Parameters:
         -----------
         repository: str
@@ -89,7 +90,7 @@ class Builder(TaskRunner):
             Name of the docker registry. Default: ghcr.io
         dryrun: bool
             If True, print the commands without running them
-        
+
         """
         super().__init__(logger, dryrun)
         self.repository = repository
@@ -102,22 +103,22 @@ class Builder(TaskRunner):
 
     def get_full_tag(self, image, tag):
         """Return full tag that includes the registry and repository
-        
+
         Parameters:
         -----------
         image: str
             Image name (e.g. astro-default or heasoft)
         tag: str
             The image tag.
-        
+
         """
         self.check_tag(tag)
         full_tag = f'{self.registry}/{self.repository}/{image}:{tag}'
         return full_tag
-    
+
     def build(self, image, tag, build_args=None, extra_args=None):
         """Build an image by calling 'docker build ..'
-        
+
         Parameters:
         -----------
         repo: str
@@ -127,34 +128,36 @@ class Builder(TaskRunner):
         tag: str
             The image tag.
         build_args: list
-            A list of str arguments to be passed directly to 'docker build'. e.g.
-            'SOME_ENV=myvalue OTHER_ENV=value'
+            A list of str arguments to be passed directly to 'docker build'.
+            e.g. 'SOME_ENV=myvalue OTHER_ENV=value'
         extra_args: str
             Extra command line arguments to be passed to 'docker build'
             e.g. '--no-cache --network=host'
-        
+
         """
         cmd_args = []
-    
+
         # build_args is a list
         build_args = build_args or []
         if not isinstance(build_args, list):
-            raise ValueError(f'build_args is of type {type(build_args)}. Expected a list.')
+            raise ValueError(f'build_args is of type {type(build_args)}.'
+                             ' Expected a list.')
         if ':' in tag:
             tag = tag.split(':')[-1]
-        
+
         # Ensure we have: name=value
         build_args = [arg.strip() for arg in build_args]
-        
+
         # add some defaults to build_args
-        # For base_image, the tags are external and should be updated in the Dockerfile
+        # For base_image, the tags are external and should be updated
+        # in the Dockerfile
         if image != 'base_image':
             mapping = {
                 'REPOSITORY': self.repository,
                 'REGISTRY': self.registry,
                 'BASE_TAG': tag,
             }
-            for key,val in mapping.items():
+            for key, val in mapping.items():
                 if not any([arg.startswith(f'{key}=') for arg in build_args]):
                     build_args.append(f'{key}={val}')
 
@@ -176,11 +179,11 @@ class Builder(TaskRunner):
         full_tag = self.get_full_tag(image, tag)
         build_cmd = f"docker build {cmd_args} --tag {full_tag} {image}"
         self.out(f"Building {image} ...")
-        result = self.run(build_cmd, timeout=10000)
+        self.run(build_cmd, timeout=10000)
 
     def push(self, image, tag):
         """Push the image with 'docker push'
-        
+
         Parameters:
         -----------
         image: str
@@ -193,11 +196,11 @@ class Builder(TaskRunner):
         full_tag = self.get_full_tag(image, tag)
         push_command = f'docker push {full_tag}'
         self.out(f"Pushing {full_tag} ...")
-        result = self.run(push_command, timeout=1000)
-    
+        self.run(push_command, timeout=1000)
+
     def release(self, source_tag, release_tags, images=None):
         """Make an image release by tagging the image with release_tags
-        
+
         Parameters:
         -----------
         source_tag: str
@@ -214,34 +217,34 @@ class Builder(TaskRunner):
             raise ValueError(f'release_tags: {release_tags} is not a list')
         for release_tag in release_tags:
             self.check_tag(release_tag)
-        
+
         if images is not None and not isinstance(images, list):
             raise ValueError(f'Expected images to be a list; got {images}')
-        
+
         # get a list of images to release
         to_release = images if images is not None else list(IMAGE_ORDER)
         for image in to_release:
             if image not in IMAGE_ORDER:
-                raise ValueError(f'Requested image to release {image} is unknown')
-        
+                raise ValueError(f'Unknow Requested image {image}.')
+
         # Loop through the images
         for image in to_release:
             full_source_tag = self.get_full_tag(image, source_tag)
-            
+
             # pull
             command = f'docker pull {full_source_tag}'
             self.out(f"Pulling {full_source_tag} ...")
             self.run(command, timeout=1000)
-            
+
             # loog through release tags
             for release_tag in release_tags:
                 full_release_tag = self.get_full_tag(image, release_tag)
-                
+
                 # tag
                 command = f'docker tag {full_source_tag} {full_release_tag}'
-                self.out(f"Tagging {full_source_tag} with {full_release_tag} ...")
+                self.out(f"Tagging {full_source_tag} with {full_release_tag}")
                 self.run(command, timeout=1000)
-                
+
                 # push
                 command = f'docker push {full_release_tag}'
                 self.out(f"Pushing {full_release_tag} ...")
@@ -249,7 +252,7 @@ class Builder(TaskRunner):
 
     def remove_lockfiles(self, image):
         """Remove conda lock files from an image
-        
+
         Parameters
         ----------
         image: str
@@ -260,11 +263,11 @@ class Builder(TaskRunner):
         for lockfile in lockfiles:
             self.out(f"Removing {lockfile}")
             cmd = f'rm -f {lockfile}'
-            result = self.run(cmd, timeout=100)
+            self.run(cmd, timeout=100)
 
     def update_lockfiles(self, image, tag, extra_args=None):
         """Update the conda lock files in {image} using image {tag}
-        
+
         Parameters
         ----------
         image: str
@@ -291,7 +294,8 @@ class Builder(TaskRunner):
             cmd = (f'docker run --entrypoint="" --rm {extra_args} {tag} '
                    f'mamba env export -n {env_name}')
             result = self.run(cmd, 500, capture_output=True)
-            if result is not None: # dryrun=True
+            if result is not None:
+                # dryrun=True
                 # capture lines after: 'name:'
                 lines = []
                 include = False
@@ -303,56 +307,83 @@ class Builder(TaskRunner):
                 with open(f"{image}/conda-{env_name}-lock.yml", "w") as fp:
                     fp.write("\n".join(lines))
 
+
 if __name__ == '__main__':
-    
+
     ap = argparse.ArgumentParser()
 
-    ap.add_argument('images', nargs='*',
-        help="Image names to build separated by spaces e.g. 'base_image astro-default'")
+    ap.add_argument(
+        'images', nargs='*',
+        help=("Image names to build separated by spaces e.g. "
+              "'base_image astro-default'")
+    )
 
-    ap.add_argument('--tag',
-        help="Container registry tag name (e.g. 'mybranch'). Default is current git branch")
+    ap.add_argument(
+        '--tag',
+        help=("Container registry tag name (e.g. 'mybranch'). "
+              "Default is current git branch")
+    )
 
-    ap.add_argument('--registry',
+    ap.add_argument(
+        '--registry',
         help='Container registry name (e.g. ghcr.io)',
-        default='ghcr.io')
+        default='ghcr.io'
+    )
 
-    ap.add_argument('--repository',
+    ap.add_argument(
+        '--repository',
         help="GH repository name (e.g. 'nasa-fornax/fornax-images')",
-        default='nasa-fornax/fornax-images')
+        default='nasa-fornax/fornax-images'
+    )
 
-    ap.add_argument('--push', action='store_true',
+    ap.add_argument(
+        '--push', action='store_true',
         help='After building, push to container registry',
-        default=False)
-    
-    ap.add_argument('--release', nargs='*',
-        help='Release using the given tag')
-    
-    ap.add_argument('--no-build', action='store_true',
+        default=False
+    )
+
+    ap.add_argument(
+        '--release', nargs='*',
+        help='Release using the given tag'
+    )
+
+    ap.add_argument(
+        '--no-build', action='store_true',
         help="Do not run 'docker build' command",
-        default=False)
+        default=False
+    )
 
-    ap.add_argument('--update-lock', action='store_true',
+    ap.add_argument(
+        '--update-lock', action='store_true',
         help='Update conda lock files.',
-        default=False)
+        default=False
+    )
 
-    ap.add_argument('--dryrun', action='store_true',
+    ap.add_argument(
+        '--dryrun', action='store_true',
         help='prepare but do not run commands',
-        default=False)
+        default=False
+    )
 
-    ap.add_argument('--build-args', nargs='*',
-        help="Extra --build-arg arguments passed to docker build e.g. 'a=b c=d'")
+    ap.add_argument(
+        '--build-args', nargs='*',
+        help="Extra --build-arg arguments for docker build e.g. 'a=b c=d'"
+    )
 
-    ap.add_argument('--extra-pars',
-        help="Arguments to be passed directly to `docker build` or `docker run`",
-        default=None)
-    
-    ap.add_argument('--debug', action='store_true',
+    ap.add_argument(
+        '--extra-pars',
+        help="Arguments to be passed to `docker build` or `docker run`",
+        default=None
+    )
+
+    ap.add_argument(
+        '--debug', action='store_true',
         help='Print debug messages',
-        default=False)
+        default=False
+    )
 
     args = ap.parse_args()
-    
+
     # get parameters
     dryrun = args.dryrun
     debug = args.debug
@@ -383,12 +414,14 @@ if __name__ == '__main__':
 
     # get current branch name as default tag
     if (len(images) or release is not None) and tag is None:
-        out = builder.run('git branch --show-current', timeout=100, capture_output=True)
+        out = builder.run(
+            'git branch --show-current', timeout=100, capture_output=True
+        )
         if out is not None:
             tag = out.stdout.strip()
         # if out is None, we are in --dryrun mode, add a dummy tag
         tag = 'no-tag' if out is None else out.stdout.strip()
-    
+
     # some logging:
     builder.out('Builder initialized ..', logging.DEBUG)
     builder.out('+++ INPUT +++', logging.DEBUG)
@@ -413,18 +446,18 @@ if __name__ == '__main__':
     builder.out(f'Images to build: {to_build}', logging.DEBUG)
     for image in to_build:
         builder.out(f'Working on: {image}', logging.DEBUG)
-        
+
         if update_lock:
             builder.remove_lockfiles(image)
-        
+
         if not no_build:
             builder.build(image, tag, build_args, extra_pars)
-        
+
         if update_lock:
             builder.update_lockfiles(image, tag)
 
         if push:
             builder.push(image, tag)
-        
+
     if release is not None:
         builder.release(tag, release)
