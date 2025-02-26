@@ -94,10 +94,26 @@ class Builder(TaskRunner):
         self.repository = repository
         self.registry = registry
 
-    def check_tag(self, tag):
-        """Check the tag"""
-        if not isinstance(tag, str) or ':' in tag:
-            raise ValueError(f'tag: {tag} is not a str without :')
+    def _check_tags(self, source_tag=None, release_tags=None):
+        """Check the source tags and/or release tags
+
+        Parameters
+        ----------
+        source_tag: str or None
+            the source tag
+        release_tags: list or None
+            A list of release tags
+        """
+        if source_tag is not None:
+            if not isinstance(source_tag, str) or ':' in source_tag:
+                raise ValueError(f'tag: {source_tag} is not a str without :')
+        if release_tags is not None:
+            if not isinstance(release_tags, list):
+                raise ValueError(f'release_tags: {release_tags} is not a list')
+            for release_tag in release_tags:
+                if not isinstance(release_tag, str) or ':' in release_tag:
+                    raise ValueError(
+                        f'tag: {release_tag} is not a str without :')
 
     def get_full_tag(self, image, tag):
         """Return full tag that includes the registry and repository
@@ -110,7 +126,7 @@ class Builder(TaskRunner):
             The image tag.
 
         """
-        self.check_tag(tag)
+        self._check_tags(tag)
         full_tag = f'{self.registry}/{self.repository}/{image}:{tag}'
         return full_tag
 
@@ -190,7 +206,6 @@ class Builder(TaskRunner):
             The image tag.
 
         """
-        self.check_tag(tag)
         full_tag = self.get_full_tag(image, tag)
         push_command = f'docker push {full_tag}'
         self.out(f"Pushing {full_tag} ...")
@@ -210,11 +225,7 @@ class Builder(TaskRunner):
 
         """
         # check the passed tags
-        self.check_tag(source_tag)
-        if not isinstance(release_tags, list):
-            raise ValueError(f'release_tags: {release_tags} is not a list')
-        for release_tag in release_tags:
-            self.check_tag(release_tag)
+        self._check_tags(source_tag, release_tags)
 
         if images is not None and not isinstance(images, list):
             raise ValueError(f'Expected images to be a list; got {images}')
@@ -277,7 +288,7 @@ class Builder(TaskRunner):
             e.g. '--network=host'
 
         """
-        self.check_tag(tag)
+        self._check_tags(tag)
 
         extra_args = extra_args or ''
         if not isinstance(extra_args, str):

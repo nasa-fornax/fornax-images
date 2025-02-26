@@ -66,12 +66,12 @@ class TestBuilder(unittest.TestCase):
             full_tag, f'{self.registry}/{self.repo}/{self.image}:{self.tag}'
         )
 
-    def test_check_tag(self):
+    def test_check_tags(self):
         with self.assertRaises(ValueError):
-            self.builder_dry.check_tag('repo:tag')
+            self.builder_dry._check_tags('repo:tag')
         with self.assertRaises(ValueError):
-            self.builder_dry.check_tag(['repo'])
-        self.builder_dry.check_tag('tag')
+            self.builder_dry._check_tags(['repo'])
+        self.builder_dry._check_tags('tag')
         self.logger.handlers.clear()
 
     def test_build__basic(self):
