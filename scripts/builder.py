@@ -259,6 +259,48 @@ class Builder(TaskRunner):
                 self.out(f"Pushing {full_release_tag} ...")
                 self.run(command, timeout=1000)
 
+    def push_to_ecr(
+        self, endpoint, source_tag, release_tags=None, images=None
+    ):
+        """Trigger the ECR hook to update the images
+
+        Parameters:
+        -----------
+        endpoint: str
+            ECR endpoint
+        source_tag: str
+            The tag name for the image (no repo name)
+        release_tags: list or None
+            A list of target tag names for the release (no repo name)
+        images: list or None
+            The list of images to tag for release. By default, all images
+
+        """
+        # check the passed tags
+        self._check_tags(source_tag, release_tags)
+
+        if endpoint is None:
+            raise ValueError('endpoint cannot be None')
+
+        if images is not None and not isinstance(images, list):
+            raise ValueError(f'Expected images to be a list; got {images}')
+
+        # get a list of images to release
+        images_to_process = images if images is not None else list(IMAGE_ORDER)
+        for image in images_to_process:
+            if image not in IMAGE_ORDER:
+                raise ValueError(f'Unknow Requested image {image}.')
+
+        # Loop through the images
+        for image in images_to_process:
+
+            print(f'triggering {endpoint} {image} {source_tag}')
+
+            # loog through release tags
+            if release_tags is not None:
+                for release_tag in release_tags:
+                    print(f'triggering {endpoint} {image} {release_tags}')
+
     def remove_lockfiles(self, image):
         """Remove conda lock files from an image
 

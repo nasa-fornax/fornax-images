@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import argparse
 import json
 
@@ -43,6 +44,17 @@ if __name__ == '__main__':
     ap.add_argument(
         '--release', nargs='*',
         help='Release using the given tag'
+    )
+
+    ap.add_argument(
+        '--trigger-ecr', action='store_true',
+        help='Trigger the ECR webhook',
+        default=False
+    )
+
+    ap.add_argument(
+        '--ecr-endpoint',
+        help='endpoint to trigger the push to the ECR'
     )
 
     ap.add_argument(
@@ -91,16 +103,16 @@ if __name__ == '__main__':
     tag = args.tag
     push = args.push
     release = args.release
+    trigger_ecr = args.trigger_ecr
+    ecr_endpoint = args.ecr_endpoint
     update_lock = args.update_lock
     no_build = args.no_build
     build_args = args.build_args
     extra_pars = args.extra_pars
 
     # in case images is of the form: '["dir_1", "dir_2"]'
-    print(images)
     if len(images) == 1 and '[' in images[0]:
         images = json.loads(images[0])
-    print(images)
 
     os.environ["DOCKER_BUILDKIT"] = "1"
     logging.basicConfig(
@@ -160,4 +172,7 @@ if __name__ == '__main__':
             builder.push(image, tag)
 
     if release is not None:
-        builder.release(tag, release)
+        builder.release(tag, release, images)
+
+    if trigger_ecr:
+        builder.push_to_ecr(ecr_endpoint, tag, release, images)
