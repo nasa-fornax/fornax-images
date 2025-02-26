@@ -8,7 +8,7 @@ import argparse
 import json
 
 IMAGE_ORDER = (
-    'base_image',
+    'base-image',
     'astro-default',
     # 'heasoft'
 )
@@ -149,9 +149,9 @@ class Builder(TaskRunner):
         build_args = [arg.strip() for arg in build_args]
 
         # add some defaults to build_args
-        # For base_image, the tags are external and should be updated
+        # For base-image, the tags are external and should be updated
         # in the Dockerfile
-        if image != 'base_image':
+        if image != 'base-image':
             mapping = {
                 'REPOSITORY': self.repository,
                 'REGISTRY': self.registry,
@@ -315,7 +315,7 @@ if __name__ == '__main__':
     ap.add_argument(
         'images', nargs='*',
         help=("Image names to build separated by spaces e.g. "
-              "'base_image astro-default'")
+              "'base-image astro-default'")
     )
 
     ap.add_argument(

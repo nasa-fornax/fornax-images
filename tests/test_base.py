@@ -61,7 +61,7 @@ class CommonTests:
 class Test_base_image(unittest.TestCase, CommonTests):
 
     def test_conda_env_file(self):
-        self._test_conda_env_file('base_image')
+        self._test_conda_env_file('base-image')
 
     def test_unique_base_image_test(self):
         self.assertEqual(1, 1)

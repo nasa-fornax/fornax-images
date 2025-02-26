@@ -6,7 +6,7 @@ ARG BASE_TAG=latest
 ARG REPOSITORY=nasa-fornax/fornax-images
 ARG REGISTRY=ghcr.io
 
-FROM ${REGISTRY}/${REPOSITORY}/base_image:${BASE_TAG}
+FROM ${REGISTRY}/${REPOSITORY}/base-image:${BASE_TAG}
 
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images

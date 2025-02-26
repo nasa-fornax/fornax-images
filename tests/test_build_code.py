@@ -164,16 +164,16 @@ class TestBuilder(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.builder_dry.release('tag', ['out'], images=['some_image'])
         # the following should work
-        self.builder_dry.release('tag', ['out'], ['base_image'])
+        self.builder_dry.release('tag', ['out'], ['base-image'])
 
     def test_build__release(self):
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             self.builder_dry.release(
-                f'{self.tag}', [f'{self.tag}-out'], images=['base_image'])
+                f'{self.tag}', [f'{self.tag}-out'], images=['base-image'])
             output = mock_out.getvalue().strip()
-        source_tag = self.builder_dry.get_full_tag('base_image', self.tag)
-        release_tag = self.builder_dry.get_full_tag('base_image',
+        source_tag = self.builder_dry.get_full_tag('base-image', self.tag)
+        release_tag = self.builder_dry.get_full_tag('base-image',
                                                     f'{self.tag}-out')
         self.assertTrue(f'docker pull {source_tag}' in output)
         self.assertTrue(f'docker tag {source_tag} {release_tag}' in output)
