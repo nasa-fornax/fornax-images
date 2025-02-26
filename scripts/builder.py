@@ -3,6 +3,8 @@ import subprocess
 import sys
 import glob
 import re
+import urllib.request
+import time
 
 
 IMAGE_ORDER = (
@@ -291,15 +293,29 @@ class Builder(TaskRunner):
             if image not in IMAGE_ORDER:
                 raise ValueError(f'Unknow Requested image {image}.')
 
-        # Loop through the images
+        # Loop through the images and collect parameters to params
+        params = []
         for image in images_to_process:
 
-            print(f'triggering {endpoint} {image} {source_tag}')
+            params.append([image, source_tag])
 
             # loog through release tags
             if release_tags is not None:
                 for release_tag in release_tags:
-                    print(f'triggering {endpoint} {image} {release_tags}')
+                    params.append([image, release_tag])
+
+        # now loop through the parameters and make the request
+        for param in params:
+            self.out(f"Triggering ecr for {image}, {source_tag} ...")
+            if not self.dryrun:
+                url = f'{endpoint}?image={image}&{source_tag}'
+                request = urllib.request.Request(url)
+
+                # this will fail if something doesn't work,
+                # and we want to know about it
+                with urllib.request.urlopen(request) as response:
+                    self.out(f"Trigger returned {response.status}")
+                    time.sleep(5)
 
     def remove_lockfiles(self, image):
         """Remove conda lock files from an image
