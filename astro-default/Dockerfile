@@ -10,7 +10,7 @@ FROM ${REGISTRY}/${REPOSITORY}/base_image:${BASE_TAG}
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
 LABEL org.opencontainers.image.description "Fornax Main Astronomy Image"
-LABEL maintainer="Fornax Project"
+LABEL org.opencontainers.image.authors="Fornax Project"
 
 # add notebook updater script to run when jupyter starts
 USER root
