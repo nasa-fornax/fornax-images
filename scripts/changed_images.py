@@ -5,7 +5,7 @@ import sys
 import logging
 
 sys.path.insert(0, f'{os.path.dirname(__file__)}')
-from build import TaskRunner, IMAGE_ORDER  # noqa: E402
+from builder import TaskRunner, IMAGE_ORDER  # noqa: E402
 
 
 def find_changed_images(github_data: dict, runner: TaskRunner):

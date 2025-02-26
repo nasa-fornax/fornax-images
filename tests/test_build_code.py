@@ -10,7 +10,7 @@ from io import StringIO
 
 
 sys.path.insert(0, f'{os.path.dirname(__file__)}/../scripts/')
-from build import TaskRunner, Builder  # noqa: E402
+from builder import TaskRunner, Builder  # noqa: E402
 from changed_images import find_changed_images  # noqa: E402
 
 
