@@ -27,7 +27,6 @@ WORKDIR $HOME
 # End of imports from jupyter/base-notebook #
 # ----------------------------------------- #
 
-
 ENV CONDA_ENV=notebook
 
 # Ask dask to read config from ${CONDA_DIR}/etc rather than

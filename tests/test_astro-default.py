@@ -6,7 +6,7 @@ import contextlib
 import pytest
 
 sys.path.insert(0, os.getcwd())
-from test_base import CommonTests  # noqa: E402
+CommonTests = __import__('test_base-image').CommonTests
 
 notebook_dir = os.environ.get('NOTEBOOK_DIR', '/home/jovyan/notebooks')
 
