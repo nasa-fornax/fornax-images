@@ -52,7 +52,7 @@ RUN cd build && bash /opt/scripts/apt-install.sh
 USER $NB_USER
 # setup conda environments
 RUN cd build && bash /opt/scripts/conda-env-install.sh \
- # Change dispaly name of the default kernel
+ # Change display name of the default kernel
  && mamba run -n $CONDA_ENV python -m ipykernel install --sys-prefix --display-name "$CONDA_ENV"
 
 # Any other build-* scripts #

@@ -308,13 +308,15 @@ class Builder(TaskRunner):
         for param in params:
             self.out(f"Triggering ecr for {image}, {source_tag} ...")
             if not self.dryrun:
-                url = f'{endpoint}?image={image}&{source_tag}'
+                url = f'{endpoint}?image={image}&tag={source_tag}'
                 request = urllib.request.Request(url)
 
                 # this will fail if something doesn't work,
                 # and we want to know about it
                 with urllib.request.urlopen(request) as response:
-                    self.out(f"Trigger returned {response.status}")
+                    self.out(f"Trigger returned status: {response.status}")
+                    self.out(("Trigger returned response: "
+                              f"{response.read().decode()}"))
                     time.sleep(5)
 
     def remove_lockfiles(self, image):
