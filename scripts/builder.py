@@ -9,7 +9,7 @@ import time
 
 IMAGE_ORDER = (
     'base-image',
-    # 'astro-default',
+    'astro-default',
     # 'heasoft'
 )
 
