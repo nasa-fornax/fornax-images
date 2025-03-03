@@ -23,6 +23,8 @@ It also includes three GitHub workflows:
 
 For each image built, it is pushed to the GitHub container registry associated
 with this repository.
+When an new image is built, AWS endpoint is called to delete the cached equivalent in the ECR.
+The next pull from the ECR updates its cache and uses the newly-built image from github.
 
 See the "Packages" link on the right hand side of the main repository page for
 a list of images in the container registry.
@@ -51,7 +53,7 @@ NB: The code in this directory has only been tested with Python3.11 and better.
   tags all "main" images as released using the release tag name supplied plus a
   symbolic "stable" tag.
 
-- `src/build.py` can be run standalone from any machine.  It can only
+- `src/build.py` can be run standalone from any machine with docker.  It can only
   push images if it is logged in to a GitHub account with an API token that
   permitted to create "packages" using `docker login` .
 
