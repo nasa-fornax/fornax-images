@@ -5,8 +5,8 @@ FROM quay.io/jupyter/docker-stacks-foundation:${BASE_TAG}
 
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
-LABEL org.opencontainers.image.description "Fornax Base Astronomy Image"
-LABEL org.opencontainers.image.authors "Fornax Project"
+LABEL org.opencontainers.image.description="Fornax Base Astronomy Image"
+LABEL org.opencontainers.image.authors="Fornax Project"
 
 
 # Bring some commands from jupyter/base-notebook
@@ -26,7 +26,6 @@ USER $NB_USER
 WORKDIR $HOME
 # End of imports from jupyter/base-notebook #
 # ----------------------------------------- #
-
 
 ENV CONDA_ENV=notebook
 
@@ -53,7 +52,7 @@ RUN cd build && bash /opt/scripts/apt-install.sh
 USER $NB_USER
 # setup conda environments
 RUN cd build && bash /opt/scripts/conda-env-install.sh \
- # Change dispaly name of the default kernel
+ # Change display name of the default kernel
  && mamba run -n $CONDA_ENV python -m ipykernel install --sys-prefix --display-name "$CONDA_ENV"
 
 # Any other build-* scripts #

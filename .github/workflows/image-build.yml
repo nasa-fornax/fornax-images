@@ -71,6 +71,8 @@ jobs:
           python scripts/build.py --debug \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.head_ref || github.ref_name }}" \
+              --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} \
+              --trigger-ecr \
               --push "$DIR_CHANGES"
   
   test-images:

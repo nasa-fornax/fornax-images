@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import logging
 import sys
 import os
@@ -7,10 +7,11 @@ import pathlib
 import tempfile
 import glob
 from io import StringIO
+import urllib.request
 
 
 sys.path.insert(0, f'{os.path.dirname(__file__)}/../scripts/')
-from build import TaskRunner, Builder  # noqa: E402
+from builder import TaskRunner, Builder  # noqa: E402
 from changed_images import find_changed_images  # noqa: E402
 
 
@@ -66,12 +67,12 @@ class TestBuilder(unittest.TestCase):
             full_tag, f'{self.registry}/{self.repo}/{self.image}:{self.tag}'
         )
 
-    def test_check_tag(self):
+    def test_check_tags(self):
         with self.assertRaises(ValueError):
-            self.builder_dry.check_tag('repo:tag')
+            self.builder_dry._check_tags('repo:tag')
         with self.assertRaises(ValueError):
-            self.builder_dry.check_tag(['repo'])
-        self.builder_dry.check_tag('tag')
+            self.builder_dry._check_tags(['repo'])
+        self.builder_dry._check_tags('tag')
         self.logger.handlers.clear()
 
     def test_build__basic(self):
@@ -164,20 +165,54 @@ class TestBuilder(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.builder_dry.release('tag', ['out'], images=['some_image'])
         # the following should work
-        self.builder_dry.release('tag', ['out'], ['base_image'])
+        self.builder_dry.release('tag', ['out'], ['base-image'])
 
     def test_build__release(self):
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             self.builder_dry.release(
-                f'{self.tag}', [f'{self.tag}-out'], images=['base_image'])
+                f'{self.tag}', [f'{self.tag}-out'], images=['base-image'])
             output = mock_out.getvalue().strip()
-        source_tag = self.builder_dry.get_full_tag('base_image', self.tag)
-        release_tag = self.builder_dry.get_full_tag('base_image',
+        source_tag = self.builder_dry.get_full_tag('base-image', self.tag)
+        release_tag = self.builder_dry.get_full_tag('base-image',
                                                     f'{self.tag}-out')
         self.assertTrue(f'docker pull {source_tag}' in output)
         self.assertTrue(f'docker tag {source_tag} {release_tag}' in output)
         self.assertTrue(f'docker push {release_tag}' in output)
+        self.logger.handlers.clear()
+
+    def test_build__push_to_ecr__no_endpoint(self):
+        endpoint = None
+        with self.assertRaises(ValueError):
+            self.builder_dry.push_to_ecr(
+                endpoint, self.tag, release_tags=None, images=[self.image])
+
+    @patch('urllib.request.urlopen')
+    def test_build__push_to_ecr(self, mock_urlopen):
+        endpoint = 'http://some-endpoint'
+        image = 'base-image'
+        msg, status = 'mock response data', 202
+        mock_response = MagicMock()
+        mock_response.status = status
+        mock_response.read.return_value = msg.encode()
+        mock_response.__enter__.return_value = mock_response  # For 'with'
+        mock_urlopen.return_value = mock_response
+        with patch('sys.stderr', new=StringIO()) as mock_out:
+            logging.basicConfig(level=logging.DEBUG)
+            self.builder_run.push_to_ecr(
+                endpoint, self.tag, release_tags=None, images=[image])
+            output = mock_out.getvalue().strip()
+        called_request = mock_urlopen.call_args[0][0]
+        # check instance
+        assert isinstance(called_request, urllib.request.Request)
+
+        # check url
+        expected_url = f'{endpoint}?image={image}&tag={self.tag}'
+        assert called_request.full_url == expected_url
+
+        # check the printed messages
+        self.assertTrue(f'returned status: {status}' in output)
+        self.assertTrue(f'returned response: {msg}' in output)
         self.logger.handlers.clear()
 
     def test_remove_lockfiles(self):
