@@ -98,7 +98,6 @@ USER $NB_USER
 # For vscode
 ENV CODE_EXECUTABLE=openvscode-server
 
-
 # For outside mount when using outside fornax
 RUN mkdir -p /opt/workspace
 VOLUME /opt/workspace
