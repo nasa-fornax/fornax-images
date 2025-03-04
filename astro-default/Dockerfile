@@ -18,5 +18,6 @@ USER root
 COPY --chmod=0755 update-notebooks.sh /usr/local/bin/before-notebook.d
 USER $NB_USER
 
+
 # For firefly
 ENV FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer
