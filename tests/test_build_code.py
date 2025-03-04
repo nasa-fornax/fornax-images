@@ -215,6 +215,23 @@ class TestBuilder(unittest.TestCase):
         self.assertTrue(f'returned response: {msg}' in output)
         self.logger.handlers.clear()
 
+    @patch('urllib.request.urlopen')
+    def test_build__push_to_ecr_multiple_images(self, mock_urlopen):
+        endpoint = 'http://some-endpoint'
+        images = ['base-image', 'astro-default']
+        msg, status = 'mock response data', 202
+        mock_response = MagicMock()
+        mock_response.status = status
+        mock_response.read.return_value = msg.encode()
+        mock_response.__enter__.return_value = mock_response  # For 'with'
+        mock_urlopen.return_value = mock_response
+        self.builder_run.push_to_ecr(
+            endpoint, self.tag, release_tags=None, images=images)
+        for iimage, image in enumerate(images):
+            called_request = mock_urlopen.call_args_list[iimage][0][0]
+            expected_url = f'{endpoint}?image={image}&tag={self.tag}'
+            assert called_request.full_url == expected_url
+
     def test_remove_lockfiles(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             files = ["conda-lock.yml", "conda-notebook-lock.yml",

@@ -305,10 +305,10 @@ class Builder(TaskRunner):
                     params.append([image, release_tag])
 
         # now loop through the parameters and make the request
-        for param in params:
-            self.out(f"Triggering ecr for {image}, {source_tag} ...")
+        for image, tag in params:
+            self.out(f"Triggering ecr for {image}, {tag} ...")
             if not self.dryrun:
-                url = f'{endpoint}?image={image}&tag={source_tag}'
+                url = f'{endpoint}?image={image}&tag={tag}'
                 request = urllib.request.Request(url)
 
                 # this will fail if something doesn't work,
