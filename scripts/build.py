@@ -149,6 +149,10 @@ if __name__ == '__main__':
     builder.out(f'extra_pars: {extra_pars}', logging.DEBUG)
     builder.out('+++++++++++++', logging.DEBUG)
 
+    # if releasing, tag all images
+    if release is not None:
+        images = list(IMAGE_ORDER)
+
     # get a sorted list of images to build
     to_build = []
     for image in IMAGE_ORDER:

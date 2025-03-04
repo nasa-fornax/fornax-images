@@ -317,7 +317,7 @@ class Builder(TaskRunner):
                     self.out(f"Trigger returned status: {response.status}")
                     self.out(("Trigger returned response: "
                               f"{response.read().decode()}"))
-                    time.sleep(2)
+                    time.sleep(0.1)
 
     def remove_lockfiles(self, image):
         """Remove conda lock files from an image
