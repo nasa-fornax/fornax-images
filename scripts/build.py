@@ -161,8 +161,8 @@ if __name__ == '__main__':
 
     # if we are tagging to main; do not build
     # just re-tag from develop
-    if tag == 'main':
-        builder.release('develop', ['main'], images)
+    if tag == 'main': 
+        builder.release('develop', ['main'], images=None)
     else:
         builder.out(f'Images to build: {to_build}', logging.DEBUG)
         for image in to_build:
