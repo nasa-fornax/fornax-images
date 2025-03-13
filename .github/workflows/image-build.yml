@@ -79,6 +79,7 @@ jobs:
     needs: build-and-push-images
     uses: ./.github/workflows/run-tests.yml
     secrets: inherit
+    if: "!contains(github.event.head_commit.message, '[skip-image-tests]')"
     with:
       # pass the images that changed for testing
       images: ${{ needs.build-and-push-images.outputs.dir_changes }}

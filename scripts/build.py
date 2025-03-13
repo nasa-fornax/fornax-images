@@ -163,6 +163,12 @@ if __name__ == '__main__':
     for image in to_build:
         builder.out(f'Working on: {image}', logging.DEBUG)
 
+        # if we are tagging to main; do not build
+        # just re-tag from the latest develop
+        if tag == 'main':
+            builder.release('develop', 'main', images)
+            continue
+
         if update_lock:
             builder.remove_lockfiles(image)
 
