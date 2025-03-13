@@ -166,7 +166,7 @@ if __name__ == '__main__':
         # if we are tagging to main; do not build
         # just re-tag from the latest develop
         if tag == 'main':
-            builder.release('develop', 'main', images)
+            builder.release('develop', 'main')
             continue
 
         if update_lock:
