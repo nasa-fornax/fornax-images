@@ -159,27 +159,26 @@ if __name__ == '__main__':
         if image in images:
             to_build.append(image)
 
-    builder.out(f'Images to build: {to_build}', logging.DEBUG)
-    for image in to_build:
-        builder.out(f'Working on: {image}', logging.DEBUG)
+    # if we are tagging to main; do not build
+    # just re-tag from develop
+    if tag == 'main':
+        builder.release('develop', 'main', images)
+    else:
+        builder.out(f'Images to build: {to_build}', logging.DEBUG)
+        for image in to_build:
+            builder.out(f'Working on: {image}', logging.DEBUG)
 
-        # if we are tagging to main; do not build
-        # just re-tag from the latest develop
-        if tag == 'main':
-            builder.release('develop', 'main')
-            continue
+            if update_lock:
+                builder.remove_lockfiles(image)
 
-        if update_lock:
-            builder.remove_lockfiles(image)
+            if not no_build:
+                builder.build(image, tag, build_args, extra_pars)
 
-        if not no_build:
-            builder.build(image, tag, build_args, extra_pars)
+            if update_lock:
+                builder.update_lockfiles(image, tag)
 
-        if update_lock:
-            builder.update_lockfiles(image, tag)
-
-        if push:
-            builder.push(image, tag)
+            if push:
+                builder.push(image, tag)
 
     if release is not None:
         builder.release(tag, release, images)
