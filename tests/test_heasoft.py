@@ -26,6 +26,8 @@ def change_dir(destination):
 
 class Test_heasoft(unittest.TestCase, CommonTests):
 
+    default_env = 'heasoft'
+
     def test_conda_env_file(self):
         self._test_conda_env_file('astro-default')
 
