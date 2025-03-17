@@ -1,0 +1,9 @@
+name: notebook
+channels:
+  - https://heasarc.gsfc.nasa.gov/FTP/software/conda
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.12
+  - heasoft=6.35
+prefix: /opt/conda/envs/notebook
