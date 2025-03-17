@@ -10,7 +10,7 @@ import time
 IMAGE_ORDER = (
     'base-image',
     'astro-default',
-    # 'heasoft'
+    'heasoft'
 )
 
 
@@ -348,7 +348,7 @@ class Builder(TaskRunner):
             e.g. '--network=host'
 
         """
-        self._check_tags(tag)
+        full_tag = self.get_full_tag(image, tag)
 
         extra_args = extra_args or ''
         if not isinstance(extra_args, str):
@@ -360,7 +360,7 @@ class Builder(TaskRunner):
         for env in envfiles:
             match = re.match(rf"{image}/conda-(.*).yml", env)
             env_name = match[1] if match else 'base'
-            cmd = (f'docker run --entrypoint="" --rm {extra_args} {tag} '
+            cmd = (f'docker run --entrypoint="" --rm {extra_args} {full_tag} '
                    f'mamba env export -n {env_name}')
             result = self.run(cmd, 500, capture_output=True)
             if result is not None:
