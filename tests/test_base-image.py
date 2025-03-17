@@ -22,6 +22,7 @@ class CommonTests:
 
     def test_python_path(self):
         version = f'{sys.version_info.major}.{sys.version_info.minor}'
+        print(self.default_env)
         self.assertTrue(
             sys.executable in
             [f'/opt/conda/envs/{self.default_env}/bin/python',

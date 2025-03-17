@@ -1,4 +1,4 @@
-name: notebook
+name: heasoft
 channels:
   - https://heasarc.gsfc.nasa.gov/FTP/software/conda
   - conda-forge
@@ -6,4 +6,5 @@ channels:
 dependencies:
   - python=3.12
   - heasoft=6.35
-prefix: /opt/conda/envs/notebook
+  - pytest
+prefix: /opt/conda/envs/heasoft

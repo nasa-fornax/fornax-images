@@ -29,24 +29,11 @@ class Test_heasoft(unittest.TestCase, CommonTests):
     default_env = 'heasoft'
 
     def test_conda_env_file(self):
-        self._test_conda_env_file('astro-default')
+        self._test_conda_env_file('heasoft')
 
     def test_check_packages(self):
-        import heasoftpy
-        import xspec
-        heasoftpy.__version__
-        xspec.__version__
-
-    # def test_notebooks_folder(self):
-    #     self.assertTrue(
-    #         os.path.exists(notebook_dir)
-    #     )
-    #     self.assertTrue(
-    #         os.path.exists(f'{notebook_dir}/fornax-documentation')
-    #     )
-    #     self.assertTrue(
-    #         os.path.exists(f'{notebook_dir}/fornax-demo-notebooks')
-    #     )
+        import heasoftpy # noqa 401
+        import xspec  # noqa 401
 
 
 @pytest.mark.parametrize("notebook",  list(notebooks.keys()))
