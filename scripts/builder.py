@@ -262,14 +262,14 @@ class Builder(TaskRunner):
                 self.run(command, timeout=1000)
 
     def push_to_ecr(
-        self, endpoint, source_tag, release_tags=None, images=None
+        self, endpoints, source_tag, release_tags=None, images=None
     ):
         """Trigger the ECR hook to update the images
 
         Parameters:
         -----------
-        endpoint: str
-            ECR endpoint
+        endpoints: str or list
+            ECR endpoint(s)
         source_tag: str
             The tag name for the image (no repo name)
         release_tags: list or None
@@ -281,8 +281,12 @@ class Builder(TaskRunner):
         # check the passed tags
         self._check_tags(source_tag, release_tags)
 
-        if endpoint is None:
-            raise ValueError('endpoint cannot be None')
+        if endpoints is None:
+            raise ValueError('endpoints cannot be None')
+
+        # endpoint can be a str or a list
+        if isinstance(endpoints, str):
+            endpoints = [endpoints]
 
         if images is not None and not isinstance(images, list):
             raise ValueError(f'Expected images to be a list; got {images}')
@@ -308,16 +312,19 @@ class Builder(TaskRunner):
         for image, tag in params:
             self.out(f"Triggering ecr for {image}, {tag} ...")
             if not self.dryrun:
-                url = f'{endpoint}?image={image}&tag={tag}'
-                request = urllib.request.Request(url)
+                # Do it for both endpoints (dev and prod) if passed
+                for ipoint, endpoint in enumerate(endpoints):
+                    self.out(f"Doing endpoint {ipoint+1} ...")
+                    url = f'{endpoint}?image={image}&tag={tag}'
+                    request = urllib.request.Request(url)
 
-                # this will fail if something doesn't work,
-                # and we want to know about it
-                with urllib.request.urlopen(request) as response:
-                    self.out(f"Trigger returned status: {response.status}")
-                    self.out(("Trigger returned response: "
-                              f"{response.read().decode()}"))
-                    time.sleep(0.1)
+                    # this will fail if something doesn't work,
+                    # and we want to know about it
+                    with urllib.request.urlopen(request) as response:
+                        self.out(f"Trigger returned status: {response.status}")
+                        self.out(("Trigger returned response: "
+                                  f"{response.read().decode()}"))
+                        time.sleep(0.1)
 
     def remove_lockfiles(self, image):
         """Remove conda lock files from an image

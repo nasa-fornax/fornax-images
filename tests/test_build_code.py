@@ -232,6 +232,35 @@ class TestBuilder(unittest.TestCase):
             expected_url = f'{endpoint}?image={image}&tag={self.tag}'
             assert called_request.full_url == expected_url
 
+    @patch('urllib.request.urlopen')
+    def test_build__push_to_multiple_ecr(self, mock_urlopen):
+        endpoints = ['http://some-endpoint1', 'http://some-endpoint2']
+        image = 'base-image'
+        msg, status = 'mock response data', 202
+        mock_response = MagicMock()
+        mock_response.status = status
+        mock_response.read.return_value = msg.encode()
+        mock_response.__enter__.return_value = mock_response  # For 'with'
+        mock_urlopen.return_value = mock_response
+        with patch('sys.stderr', new=StringIO()) as mock_out:
+            logging.basicConfig(level=logging.DEBUG)
+            self.builder_run.push_to_ecr(
+                endpoints, self.tag, release_tags=None, images=[image])
+            output = mock_out.getvalue().strip()
+        for irq in [0, 1]:
+            called_request = mock_urlopen.call_args_list[irq][0][0]
+            # check instance
+            assert isinstance(called_request, urllib.request.Request)
+
+            # check url
+            expected_url = f'{endpoints[irq]}?image={image}&tag={self.tag}'
+            assert called_request.full_url == expected_url
+
+            # check the printed messages
+            self.assertTrue(f'returned status: {status}' in output)
+            self.assertTrue(f'returned response: {msg}' in output)
+            self.logger.handlers.clear()
+
     def test_remove_lockfiles(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             files = ["conda-lock.yml", "conda-notebook-lock.yml",
