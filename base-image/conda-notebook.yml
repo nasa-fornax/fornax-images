@@ -2,10 +2,10 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - python==3.11
-  - jupyterlab==4.2.4
-  - jupyterhub==5.1.0
-  - notebook==7.2.1
+  - python==3.12
+  - jupyterlab==4.3.6
+  - jupyterhub==5.2.1
+  - notebook==7.3.3
   - ipykernel
   - ipywidgets
   - jupytext

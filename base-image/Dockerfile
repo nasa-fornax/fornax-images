@@ -1,4 +1,4 @@
-ARG BASE_TAG=2024-08-12
+ARG BASE_TAG=2025-03-17
 
 FROM quay.io/jupyter/base-notebook:${BASE_TAG} as base
 FROM quay.io/jupyter/docker-stacks-foundation:${BASE_TAG}
