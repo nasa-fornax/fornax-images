@@ -29,6 +29,7 @@ class TestTaskRunner(unittest.TestCase):
 
     def test_out(self):
         msg = 'test logging ...'
+        self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             self.builder_run.out(msg)
@@ -320,6 +321,7 @@ class TestChangedImages(unittest.TestCase):
                 'base_ref': '7905b4edab6'
             }
         }
+        self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             res = find_changed_images(pull_request_event, self.runner)
@@ -328,7 +330,7 @@ class TestChangedImages(unittest.TestCase):
         self.assertTrue(f'git fetch origin {base_ref}' in output)
         self.assertTrue(
             f'git --no-pager diff --name-only HEAD origin/${base_ref} '
-            f'| xargs -n1 dirname | sort -u' in output
+            "| xargs -n1 dirname | awk -F'/' '{print $1}' | sort -u" in output
         )
         self.assertEqual(res, [])
         self.logger.handlers.clear()
@@ -341,6 +343,7 @@ class TestChangedImages(unittest.TestCase):
                 'after': '2add5c8e038'
             }
         }
+        self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             res = find_changed_images(push_event, self.runner)
@@ -350,7 +353,8 @@ class TestChangedImages(unittest.TestCase):
         self.assertTrue(f'git fetch origin {before}' in output)
         self.assertTrue((
             f'git --no-pager diff-tree --name-only -r {before}..{after}'
-            ' | xargs -n1 dirname | sort -u') in output
+            " | xargs -n1 dirname | awk -F'/' '{print $1}' | sort -u")
+            in output
         )
         self.assertEqual(res, [])
         self.logger.handlers.clear()
@@ -375,12 +379,15 @@ class TestChangedImages(unittest.TestCase):
 
     def test_else_event(self):
         else_event = {'event_name': 'other'}
+        self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             res = find_changed_images(else_event, self.runner)
             output = mock_out.getvalue().strip()
+        print(output)
         self.assertTrue(
-            'git ls-files | xargs -n1 dirname | sort -u' in output
+            ("git ls-files | xargs -n1 dirname | awk -F'/' "
+             "'{print $1}' | sort -u") in output
         )
         self.assertEqual(res, [])
         self.logger.handlers.clear()
