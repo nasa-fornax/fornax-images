@@ -553,6 +553,5 @@ dependencies:
     - jupyterlab_git==0.51.0
     - jupyterlab_myst==2.4.2
     - specreduce==1.4.1
-    - tractor==10.5
 
 prefix: "/opt/conda/envs/notebook"
