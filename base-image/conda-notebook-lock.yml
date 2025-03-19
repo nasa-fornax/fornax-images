@@ -246,7 +246,7 @@ dependencies:
   - matplotlib-inline=0.1.7=pyhd8ed1ab_1
   - mdit-py-plugins=0.4.2=pyhd8ed1ab_1
   - mdurl=0.1.2=pyhd8ed1ab_1
-  - mistune=3.1.2=pyhd8ed1ab_0
+  - mistune=3.1.3=pyh29332c3_0
   - more-itertools=10.6.0=pyhd8ed1ab_0
   - mpmath=1.3.0=pyhd8ed1ab_1
   - msgpack-python=1.1.0=py312h68727a3_0
