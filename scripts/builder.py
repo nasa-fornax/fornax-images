@@ -4,6 +4,7 @@ import sys
 import glob
 import re
 import urllib.request
+import urllib.error
 import time
 
 
@@ -318,13 +319,21 @@ class Builder(TaskRunner):
                     url = f'{endpoint}?image={image}&tag={tag}'
                     request = urllib.request.Request(url)
 
-                    # this will fail if something doesn't work,
+                    # this will fail if something other than 404 is returned,
                     # and we want to know about it
-                    with urllib.request.urlopen(request) as response:
+                    try:
+                        response = urllib.request.urlopen(request)
                         self.out(f"Trigger returned status: {response.status}")
                         self.out(("Trigger returned response: "
                                   f"{response.read().decode()}"))
                         time.sleep(0.1)
+                    except urllib.error.HTTPError as err:
+                        # 404 means the repo does not exist, which is ok
+                        if err.code == 404:
+                            self.out("Trigger returned status: 404")
+                        else:
+                            # raise for any other error
+                            raise
 
     def remove_lockfiles(self, image):
         """Remove conda lock files from an image

@@ -8,6 +8,7 @@ import tempfile
 import glob
 from io import StringIO
 import urllib.request
+import urllib.error
 
 
 sys.path.insert(0, f'{os.path.dirname(__file__)}/../scripts/')
@@ -216,6 +217,47 @@ class TestBuilder(unittest.TestCase):
         self.assertTrue(f'returned response: {msg}' in output)
         self.logger.handlers.clear()
 
+    def test_build__push_to_ecr_not_found(self):
+        endpoint = 'http://some-endpoint'
+        image = 'base-image'
+        msg, status = 'Not Found', 404
+        mock_urlopen = MagicMock()
+        mock_urlopen.side_effect = urllib.error.HTTPError(
+            url=endpoint, code=status, msg=msg,
+            hdrs=None, fp=None
+        )
+        self.logger.handlers.clear()
+        with (patch('sys.stderr', new=StringIO()) as mock_out,
+              patch("urllib.request.urlopen", new=mock_urlopen)):
+            logging.basicConfig(level=logging.DEBUG)
+            self.builder_run.push_to_ecr(
+                endpoint, self.tag, release_tags=None, images=[image])
+            output = mock_out.getvalue().strip()
+        called_request = mock_urlopen.call_args[0][0]
+
+        # check url
+        expected_url = f'{endpoint}?image={image}&tag={self.tag}'
+        assert called_request.full_url == expected_url
+
+        # check the printed messages
+        self.assertTrue(f'returned status: {status}' in output)
+        self.logger.handlers.clear()
+
+    def test_build__push_to_ecr_other_error(self):
+        endpoint = 'http://some-endpoint'
+        image = 'base-image'
+        msg, status = 'Not Found', 403
+        mock_urlopen = MagicMock()
+        mock_urlopen.side_effect = urllib.error.HTTPError(
+            url=endpoint, code=status, msg=msg,
+            hdrs=None, fp=None
+        )
+        with patch("urllib.request.urlopen", new=mock_urlopen):
+            with self.assertRaises(urllib.error.HTTPError):
+                self.builder_run.push_to_ecr(
+                    endpoint, self.tag, release_tags=None, images=[image])
+        self.logger.handlers.clear()
+
     @patch('urllib.request.urlopen')
     def test_build__push_to_ecr_multiple_images(self, mock_urlopen):
         endpoint = 'http://some-endpoint'
@@ -243,6 +285,7 @@ class TestBuilder(unittest.TestCase):
         mock_response.read.return_value = msg.encode()
         mock_response.__enter__.return_value = mock_response  # For 'with'
         mock_urlopen.return_value = mock_response
+        self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             self.builder_run.push_to_ecr(
@@ -384,7 +427,6 @@ class TestChangedImages(unittest.TestCase):
             logging.basicConfig(level=logging.DEBUG)
             res = find_changed_images(else_event, self.runner)
             output = mock_out.getvalue().strip()
-        print(output)
         self.assertTrue(
             ("git ls-files | xargs -n1 dirname | awk -F'/' "
              "'{print $1}' | sort -u") in output
