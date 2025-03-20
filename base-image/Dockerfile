@@ -136,7 +136,7 @@ ONBUILD RUN cd build \
 
 # landing page
 ONBUILD COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md* /opt/scripts/
-ONBUILD RUN cd /opt/script/ \
+ONBUILD RUN cd /opt/scripts/ \
  && if test -f introduction.md; then pandoc introduction.md -o introduction.html; fi
 
 ONBUILD RUN rm -r $HOME/build
