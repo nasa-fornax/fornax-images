@@ -4,7 +4,6 @@
 
 # Welcome to the Fornax Science Console!
 
-
 # Documentation
 The general documentation for using the Fornax Science Console are available in the 
 [documentation repository](fornax-documentation/README.md). These can also be browsed
