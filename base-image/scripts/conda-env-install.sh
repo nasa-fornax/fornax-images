@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 set -o pipefail
 
@@ -11,19 +10,23 @@ for envfile in `ls conda-*.yml | grep -v lock`; do
     if test -f conda-${env}-lock.yml; then
         ENVFILE=conda-${env}-lock.yml
         echo "Found $ENVFILE, using it ..."
-        mamba env update -n ${env} -f $ENVFILE
+        # create the environment if it doesn't exist
+        mamba env list | grep -q "^[[:space:]]*$env " || mamba create -n ${env}
+        conda env update -n ${env} -f $ENVFILE --solver libmamba
     elif test -f conda-${env}.yml; then
         ENVFILE=conda-${env}.yml
         echo "Found $ENVFILE, using it ..."
-        mamba env update -n ${env} -f $ENVFILE
+        # create the environment if it doesn't exist
+        mamba env list | grep -q "^[[:space:]]*$env " || mamba create -n ${env}
+        conda env update -n ${env} -f $ENVFILE --solver libmamba
     elif [[ "$env"=="$CONDA_ENV" ]]; then
         echo "Defaulting to basic env ..." 
-        mamba create --name $env python=3.11 jupyterlab
+        mamba create --name $env python=3.12 jupyterlab
     fi
     if [ "$env" != "$CONDA_ENV" ]; then
-        # add the environement as a jupyter kernel
+        # add the environment as a jupyter kernel
         # CONDA_ENV is defined in the dockerfile
-        mamba install -n $env ipykernel
+        mamba install -n $env -y ipykernel
         mamba run -n $env python -m ipykernel install --name $env --prefix $CONDA_DIR/envs/$CONDA_ENV
     fi
 done

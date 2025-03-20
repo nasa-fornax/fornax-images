@@ -9,7 +9,6 @@ dependencies:
   - pyarrow
   - swig
   - ipykernel
-  - cairo
   - cython
   - ceres-solver
   - pkg-config
@@ -40,6 +39,9 @@ dependencies:
   - umap-learn
   - statsmodels
   - lsdb
+  - bottleneck
+  - ipyvue
+  - ipyvuetify
   - pip
   - pip:
     - specreduce
@@ -48,4 +50,5 @@ dependencies:
     - gdown
     - ipyaladin
     - jupyter_firefly_extensions
+    - jdaviz
 prefix: /opt/conda/envs/notebook

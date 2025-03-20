@@ -51,5 +51,5 @@ jobs:
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.event.release.target_commitish }}" \
               --release "${{ github.event.release.tag_name }}" stable \
-              --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} \
+              --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }} \
               --trigger-ecr

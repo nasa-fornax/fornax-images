@@ -20,8 +20,8 @@ def find_changed_images(github_data: dict, runner: TaskRunner):
         cmd = f'git fetch origin {base_ref}'
         runner.run(cmd, 500, capture_output=True)
 
-        cmd = (f'git --no-pager diff --name-only HEAD origin/${base_ref} '
-               '| xargs -n1 dirname | sort -u')
+        cmd = (f"git --no-pager diff --name-only HEAD origin/${base_ref} "
+               "| xargs -n1 dirname | awk -F'/' '{print $1}' | sort -u")
         final_out = runner.run(cmd, 500, capture_output=True)
 
     elif github_data['event_name'] == 'push':
@@ -39,12 +39,13 @@ def find_changed_images(github_data: dict, runner: TaskRunner):
             cmd = f'git fetch origin {before}'
             runner.run(cmd, 500, capture_output=True)
 
-            cmd = (f'git --no-pager diff-tree --name-only -r {before}..{after}'
-                   ' | xargs -n1 dirname | sort -u')
+            cmd = (f"git --no-pager diff-tree --name-only -r {before}..{after}"
+                   " | xargs -n1 dirname | awk -F'/' '{print $1}' | sort -u")
             final_out = runner.run(cmd, 500, capture_output=True)
 
     else:
-        cmd = 'git ls-files | xargs -n1 dirname | sort -u'
+        cmd = ("git ls-files | xargs -n1 dirname | awk -F'/' "
+               "'{print $1}' | sort -u")
         final_out = runner.run(cmd, 500, capture_output=True)
 
     changed_images = []
