@@ -1,16 +1,9 @@
----
-jupyter:
-  kernelspec: 
-    name: "null"
-    display_name: "No Kernel"
-    language: ""
----
-#
+
 <img src="https://nasa-fornax.github.io/fornax-demo-notebooks/_static/fornax_logo.png" alt="Fornax Science Console"
     style="float: right; width: 200px; margin: 10px;" />
 
 # Welcome to the Fornax Science Console!
----
+
 
 # Documentation
 The general documentation for using the Fornax Science Console are available in the 
@@ -33,11 +26,13 @@ at the start of every new session. To disable these updates, add an empty file c
 
 ---
 # Latest Changes
-#### 20/03/2025
+
+## 20/03/2025
 - Add jdaviz (and dependencies) to support JWST notebooks.
 - Update python to 3.12 (and iupyterlab==4.3.6, jupyterhub==5.2.1, notebook==7.3.3).
 - Update various other packages to the latest.
-#### 11/26/2024
+
+## 11/26/2024
 - The primary conda environment is changed to `notebook`. It is the environment
 where the notebooks should be run. With this change, the dask extension should
 work naturally.
