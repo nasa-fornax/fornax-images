@@ -29,9 +29,8 @@ mamba clean -yaf &>/dev/null
 if test -z $NOTEBOOK_DIR; then export NOTEBOOK_DIR=$HOME/notebooks; fi
 mkdir -p $NOTEBOOK_DIR
 if test -f /opt/scripts/introduction.html; then
-    mv  /opt/scripts/introduction.html $NOTEBOOK_DIR
+    cp /opt/scripts/introduction.html $NOTEBOOK_DIR
 fi
 if test -f $NOTEBOOK_DIR/introduction.md; then
-    rm  $NOTEBOOK_DIR/introduction.md
+    rm $NOTEBOOK_DIR/introduction.md
 fi
-touch $NOTEBOOK_DIR/introduction.html

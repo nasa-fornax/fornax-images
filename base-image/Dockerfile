@@ -134,10 +134,13 @@ ONBUILD RUN cd build \
  ; done
 # --------------------------- #
 
-# landing page
+# landing page; even an empty one
 ONBUILD COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md* /opt/scripts/
 ONBUILD RUN cd /opt/scripts/ \
- && if test -f introduction.md; then pandoc introduction.md -o introduction.html; fi
+ && if test -f introduction.md; then \
+  pandoc introduction.md -o introduction.html --standalone --metadata title="Welcome to Fornax Science Console!"; \
+ fi \
+ && touch introduction.html
 
 ONBUILD RUN rm -r $HOME/build
 ONBUILD USER ${NB_USER}
