@@ -7,5 +7,5 @@ mkdir -p $CONDA_DIR/envs/$env/share/jupyter/lab/settings/
 mv ~/build/overrides.json $CONDA_DIR/envs/$env/share/jupyter/lab/settings/
 
 
-# disable the annoucement extension
+# disable the announcement extension
 mamba run -n $env jupyter labextension disable "@jupyterlab/apputils-extension:announcements"

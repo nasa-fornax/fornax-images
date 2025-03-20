@@ -7,7 +7,7 @@ notebook_repos=(
     https://github.com/nasa-fornax/fornax-demo-notebooks.git
     # Documentation
     https://github.com/nasa-fornax/fornax-documentation.git
-    # lsdb notbeooks
+    # lsdb notebeooks
     https://github.com/lincc-frameworks/IVOA_2024_demo.git
 )
 
