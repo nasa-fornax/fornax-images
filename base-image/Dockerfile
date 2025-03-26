@@ -36,7 +36,7 @@ ENV DASK_ROOT_CONFIG=${CONDA_DIR}/etc
 
 # COPY the current content to $HOME/build
 RUN mkdir -p $HOME/build/
-COPY --chown=$NB_UID:$NB_GID apt* conda*yml build-* $HOME/build/
+COPY --chown=$NB_UID:$NB_GID apt* conda*yml build-* requirements-* $HOME/build/
 COPY --chown=$NB_UID:$NB_GID overrides.json $HOME/build/
 
 USER root
@@ -51,7 +51,10 @@ RUN cd build && bash /opt/scripts/apt-install.sh
 
 USER $NB_USER
 # setup conda environments
-RUN cd build && bash /opt/scripts/conda-env-install.sh \
+RUN cd build \
+ && pip install --no-cache-dir uv \
+ && bash /opt/scripts/conda-env-install.sh \
+ && bash /opt/scripts/uv-env-install.sh \
  # Change display name of the default kernel
  && mamba run -n $CONDA_ENV python -m ipykernel install --sys-prefix --display-name "$CONDA_ENV"
 
@@ -121,7 +124,7 @@ ONBUILD USER $NB_USER
 
 
 # setup conda environments
-ONBUILD RUN cd build && bash /opt/scripts/conda-env-install.sh
+ONBUILD RUN cd build && bash /opt/scripts/conda-env-install.sh && bash /opt/scripts/uv-env-install.sh
 # and ensure the correct display name
 ONBUILD RUN mamba run -n $CONDA_ENV python -m ipykernel install --sys-prefix --display-name "$CONDA_ENV"
 # ----------------------- #

@@ -264,7 +264,7 @@ dependencies:
   - nodejs=20.18.1=hc55a1b2_0
   - notebook=7.3.3=pyhd8ed1ab_0
   - notebook-shim=0.2.4=pyhd8ed1ab_1
-  - numpy=1.26.4=py312heda63a1_0
+  - numpy=2.2.4=py312h72c5963_0
   - oauthlib=3.2.2=pyhd8ed1ab_1
   - openjpeg=2.5.3=h5fbd93e_0
   - openldap=2.6.9=he970967_0
