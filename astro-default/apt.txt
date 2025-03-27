@@ -1,1 +1,10 @@
 libcairo2-dev
+libnetpbm10-dev
+netpbm
+libpng-dev
+libjpeg-dev
+zlib1g-dev
+libbz2-dev
+swig
+libcfitsio-dev
+pkg-config

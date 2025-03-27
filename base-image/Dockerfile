@@ -27,7 +27,8 @@ WORKDIR $HOME
 # End of imports from jupyter/base-notebook #
 # ----------------------------------------- #
 
-ENV CONDA_ENV=notebook
+ENV CONDA_ENV=notebook \
+    ENV_DIR=/opt/envs
 
 # Ask dask to read config from ${CONDA_DIR}/etc rather than
 # the default of /etc, since the non-root jovyan user can write
@@ -51,7 +52,8 @@ RUN cd build && bash /opt/scripts/apt-install.sh
 
 USER $NB_USER
 # setup conda environments
-RUN cd build \
+RUN mkdir -p $ENV_DIR \
+ && cd build \
  && pip install --no-cache-dir uv \
  && bash /opt/scripts/conda-env-install.sh \
  && bash /opt/scripts/uv-env-install.sh \
