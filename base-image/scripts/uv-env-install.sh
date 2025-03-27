@@ -3,8 +3,6 @@ set -e
 set -o pipefail
 
 # handle uv environment
-ENV_DIR=/opt/envs
-mkdir -p $ENV_DIR
 
 for envfile in `ls requirements-*.txt`; do
     env=`echo $envfile | sed -n 's/requirements-\(.*\)\.txt/\1/p'`
