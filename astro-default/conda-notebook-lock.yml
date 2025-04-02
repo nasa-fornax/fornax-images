@@ -4,7 +4,6 @@ channels:
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
-  - _x86_64-microarch-level=4=2_icelake
   - acstools=3.7.2=pyhd8ed1ab_1
   - affine=2.4.0=pyhd8ed1ab_1
   - aiobotocore=2.21.1=pyhd8ed1ab_0
@@ -554,6 +553,5 @@ dependencies:
     - jupyterlab_git==0.51.0
     - jupyterlab_myst==2.4.2
     - specreduce==1.4.1
-    - tractor==10.5
 
 prefix: "/opt/conda/envs/notebook"
