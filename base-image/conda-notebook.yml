@@ -12,7 +12,7 @@ dependencies:
   - nbgitpuller
   - dask
   - dask-labextension
-  - numpy<2
+  - numpy
   - scipy
   - pandas
   - astropy
