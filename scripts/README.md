@@ -18,8 +18,10 @@ It also includes three GitHub workflows:
 - `release.yml`: runs on a release, and it tags the image from which the release is
  coming from (typically main) with a release tag and symbolic tag named 'stable'.
 
-- A workflow that runs the tests of the building scripts and tagging machinery when
+- `check-build-code.yml`: A workflow that runs the tests of the building scripts and tagging machinery when
   anything in "scripts" changes.
+
+- `run-tests.yml`: Running some tests using the demo notebooks.
 
 For each image built, it is pushed to the GitHub container registry associated
 with this repository.

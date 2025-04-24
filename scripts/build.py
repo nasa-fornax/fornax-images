@@ -12,7 +12,7 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
 
     ap.add_argument(
-        'images', nargs='*',
+        'images', nargs='+',
         help=("Image names to build separated by spaces e.g. "
               "'base-image astro-default'")
     )
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     )
 
     ap.add_argument(
-        '--release', nargs='*',
+        '--release', nargs='+',
         help='Release using the given tag'
     )
 
@@ -53,8 +53,8 @@ if __name__ == '__main__':
     )
 
     ap.add_argument(
-        '--ecr-endpoint',
-        help='endpoint to trigger the push to the ECR'
+        '--ecr-endpoint', nargs='+',
+        help='endpoints to notify the ECR'
     )
 
     ap.add_argument(
@@ -161,7 +161,9 @@ if __name__ == '__main__':
 
     # if we are tagging to main; do not build
     # just re-tag from develop
-    if tag == 'main': 
+    if tag == 'main':
+        # this is strictly not a release,
+        # but using the release function for re-tagging
         builder.release('develop', ['main'], images=None)
     else:
         builder.out(f'Images to build: {to_build}', logging.DEBUG)

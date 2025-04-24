@@ -14,4 +14,4 @@ LABEL org.opencontainers.image.description="Fornax High Energy Astronomy Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
 # set default conda env
-ENV CONDA_ENV=notebook
+ENV CONDA_ENV=heasoft

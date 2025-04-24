@@ -1,4 +1,4 @@
-ARG BASE_TAG=2024-08-12
+ARG BASE_TAG=2025-03-17
 
 FROM quay.io/jupyter/base-notebook:${BASE_TAG} as base
 FROM quay.io/jupyter/docker-stacks-foundation:${BASE_TAG}
@@ -134,8 +134,13 @@ ONBUILD RUN cd build \
  ; done
 # --------------------------- #
 
-# landing page
+# landing page; even an empty one
 ONBUILD COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md* /opt/scripts/
+ONBUILD RUN cd /opt/scripts/ \
+ && if test -f introduction.md; then \
+  pandoc introduction.md -o introduction.html --standalone --metadata title="Welcome to Fornax Science Console!"; \
+ fi \
+ && touch introduction.html
 
 ONBUILD RUN rm -r $HOME/build
 ONBUILD USER ${NB_USER}

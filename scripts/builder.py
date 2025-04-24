@@ -4,13 +4,14 @@ import sys
 import glob
 import re
 import urllib.request
+import urllib.error
 import time
 
 
 IMAGE_ORDER = (
     'base-image',
     'astro-default',
-    # 'heasoft'
+    'heasoft'
 )
 
 
@@ -262,14 +263,14 @@ class Builder(TaskRunner):
                 self.run(command, timeout=1000)
 
     def push_to_ecr(
-        self, endpoint, source_tag, release_tags=None, images=None
+        self, endpoints, source_tag, release_tags=None, images=None
     ):
         """Trigger the ECR hook to update the images
 
         Parameters:
         -----------
-        endpoint: str
-            ECR endpoint
+        endpoints: str or list
+            ECR endpoint(s)
         source_tag: str
             The tag name for the image (no repo name)
         release_tags: list or None
@@ -281,8 +282,12 @@ class Builder(TaskRunner):
         # check the passed tags
         self._check_tags(source_tag, release_tags)
 
-        if endpoint is None:
-            raise ValueError('endpoint cannot be None')
+        if endpoints is None:
+            raise ValueError('endpoints cannot be None')
+
+        # endpoint can be a str or a list
+        if isinstance(endpoints, str):
+            endpoints = [endpoints]
 
         if images is not None and not isinstance(images, list):
             raise ValueError(f'Expected images to be a list; got {images}')
@@ -308,16 +313,27 @@ class Builder(TaskRunner):
         for image, tag in params:
             self.out(f"Triggering ecr for {image}, {tag} ...")
             if not self.dryrun:
-                url = f'{endpoint}?image={image}&tag={tag}'
-                request = urllib.request.Request(url)
+                # Do it for both endpoints (dev and prod) if passed
+                for ipoint, endpoint in enumerate(endpoints):
+                    self.out(f"Doing endpoint {ipoint+1} ...")
+                    url = f'{endpoint}?image={image}&tag={tag}'
+                    request = urllib.request.Request(url)
 
-                # this will fail if something doesn't work,
-                # and we want to know about it
-                with urllib.request.urlopen(request) as response:
-                    self.out(f"Trigger returned status: {response.status}")
-                    self.out(("Trigger returned response: "
-                              f"{response.read().decode()}"))
-                    time.sleep(0.1)
+                    # this will fail if something other than 404 is returned,
+                    # and we want to know about it
+                    try:
+                        response = urllib.request.urlopen(request)
+                        self.out(f"Trigger returned status: {response.status}")
+                        self.out(("Trigger returned response: "
+                                  f"{response.read().decode()}"))
+                        time.sleep(0.1)
+                    except urllib.error.HTTPError as err:
+                        # 404 means the repo does not exist, which is ok
+                        if err.code == 404:
+                            self.out("Trigger returned status: 404")
+                        else:
+                            # raise for any other error
+                            raise
 
     def remove_lockfiles(self, image):
         """Remove conda lock files from an image
@@ -348,7 +364,7 @@ class Builder(TaskRunner):
             e.g. '--network=host'
 
         """
-        self._check_tags(tag)
+        full_tag = self.get_full_tag(image, tag)
 
         extra_args = extra_args or ''
         if not isinstance(extra_args, str):
@@ -360,7 +376,7 @@ class Builder(TaskRunner):
         for env in envfiles:
             match = re.match(rf"{image}/conda-(.*).yml", env)
             env_name = match[1] if match else 'base'
-            cmd = (f'docker run --entrypoint="" --rm {extra_args} {tag} '
+            cmd = (f'docker run --entrypoint="" --rm {extra_args} {full_tag} '
                    f'mamba env export -n {env_name}')
             result = self.run(cmd, 500, capture_output=True)
             if result is not None:

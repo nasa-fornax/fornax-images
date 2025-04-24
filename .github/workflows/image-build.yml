@@ -68,10 +68,16 @@ jobs:
           DIR_CHANGES: ${{ steps.changed-images.outputs.changed_dirs }}
         run: |
           echo "DIR_CHANGES: $DIR_CHANGES"
+          TAG="${{ github.head_ref || github.ref_name }}" 
+          if [[ "$TAG" == "main" || "$TAG" == "develop" ]]; then
+            ENDPOINT="${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }}"
+          else
+            ENDPOINT="${{ secrets.ECR_ENDPOINT }}"
+          fi
           python scripts/build.py --debug \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
-              --tag "${{ github.head_ref || github.ref_name }}" \
-              --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} \
+              --tag $TAG \
+              --ecr-endpoint $ENDPOINT \
               --trigger-ecr \
               --push "$DIR_CHANGES"
   

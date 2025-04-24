@@ -3,7 +3,7 @@ set -e
 set -o pipefail
 
 pythonenv=notebook
-astrometry_commit=e868ccd
+astrometry_commit=1b7d716
 tractor_commit=8059ae0
 
 # Install astrometry.net and tractor
@@ -12,10 +12,10 @@ git clone https://github.com/dstndstn/astrometry.net.git
 cd astrometry.net
 git config --global --add safe.directory $PWD
 git checkout $astrometry_commit
-conda run -n $pythonenv make
-conda run -n $pythonenv make py
-conda run -n $pythonenv make extra
-conda run -n $pythonenv make install INSTALL_DIR=${CONDA_DIR}/envs/${pythonenv}
+mamba run -n $pythonenv make
+mamba run -n $pythonenv make py
+mamba run -n $pythonenv make extra
+mamba run -n $pythonenv make install INSTALL_DIR=${CONDA_DIR}/envs/${pythonenv}
 mv ${CONDA_DIR}/envs/$pythonenv/lib/python/astrometry \
    ${CONDA_DIR}/envs/$pythonenv/lib/python3.??/
 
