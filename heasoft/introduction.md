@@ -13,5 +13,5 @@ No high energy notebooks yet
 ---
 # Latest Changes
 
-## 20/03/2025
-- Add heasoft-6.35 from conda
+## 24/04/2025
+- Add heasoft-6.35.1 from conda
