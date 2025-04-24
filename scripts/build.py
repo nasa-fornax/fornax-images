@@ -12,7 +12,7 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
 
     ap.add_argument(
-        'images', nargs='+',
+        'images', nargs='*',
         help=("Image names to build separated by spaces e.g. "
               "'base-image astro-default'")
     )
