@@ -1,4 +1,4 @@
-ARG BASE_TAG=2025-03-17
+ARG BASE_TAG=2025-04-28
 
 FROM quay.io/jupyter/base-notebook:${BASE_TAG} as base
 FROM quay.io/jupyter/docker-stacks-foundation:${BASE_TAG}
@@ -84,7 +84,7 @@ RUN mkdir -p $PIP_CACHE_DIR
 COPY --chown=$NB_UID:$NB_GID condarc ${CONDA_DIR}/.condarc
 # ------------------------------------#
 
-# add a script for to run before the jupyter session
+# add a script to run before the jupyter session
 USER root
 COPY --chmod=0755 pre-notebook.sh /usr/local/bin/before-notebook.d/20-pre-notebook.sh
 USER $NB_USER
@@ -125,13 +125,13 @@ ONBUILD USER $NB_USER
 # ------------------------------------ #
 
 
-# setup conda environments
+# setup conda and uv environments
 ONBUILD RUN cd build && bash /opt/scripts/conda-env-install.sh && bash /opt/scripts/uv-env-install.sh
 # and ensure the correct display name
 ONBUILD RUN mamba run -n $CONDA_ENV python -m ipykernel install --sys-prefix --display-name "$CONDA_ENV"
 # ----------------------- #
 
-# Any other build-* scripts #
+# Any other build-* scripts; e.g. build tractor #
 ONBUILD RUN cd build \
  ; for script in `ls build-*`; do \
  echo "Found script ${script} ..." \

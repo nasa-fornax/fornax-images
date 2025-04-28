@@ -25,9 +25,13 @@ dependencies:
   - code-server
   - pip
   - pip:
+      - ipykernel
+      - ipywidgets
+      - jupytext
       - jupyterlab_execute_time
       - jupyter-resource-usage
       - jupyterlab-git
       - jupyterlab-myst
+      - jupyter-vscode-proxy
       - jupyter_cpu_alive
       - jupyter-vscode-proxy
