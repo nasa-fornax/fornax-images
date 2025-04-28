@@ -5,14 +5,6 @@ set +e
 
 # include any code that needs to be run before the start of the jupyter session
 
-# remove the old nb_conda_kernels defined in the user directory
-# so they don't show up in the Jupyterlab launcher
-rm -rf ~/.local/share/jupyter/kernels/conda-base-py &>/dev/null
-rm -rf ~/.local/share/jupyter/kernels/conda-env-science_demo-py &>/dev/null
-
-# remove old condarc in the user's home; continue gracefully
-find ~/.condarc -type f ! -newermt "2024-11-26" -delete &>/dev/null || true
-
 # cleanup cache accmulated before the new cache location at /tmp/cache
 cd $HOME
 for dir in users_conda_envs .astropy/cache .cache; do
