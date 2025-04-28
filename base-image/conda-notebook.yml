@@ -6,7 +6,7 @@ dependencies:
   - jupyterlab==4.3.6
   - jupyterhub==5.2.1
   - notebook==7.3.3
-  - openvscode-server
+  - code-server
   - pip
   - pip:
       - ipykernel

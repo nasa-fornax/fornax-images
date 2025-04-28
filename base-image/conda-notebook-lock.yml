@@ -29,8 +29,9 @@ dependencies:
   - certipy=0.2.2=pyhd8ed1ab_0
   - cffi=1.17.1=py312h06ac9bb_0
   - charset-normalizer=3.4.1=pyhd8ed1ab_0
+  - code-server=4.99.3=h59d26c6_0
   - comm=0.2.2=pyhd8ed1ab_1
-  - configurable-http-proxy=4.6.2=he2f69ee_0
+  - configurable-http-proxy=4.6.3=h92b4e83_0
   - cryptography=44.0.2=py312hda17c39_0
   - debugpy=1.8.14=py312h2ec8cdc_0
   - decorator=5.2.1=pyhd8ed1ab_0
@@ -81,16 +82,11 @@ dependencies:
   - libffi=3.4.6=h2dba641_1
   - libgcc=14.2.0=h767d61c_2
   - libgcc-ng=14.2.0=h69a702a_2
-  - libgcrypt-lib=1.11.0=hb9d3cd8_2
-  - libglib=2.84.1=h2ff4ddf_0
   - libgomp=14.2.0=h767d61c_2
-  - libgpg-error=1.55=h3f2d84a_0
-  - libiconv=1.18=h4ce23a2_1
   - liblzma=5.8.1=hb9d3cd8_0
   - liblzma-devel=5.8.1=hb9d3cd8_0
   - libnghttp2=1.64.0=h161d5f1_0
   - libnsl=2.0.1=hd590300_0
-  - libsecret=0.21.7=h1e2da66_0
   - libsodium=1.0.20=h4ab18f5_0
   - libsqlite=3.49.1=hee588c1_2
   - libssh2=1.11.1=hcf80075_0
@@ -98,7 +94,6 @@ dependencies:
   - libstdcxx-ng=14.2.0=h4852527_2
   - libuuid=2.38.1=h0b41bf4_0
   - libuv=1.50.0=hb9d3cd8_0
-  - libxcb=1.17.0=h8a09558_0
   - libzlib=1.3.1=hb9d3cd8_2
   - mako=1.3.10=pyhd8ed1ab_0
   - markupsafe=3.0.2=py312h178313f_1
@@ -109,18 +104,16 @@ dependencies:
   - nbformat=5.10.4=pyhd8ed1ab_1
   - ncurses=6.5=h2d0b736_3
   - nest-asyncio=1.6.0=pyhd8ed1ab_1
-  - nodejs=18.20.5=h6f0827f_0
+  - nodejs=20.18.1=hc55a1b2_0
   - notebook=7.3.3=pyhd8ed1ab_0
   - notebook-shim=0.2.4=pyhd8ed1ab_1
   - oauthlib=3.2.2=pyhd8ed1ab_1
   - openssl=3.5.0=h7b32b05_0
-  - openvscode-server=1.96.0=h346b9c0_1
   - overrides=7.7.0=pyhd8ed1ab_1
   - packaging=25.0=pyh29332c3_1
   - pamela=1.2.0=pyhd8ed1ab_1
   - pandocfilters=1.5.0=pyhd8ed1ab_0
   - parso=0.8.4=pyhd8ed1ab_1
-  - pcre2=10.44=hba22ea6_2
   - pexpect=4.9.0=pyhd8ed1ab_1
   - pickleshare=0.7.5=pyhd8ed1ab_1004
   - pip=25.1=pyh8b19718_0
@@ -129,7 +122,6 @@ dependencies:
   - prometheus_client=0.21.1=pyhd8ed1ab_0
   - prompt-toolkit=3.0.51=pyha770c72_0
   - psutil=7.0.0=py312h66e93f0_0
-  - pthread-stubs=0.4=hb9d3cd8_1002
   - ptyprocess=0.7.0=pyhd8ed1ab_1
   - pure_eval=0.2.3=pyhd8ed1ab_1
   - pycparser=2.22=pyh29332c3_1
@@ -152,7 +144,6 @@ dependencies:
   - requests=2.32.3=pyhd8ed1ab_1
   - rfc3339-validator=0.1.4=pyhd8ed1ab_1
   - rfc3986-validator=0.1.1=pyh9f0ad1d_0
-  - ripgrep=14.1.1=h8fae777_0
   - rpds-py=0.24.0=py312h3b7be25_0
   - send2trash=1.8.3=pyh0d859eb_1
   - setuptools=79.0.1=pyhff2d567_0
@@ -180,9 +171,6 @@ dependencies:
   - webencodings=0.5.1=pyhd8ed1ab_3
   - websocket-client=1.8.0=pyhd8ed1ab_1
   - wheel=0.45.1=pyhd8ed1ab_1
-  - xorg-libx11=1.8.12=h4f16b4b_0
-  - xorg-libxau=1.0.12=hb9d3cd8_0
-  - xorg-libxdmcp=1.1.5=hb9d3cd8_0
   - xz=5.8.1=hbcc6ac9_0
   - xz-gpl-tools=5.8.1=hbcc6ac9_0
   - xz-tools=5.8.1=hb9d3cd8_0

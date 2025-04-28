@@ -101,7 +101,7 @@ RUN cat $HOME/.bashrc >> /etc/bash.bashrc \
 USER $NB_USER
 
 # For vscode
-ENV CODE_EXECUTABLE=openvscode-server
+ENV CODE_EXECUTABLE=code-server
 
 # For outside mount when using outside fornax
 RUN mkdir -p /opt/workspace
