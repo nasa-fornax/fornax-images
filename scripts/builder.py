@@ -9,6 +9,7 @@ import time
 
 
 IMAGE_ORDER = (
+    'jupyter-base',
     'base-image',
     'astro-default',
     'heasoft'
