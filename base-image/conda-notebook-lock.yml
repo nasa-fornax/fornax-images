@@ -380,6 +380,7 @@ dependencies:
     - astroquery==0.4.10
     - dask==2025.4.1
     - dask_labextension==7.0.0
+    - fornax_labextension==0.1.0
     - ipywidgets==8.1.6
     - jupyter-resource-usage==1.1.1
     - jupyter_cpu_alive==0.1.2

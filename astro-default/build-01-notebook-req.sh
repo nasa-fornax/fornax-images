@@ -29,7 +29,8 @@ cd build
 
 for req in `ls requirements_*`; do
     # de-reference -r{filename}
-    resolve_references "$req" > "${req/requirements_/requirements-}"
+    reqlow=${req,,}
+    resolve_references "$req" > "${reqlow/requirements_/requirements-py-}"
 done
 
 rm requirements_*

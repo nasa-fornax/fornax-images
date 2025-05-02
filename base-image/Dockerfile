@@ -115,7 +115,11 @@ WORKDIR ${HOME}
 # Useful environment variables
 ENV NOTEBOOK_DIR=${HOME}/notebooks \
     NOUPDATE=${HOME}/.no-notebook-update.txt
- 
+
+
+# ==== base-image content ends here ==== #
+# ====================================== #
+
 # Install OS packages and then clean up
 ONBUILD RUN mkdir -p $HOME/build
 ONBUILD COPY --chown=$NB_UID:$NB_GID apt* conda*yml build-* $HOME/build/
