@@ -31,3 +31,4 @@ dependencies:
       - matplotlib
       - seaborn
       - pytest
+      - git+https://github.com/nasa-fornax/fornax-labextension.git

@@ -4,7 +4,7 @@
 set -e 
 set -o pipefail
 
-pythonenv=multiband_photometry
+pythonenv=py-multiband_photometry
 astrometry_commit=1b7d716
 tractor_commit=8059ae0
 
