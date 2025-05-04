@@ -8,7 +8,7 @@ pythonenv=py-multiband_photometry
 astrometry_commit=1b7d716
 tractor_commit=8059ae0
 
-mamba install -n $CONDA_ENV cython
+mamba install cython
 mamba clean -yaf
 
 # Install astrometry.net and tractor
