@@ -1,0 +1,11 @@
+vim
+nano
+emacs-nox
+fuse
+git
+curl
+zip
+build-essential
+gcc
+make
+gfortran

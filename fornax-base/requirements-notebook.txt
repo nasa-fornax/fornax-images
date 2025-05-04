@@ -1,0 +1,13 @@
+ipykernel
+nbgitpuller
+dask
+numpy
+scipy
+pandas
+astropy
+pyvo
+astroquery
+tqdm
+matplotlib
+seaborn
+pytest
