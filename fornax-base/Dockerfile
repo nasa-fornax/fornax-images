@@ -60,8 +60,6 @@ RUN mkdir -p $ENV_DIR \
  && pip install --no-cache-dir -r $HOME/build/base-requirements.txt \
  # && bash /opt/scripts/conda-env-install.sh
  && bash /opt/scripts/uv-env-install.sh
- # Change display name of the default kernel
- # && mamba run -n $DEFAULT_ENV python -m ipykernel install --sys-prefix --display-name "$DEFAULT_ENV"
 
 
 # # ------------------------------------#
@@ -77,8 +75,10 @@ USER $NB_USER
 USER root
 ENV PATH=$CONDA_DIR/envs/$CONDA_ENV/bin:$PATH
 RUN cat $HOME/.bashrc >> /etc/bash.bashrc \
- && printf "\nconda activate \$CONDA_ENV\n" >> /etc/bash.bashrc \
- #&& printf "\nconda activate \$CONDA_ENV\n" >> /usr/local/bin/before-notebook.d/10activate-conda-env.sh \
+ # remove conda hook
+ && sed -i '/conda shell.bash hook/d' /etc/bash.bashrc \
+ # activate DEFAULT_ENV
+ && printf "\nsource $ENV_DIR/$DEFAULT_ENV/bin/activate\n" >> /etc/bash.bashrc \
  && printf "" > $HOME/.bashrc
 USER $NB_USER
 
