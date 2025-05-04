@@ -11,7 +11,7 @@ import time
 IMAGE_ORDER = (
     'jupyter-base',
     'fornax-base',
-    'astro-default',
+    'fornax-main',
     'heasoft'
 )
 
@@ -125,7 +125,7 @@ class Builder(TaskRunner):
         Parameters:
         -----------
         image: str
-            Image name (e.g. astro-default or heasoft)
+            Image name (e.g. fornax-main or heasoft)
         tag: str
             The image tag.
 
@@ -142,7 +142,7 @@ class Builder(TaskRunner):
         repo: str
             repository name
         image: str
-            The name of the image to be built (e.g. astro-default or heasoft)
+            The name of the image to be built (e.g. fornax-main or heasoft)
         tag: str
             The image tag.
         build_args: list
@@ -205,7 +205,7 @@ class Builder(TaskRunner):
         Parameters:
         -----------
         image: str
-            The name of Image to be pushed (e.g. astro-default or heasoft)
+            The name of Image to be pushed (e.g. fornax-main or heasoft)
         tag: str
             The image tag.
 
@@ -342,7 +342,7 @@ class Builder(TaskRunner):
         Parameters
         ----------
         image: str
-            Image name (e.g. astro-default or heasoft)
+            Image name (e.g. fornax-main or heasoft)
         """
         self.out(f"Removing the lock files for {image}")
         lockfiles = glob.glob(f"{image}/conda-*lock.yml")
@@ -357,7 +357,7 @@ class Builder(TaskRunner):
         Parameters
         ----------
         image: str
-            The name of the image to be updated (e.g. astro-default or heasoft)
+            The name of the image to be updated (e.g. fornax-main or heasoft)
         tag: str
             The image tag.
         extra_args: str
