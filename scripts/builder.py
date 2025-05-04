@@ -10,7 +10,7 @@ import time
 
 IMAGE_ORDER = (
     'jupyter-base',
-    'base-image',
+    'fornax-base',
     'astro-default',
     'heasoft'
 )
@@ -167,9 +167,9 @@ class Builder(TaskRunner):
         build_args = [arg.strip() for arg in build_args]
 
         # add some defaults to build_args
-        # For base-image, the tags are external and should be updated
+        # For jupyter-base, the tags are external and should be updated
         # in the Dockerfile
-        if image != 'base-image':
+        if image != 'jupyter-base':
             mapping = {
                 'REPOSITORY': self.repository,
                 'REGISTRY': self.registry,
