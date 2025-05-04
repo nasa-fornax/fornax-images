@@ -16,7 +16,7 @@ for envfile in `ls requirements-*.txt`; do
     uv venv $VIRTUAL_ENV
     uv pip install -r $ENVFILE
     uv pip install ipykernel
-    uv run python -m ipykernel install --name $env --prefix $CONDA_DIR/envs/$CONDA_ENV
+    uv run python -m ipykernel install --name $env --prefix $CONDA_DIR
     uv pip freeze > $VIRTUAL_ENV/$ENVFILE
 done
 

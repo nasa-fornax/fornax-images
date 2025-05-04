@@ -95,11 +95,10 @@ CMD ["start-notebook.py"]
 USER root
 RUN cd /usr/local/bin/ \
  && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/start-notebook.py \
- && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/start-notebook.sh \
  && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/start-singleuser.py \
- && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/start-singleuser.sh \
  && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/docker_healthcheck.py \
  && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/jupyter_server_config.py \
+ && chmod +x start-notebook.py start-singleuser.py \
  && mkdir -p /etc/jupyter/ \
  && mv docker_healthcheck.py jupyter_server_config.py /etc/jupyter/
 

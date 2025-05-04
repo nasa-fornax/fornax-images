@@ -14,7 +14,7 @@ if __name__ == '__main__':
     ap.add_argument(
         'images', nargs='*',
         help=("Image names to build separated by spaces e.g. "
-              "'base-image astro-default'")
+              "'fornax-base astro-default'")
     )
 
     ap.add_argument(

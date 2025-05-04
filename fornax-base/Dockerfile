@@ -1,46 +1,41 @@
-ARG BASE_TAG=2025-04-28
+ARG BASE_TAG=latest
+ARG REPOSITORY=nasa-fornax/fornax-images
+ARG REGISTRY=ghcr.io
 
-FROM quay.io/jupyter/base-notebook:${BASE_TAG} as base
-FROM quay.io/jupyter/docker-stacks-foundation:${BASE_TAG}
-
+FROM ${REGISTRY}/${REPOSITORY}/jupyter-base:${BASE_TAG}
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
-LABEL org.opencontainers.image.description="Fornax Base Astronomy Image"
+LABEL org.opencontainers.image.description "Fornax Base Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
 
-# Bring some commands from jupyter/base-notebook
-# Skip the install of jupyterhub/lab etc
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ENV JUPYTER_PORT=8888
-EXPOSE $JUPYTER_PORT
-CMD ["start-notebook.py"]
-# Copy files from the image directly
-COPY --from=base /usr/local/bin/start-* /usr/local/bin/
-COPY --from=base /etc/jupyter/*py /etc/jupyter/
-USER root
-HEALTHCHECK --interval=3s --timeout=1s --start-period=3s --retries=3 \
-    CMD /etc/jupyter/docker_healthcheck.py || exit 1
-RUN fix-permissions /etc/jupyter/ /home/${NB_USER} /opt/
-USER $NB_USER
-WORKDIR $HOME
-# End of imports from jupyter/base-notebook #
-# ----------------------------------------- #
 
-ENV CONDA_ENV=notebook \
+ENV DEFAULT_ENV=notebook \
     ENV_DIR=/opt/envs
 
-# Ask dask to read config from ${CONDA_DIR}/etc rather than
-# the default of /etc, since the non-root jovyan user can write
-# to ${CONDA_DIR}/etc but not to /etc
-ENV DASK_ROOT_CONFIG=${CONDA_DIR}/etc
+
+# cache location: use /tmp/ so we don't fill up $HOME
+ENV CACHE_DIR=/tmp/cache
+RUN mkdir -p $CACHE_DIR
+ENV XDG_CACHE_HOME=$CACHE_DIR \
+    XDG_CACHE_DIR=$CACHE_DIR \
+    XDG_CACHE_DIR=$CACHE_DIR \
+    PIP_CACHE_DIR=$CACHE_DIR/pip
+RUN mkdir -p $PIP_CACHE_DIR
 
 # COPY the current content to $HOME/build
 RUN mkdir -p $HOME/build/
-COPY --chown=$NB_UID:$NB_GID apt* conda*yml build-* requirements-* $HOME/build/
-COPY --chown=$NB_UID:$NB_GID overrides.json $HOME/build/
+COPY --chown=$NB_UID:$NB_GID apt.txt $HOME/build/
 
 USER root
+
+# jupyter overrides
+COPY --chown=$NB_UID:$NB_GID overrides.json $HOME/build/
+RUN mkdir -p $CONDA_DIR/share/jupyter/lab/settings/ \
+ && mv ~/build/overrides.json $CONDA_DIR/share/jupyter/lab/settings/ \
+ # Disable the announcement extension
+ && jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
+
 
 # Make /opt/ user writeable so it can be used by build-* scripts
 RUN fix-permissions /opt/
@@ -51,38 +46,25 @@ COPY --chown=$NB_UID:$NB_GID scripts/*.sh /opt/scripts/
 RUN cd build && bash /opt/scripts/apt-install.sh
 
 USER $NB_USER
+
+# install code-server
+ENV CODE_EXECUTABLE=code-server
+RUN mamba install code-server "nodejs>=20" \
+ && mamba clean -yaf
+
 # setup conda environments
+COPY --chown=$NB_UID:$NB_GID base-requirements.txt requirements-notebook.txt $HOME/build/
 RUN mkdir -p $ENV_DIR \
  && cd build \
  && pip install --no-cache-dir uv \
- && bash /opt/scripts/conda-env-install.sh \
- && bash /opt/scripts/uv-env-install.sh \
+ && pip install --no-cache-dir -r $HOME/build/base-requirements.txt \
+ # && bash /opt/scripts/conda-env-install.sh
+ && bash /opt/scripts/uv-env-install.sh
  # Change display name of the default kernel
- && mamba run -n $CONDA_ENV python -m ipykernel install --sys-prefix --display-name "$CONDA_ENV"
+ # && mamba run -n $DEFAULT_ENV python -m ipykernel install --sys-prefix --display-name "$DEFAULT_ENV"
 
-# Any other build-* scripts #
-RUN cd $HOME/build \
- ; for script in `ls build-*`; do \
- echo "Found script ${script} ..." \
- && chmod +x $script \
- && ./$script \
- ; done
-# --------------------------- #
 
-# cache location: use /tmp/ so we don't fill up $HOME
-ENV CACHE_DIR=/tmp/cache
-RUN mkdir -p $CACHE_DIR
-ENV XDG_CACHE_HOME=$CACHE_DIR
-ENV XDG_CACHE_DIR=$CACHE_DIR
-ENV XDG_CACHE_DIR=$CACHE_DIR
-
-# Set default config for pip and conda
-# change default pip cache from ~/.cache/pip
-ENV PIP_CACHE_DIR=$CACHE_DIR/pip
-RUN mkdir -p $PIP_CACHE_DIR
-
-COPY --chown=$NB_UID:$NB_GID condarc ${CONDA_DIR}/.condarc
-# ------------------------------------#
+# # ------------------------------------#
 
 # add a script to run before the jupyter session
 USER root
@@ -96,29 +78,26 @@ USER root
 ENV PATH=$CONDA_DIR/envs/$CONDA_ENV/bin:$PATH
 RUN cat $HOME/.bashrc >> /etc/bash.bashrc \
  && printf "\nconda activate \$CONDA_ENV\n" >> /etc/bash.bashrc \
- && printf "\nconda activate \$CONDA_ENV\n" >> /usr/local/bin/before-notebook.d/10activate-conda-env.sh \
+ #&& printf "\nconda activate \$CONDA_ENV\n" >> /usr/local/bin/before-notebook.d/10activate-conda-env.sh \
  && printf "" > $HOME/.bashrc
 USER $NB_USER
 
-# For vscode; install code-server or openvscode-server
-# extenseion added by jupyter-vscode-proxy
-ENV CODE_EXECUTABLE=code-server
 
 # For outside mount when using outside fornax
 RUN mkdir -p /opt/workspace
 VOLUME /opt/workspace
 
 # reset user and location
-RUN rm -r $HOME/build $HOME/work /tmp/*
+RUN rm -r $HOME/build /tmp/*
 WORKDIR ${HOME}
 
 # Useful environment variables
 ENV NOTEBOOK_DIR=${HOME}/notebooks \
     NOUPDATE=${HOME}/.no-notebook-update.txt
 
-
-# ==== base-image content ends here ==== #
-# ====================================== #
+# ==== Start ONBUILD commands ==== #
+# These run in images the inherit fornax-images
+# ================================ #
 
 # Install OS packages and then clean up
 ONBUILD RUN mkdir -p $HOME/build
@@ -132,7 +111,7 @@ ONBUILD USER $NB_USER
 # setup conda and uv environments
 ONBUILD RUN cd build && bash /opt/scripts/conda-env-install.sh && bash /opt/scripts/uv-env-install.sh
 # and ensure the correct display name
-ONBUILD RUN mamba run -n $CONDA_ENV python -m ipykernel install --sys-prefix --display-name "$CONDA_ENV"
+# ONBUILD RUN mamba run -n $CONDA_ENV python -m ipykernel install --sys-prefix --display-name "$CONDA_ENV"
 # ----------------------- #
 
 # Any other build-* scripts; e.g. build tractor #
