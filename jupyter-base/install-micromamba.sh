@@ -40,7 +40,9 @@ printf """
 auto_update_conda: false
 show_channel_urls: true
 channels:
-  - conda-forge
+    - conda-forge
+pkgs_dirs:
+    - /tmp/cache/conda
 """ >> ${CONDA_DIR}/.condarc
 
 # clean
