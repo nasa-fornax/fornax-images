@@ -34,3 +34,7 @@ fi
 if test -f $NOTEBOOK_DIR/introduction.md; then
     rm $NOTEBOOK_DIR/introduction.md
 fi
+
+if [ -f /efs/extra.sh ]; then
+    source /efs/extra.sh
+fi
