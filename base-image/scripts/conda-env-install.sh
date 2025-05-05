@@ -4,7 +4,6 @@ set -o pipefail
 
 # handle conda environment and lock files
 # look for conda-{env}-lock.yml and conda-{env}.yml files
-CONDA_PROGRESS_BAR=off
 
 for envfile in `ls conda-*.yml | grep -v lock`; do
     env=`echo $envfile | sed -n 's/conda-\(.*\)\.yml/\1/p'`
@@ -13,13 +12,13 @@ for envfile in `ls conda-*.yml | grep -v lock`; do
         echo "Found $ENVFILE, using it ..."
         # create the environment if it doesn't exist
         mamba env list | grep -q "^[[:space:]]*$env " || mamba create -n ${env}
-        conda env update -n ${env} -f $ENVFILE --solver libmamba
+        conda env update -q -n ${env} -f $ENVFILE --solver libmamba
     elif test -f conda-${env}.yml; then
         ENVFILE=conda-${env}.yml
         echo "Found $ENVFILE, using it ..."
         # create the environment if it doesn't exist
         mamba env list | grep -q "^[[:space:]]*$env " || mamba create -n ${env}
-        conda env update -n ${env} -f $ENVFILE --solver libmamba
+        conda env update -q -n ${env} -f $ENVFILE --solver libmamba
     elif [[ "$env"=="$CONDA_ENV" ]]; then
         echo "Defaulting to basic env ..." 
         mamba create --name $env python=3.12 jupyterlab
