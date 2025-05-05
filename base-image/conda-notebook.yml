@@ -21,8 +21,6 @@ dependencies:
   - tqdm
   - matplotlib
   - seaborn
-  - openvscode-server
-  - jupyter-vscode-proxy
   - pytest
   - pip
   - pip:
@@ -31,3 +29,4 @@ dependencies:
       - jupyterlab-git
       - jupyterlab-myst
       - jupyter_cpu_alive
+      - jupyter-openvscodeserver-proxy
