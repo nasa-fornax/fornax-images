@@ -29,4 +29,4 @@ dependencies:
       - jupyterlab-git
       - jupyterlab-myst
       - jupyter_cpu_alive
-      - jupyter-openvscodeserver-proxy
+      - jupyter-vscode-proxy
