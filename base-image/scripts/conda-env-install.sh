@@ -4,6 +4,7 @@ set -o pipefail
 
 # handle conda environment and lock files
 # look for conda-{env}-lock.yml and conda-{env}.yml files
+CONDA_PROGRESS_BAR=off
 
 for envfile in `ls conda-*.yml | grep -v lock`; do
     env=`echo $envfile | sed -n 's/conda-\(.*\)\.yml/\1/p'`
