@@ -13,5 +13,5 @@ mamba run -n $env jupyter labextension disable "@jupyterlab/apputils-extension:a
 # install openvscode-server
 cd /tmp/
 wget -q https://github.com/gitpod-io/openvscode-server/releases/download/openvscode-server-v1.98.2/openvscode-server-v1.98.2-linux-x64.tar.gz
-tar -zxvf openvscode-server-v1.98.2-linux-x64.tar.gz
+tar -zxf openvscode-server-v1.98.2-linux-x64.tar.gz
 mv openvscode-server-v1.98.2-linux-x64 /opt/openvscode-server
