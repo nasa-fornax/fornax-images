@@ -95,8 +95,9 @@ RUN cat $HOME/.bashrc >> /etc/bash.bashrc \
  && printf "" > $HOME/.bashrc
 USER $NB_USER
 
-# For vscode
-ENV CODE_EXECUTABLE=openvscode-server
+# For vscode; install code-server or openvscode-server
+# extenseion added by jupyter-vscode-proxy
+ENV CODE_EXECUTABLE=code-server
 
 # For outside mount when using outside fornax
 RUN mkdir -p /opt/workspace
