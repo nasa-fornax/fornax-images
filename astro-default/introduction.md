@@ -24,7 +24,11 @@ at the start of every new session. To disable these updates, add an empty file c
 ---
 # Latest Changes
 
-## 20/03/2025
+## 05/04/2025
+- Fix openvscode-server by using jupyter-openvscodeserver-proxy instead of jupyter-vscode-proxy.
+- Update packages to the latest possible.
+
+## 03/20/2025
 - Add jdaviz (and dependencies) to support JWST notebooks.
 - Update python to 3.12 (and iupyterlab==4.3.6, jupyterhub==5.2.1, notebook==7.3.3).
 - Update various other packages to the latest.
