@@ -22,6 +22,7 @@ dependencies:
   - matplotlib
   - seaborn
   - pytest
+  - code-server
   - pip
   - pip:
       - jupyterlab_execute_time
