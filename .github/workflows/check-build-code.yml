@@ -3,7 +3,7 @@ name: Run tests for the build scripts
 on:
   push:
     branches-ignore: ['releases/**']
-    paths: ['scripts/**']
+    paths: ['scripts/**', 'tests/test_build_code.py']
 
 jobs:
   run-tests:
