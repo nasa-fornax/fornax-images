@@ -21,9 +21,8 @@ dependencies:
   - tqdm
   - matplotlib
   - seaborn
-  - openvscode-server
-  - jupyter-vscode-proxy
   - pytest
+  - code-server
   - pip
   - pip:
       - jupyterlab_execute_time
@@ -31,3 +30,4 @@ dependencies:
       - jupyterlab-git
       - jupyterlab-myst
       - jupyter_cpu_alive
+      - jupyter-vscode-proxy
