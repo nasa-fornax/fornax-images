@@ -1,5 +1,3 @@
-ipykernel
-nbgitpuller
 dask
 numpy
 scipy
