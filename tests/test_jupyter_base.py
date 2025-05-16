@@ -5,16 +5,16 @@ sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, conda_dir  # noqa E402
 
 
-class Test_jupyter_base(unittest.TestCase, CommonTests):
+class Test_jupyter_base(unittest.TestCase):
 
     def test_python_path(self):
-        self._test_python_path('', is_conda=True)
+        CommonTests._test_python_path('', is_conda=True)
 
     def test_which_python(self):
-        self._test_which_python('', is_conda=True)
+        CommonTests._test_which_python('', is_conda=True)
 
     def test_base_env(self):
-        self._test_conda_env_file('base', f'{conda_dir}/base-lock.yml')
+        CommonTests._test_conda_env_file('base', f'{conda_dir}/base-lock.yml')
 
     def test_stack_files(self):
         """Check for file from jupyter stack"""
