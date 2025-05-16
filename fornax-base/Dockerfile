@@ -47,12 +47,7 @@ RUN cd build && bash /opt/scripts/apt-install.sh
 
 USER $NB_USER
 
-# install code-server
-ENV CODE_EXECUTABLE=code-server
-RUN mamba install code-server "nodejs>=20" \
- && mamba clean -yaf
-
-# setup conda environments
+# add packages to base and notebook
 COPY --chown=$NB_UID:$NB_GID base-requirements.txt requirements-notebook.txt $HOME/build/
 RUN mkdir -p $ENV_DIR \
  && cd build \
@@ -61,8 +56,14 @@ RUN mkdir -p $ENV_DIR \
  # && bash /opt/scripts/conda-env-install.sh
  && bash /opt/scripts/uv-env-install.sh
 
+# install code-server
+ENV CODE_EXECUTABLE=code-server
+RUN mamba install code-server \
+ # update the lockfile
+ && mamba env export > /opt/conda/base-lock.yml \
+ && mamba clean -yaf
 
-# # ------------------------------------#
+## ------------------------------------#
 
 # add a script to run before the jupyter session
 USER root
