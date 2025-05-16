@@ -81,6 +81,7 @@ RUN cat $HOME/.bashrc >> /etc/bash.bashrc \
  && sed -i '/conda shell.bash hook/d' /etc/bash.bashrc \
  # activate DEFAULT_ENV
  && printf "\nsource $ENV_DIR/$DEFAULT_ENV/bin/activate\n" >> /etc/bash.bashrc \
+ && printf "\nsource $ENV_DIR/$DEFAULT_ENV/bin/activate\n" >> /usr/local/bin/before-notebook.d/10set-default-env.sh \
  && printf "" > $HOME/.bashrc
 USER $NB_USER
 
