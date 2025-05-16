@@ -66,6 +66,7 @@ RUN mkdir -p $ENV_DIR \
 
 # add a script to run before the jupyter session
 USER root
+RUN mv /opt/conda/bin/uv /opt/conda/bin/uvx /usr/local/bin/
 COPY --chmod=0755 pre-notebook.sh /usr/local/bin/before-notebook.d/20-pre-notebook.sh
 USER $NB_USER
 
