@@ -78,14 +78,24 @@ def test_check_packages(notebook):
     CommonTests._test_uv_env_file(notebooks[notebook]['env'])
 
 
-# @pytest.mark.parametrize("notebook",  list(notebooks.keys()))
-# def test_notebooks(notebook):
-#     nb_file = notebooks[notebook]['file']
-#     env = notebooks[notebook]['env']
-#     nb_path = os.path.dirname(nb_file)
-#     nb_filename = os.path.basename(nb_file)
-#     py_filename = nb_filename.replace('md', 'py')
-#     assert os.path.exists(f'{notebook_dir}/{nb_file}')
-#     with change_dir(f'{notebook_dir}/{nb_path}'):
-#         CommonTests.run_cmd(f'jupytext --to py {nb_filename}')
-#         CommonTests.run_cmd(f'{env_dir}/{env}/bin/python {py_filename}')
+@pytest.mark.parametrize("notebook", list(notebooks.keys()))
+def test_imports(notebook):
+    """Extract the imports from the notebook and make sure they run"""
+    nb_file = notebooks[notebook]['file']
+    env = notebooks[notebook]['env']
+    nb_path = os.path.dirname(nb_file)
+    nb_filename = os.path.basename(nb_file)
+    py_filename = nb_filename.replace('md', 'py')
+    assert os.path.exists(f'{notebook_dir}/{nb_file}')
+    cmd1 = r"grep -E '^\s*(import|from|sys\.path\.insert|sys\.path\.append)'"
+    cmd2 = r"sed 's/^[[:space:]]*//'"
+    with change_dir(f'{notebook_dir}/{nb_path}'):
+        CommonTests.run_cmd(
+            f'jupytext --to py {nb_filename}'
+        )
+        CommonTests.run_cmd(
+            f'{cmd1} {py_filename} | {cmd2} > imports_{py_filename}'
+        )
+        CommonTests.run_cmd(
+            f'{env_dir}/{env}/bin/python imports_{py_filename}'
+        )
