@@ -47,10 +47,12 @@ RUN cd /usr/local/bin/ \
  && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/run-hooks.sh \
  && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/start.sh \
  && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/10activate-conda-env.sh \
- && chmod a+rx fix-permissions \
+ && chmod a+rx fix-permissions start.sh \
  && mkdir -p start-notebook.d before-notebook.d \
  && mv 10activate-conda-env.sh start-notebook.d
 
+# Configure container entrypoint
+ENTRYPOINT ["tini", "-g", "--", "start.sh"]
 
 # Enable prompt color
 RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashrc \
