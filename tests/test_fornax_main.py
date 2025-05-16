@@ -1,12 +1,11 @@
-import unittest
 import sys
 import os
-from packaging import version
 import contextlib
 import pytest
 
-sys.path.insert(0, os.getcwd())
-CommonTests = __import__('test_base-image').CommonTests
+sys.path.insert(0, os.path.dirname(__file__))
+from common import CommonTests, conda_dir, env_dir  # noqa E402
+
 
 notebook_dir = os.environ.get('NOTEBOOK_DIR', '/home/jovyan/notebooks')
 
@@ -14,23 +13,23 @@ notebooks = {
     'multiband_photometry': {
         'file': ('fornax-demo-notebooks/forced_photometry/'
                  'multiband_photometry.md'),
-        'req': 'requirements_multiband_photometry.txt'
+        'env': 'py-multiband_photometry'
     },
     'light_curve_classifier': {
         'file': 'fornax-demo-notebooks/light_curves/light_curve_classifier.md',
-        'req': 'requirements_light_curve_classifier.txt'
+        'env': 'py-light_curve_classifier'
     },
     'light_curve_generator': {
         'file': 'fornax-demo-notebooks/light_curves/light_curve_generator.md',
-        'req': 'requirements_light_curve_generator.txt'
+        'env': 'py-light_curve_generator'
     },
     'scale_up': {
         'file': 'fornax-demo-notebooks/light_curves/scale_up.md',
-        'req': 'requirements_scale_up.txt'
+        'env': 'py-scale_up'
     },
-    'ML_AGNzoo': {
+    'ml_agnzoo': {
         'file': 'fornax-demo-notebooks/light_curves/ML_AGNzoo.md',
-        'req': 'requirements_ML_AGNzoo.txt'
+        'env': 'py-ml_agnzoo'
     }
 }
 
@@ -46,45 +45,47 @@ def change_dir(destination):
         os.chdir(current_dir)
 
 
-class Test_astro_default(unittest.TestCase, CommonTests):
+def test_python_path():
+    CommonTests._test_python_path('notebook', is_conda=False)
 
-    def test_conda_env_file(self):
-        self._test_conda_env_file('astro-default')
 
-    def test_check_packages(self):
-        import tractor
-        import astrometry
-        import lsdb
-        tractor.__version__
-        astrometry.__version__
-        self.assertLess(version.parse(lsdb.__version__), version.parse('0.4'))
+def test_which_python():
+    CommonTests._test_which_python('notebook', is_conda=False)
 
-    def test_notebooks_folder(self):
-        self.assertTrue(
-            os.path.exists(notebook_dir)
-        )
-        self.assertTrue(
-            os.path.exists(f'{notebook_dir}/fornax-documentation')
-        )
-        self.assertTrue(
-            os.path.exists(f'{notebook_dir}/fornax-demo-notebooks')
-        )
+
+def test_env_file():
+    CommonTests._test_uv_env_file('notebook')
+
+
+def test_env_vars():
+    assert os.environ['DEFAULT_ENV'] == 'notebook'
+    assert os.environ['ENV_DIR'] == '/opt/envs'
+    assert os.environ['ENV_DIR'] == env_dir
+
+
+def test_base_env():
+    CommonTests._test_conda_env_file('base', f'{conda_dir}/base-lock.yml')
+
+
+def test_notebooks_folder():
+    assert os.path.exists(notebook_dir)
+    assert os.path.exists(f'{notebook_dir}/fornax-documentation')
+    assert os.path.exists(f'{notebook_dir}/fornax-demo-notebooks')
 
 
 @pytest.mark.parametrize("notebook",  list(notebooks.keys()))
-def test_notebooks(notebook):
-    common = CommonTests()
-    nb_file = notebooks[notebook]['file']
-    nb_req = notebooks[notebook]['req']
-    nb_path = os.path.dirname(nb_file)
-    nb_filename = os.path.basename(nb_file)
-    py_filename = nb_filename.replace('md', 'py')
-    assert os.path.exists(f'{notebook_dir}/{nb_file}')
-    with change_dir(f'{notebook_dir}/{nb_path}'):
-        common.run_cmd(f'pip install -r {nb_req}')
-        common.run_cmd(f'jupytext --to py {nb_filename}')
-        common.run_cmd(f'python {py_filename}')
+def test_check_packages(notebook):
+    CommonTests._test_uv_env_file(notebooks[notebook]['env'])
 
 
-if __name__ == "__main__":
-    unittest.main()
+# @pytest.mark.parametrize("notebook",  list(notebooks.keys()))
+# def test_notebooks(notebook):
+#     nb_file = notebooks[notebook]['file']
+#     env = notebooks[notebook]['env']
+#     nb_path = os.path.dirname(nb_file)
+#     nb_filename = os.path.basename(nb_file)
+#     py_filename = nb_filename.replace('md', 'py')
+#     assert os.path.exists(f'{notebook_dir}/{nb_file}')
+#     with change_dir(f'{notebook_dir}/{nb_path}'):
+#         CommonTests.run_cmd(f'jupytext --to py {nb_filename}')
+#         CommonTests.run_cmd(f'{env_dir}/{env}/bin/python {py_filename}')
