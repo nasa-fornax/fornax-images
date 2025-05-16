@@ -19,7 +19,7 @@ echo "Cloning the notebooks to $notebook_dir ..."
 for repo in ${notebook_repos[@]}; do
     name=`echo $repo | sed 's#.*/\([^/]*\)\.git#\1#'`
     if ! test -f $NOUPDATE; then
-        timeout $timeout python -m nbgitpuller.pull $repo main $name
+        timeout $timeout $CONDA_DIR/bin/python -m nbgitpuller.pull $repo main $name
     fi
 done
 cd $HOME
