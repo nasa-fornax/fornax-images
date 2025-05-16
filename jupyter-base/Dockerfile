@@ -122,7 +122,8 @@ RUN mamba install --yes \
  && jupyter lab clean \
  && rm -rf "/home/${NB_USER}/.cache/yarn" \
  && fix-permissions "${CONDA_DIR}" \
- && fix-permissions "/home/${NB_USER}"
+ && fix-permissions "/home/${NB_USER}" \
+ && mamba env export > $CONDA_DIR/base-lock.yml
 
 USER $NB_USER
 WORKDIR $HOME
