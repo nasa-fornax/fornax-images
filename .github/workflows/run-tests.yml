@@ -52,9 +52,14 @@ jobs:
       - name: "Run tests inside the image: ${{ matrix.image }}"
         run: |
           image=${{ matrix.image }}
+          if [ $image == "jupyter-base" ]; then
+            testcmd="python "
+          else
+            testcmd="pytest -s -v -o cache_dir=/tmp/ "
+          fi
           docker run -i --rm -v .:/opt/workspace/repo-code \
             $image \
-            bash -c "pytest -s -v /opt/workspace/repo-code/tests/test_${image//-/_}.py -o cache_dir=/tmp/"
+            bash -c "$testcmd /opt/workspace/repo-code/tests/test_${image//-/_}.py"
     
       - name: "Run jupyter-lab: ${{ matrix.image }}"
         run: |
