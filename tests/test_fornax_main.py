@@ -1,5 +1,7 @@
 import sys
 import os
+import ast
+import re
 import contextlib
 import pytest
 
@@ -86,16 +88,29 @@ def test_imports(notebook):
     nb_path = os.path.dirname(nb_file)
     nb_filename = os.path.basename(nb_file)
     py_filename = nb_filename.replace('md', 'py')
-    assert os.path.exists(f'{notebook_dir}/{nb_file}')
-    cmd1 = r"grep -E '^\s*(import|from|sys\.path\.insert|sys\.path\.append)'"
-    cmd2 = r"sed 's/^[[:space:]]*//'"
+    # isolate the imports
     with change_dir(f'{notebook_dir}/{nb_path}'):
         CommonTests.run_cmd(
             f'jupytext --to py {nb_filename}'
         )
-        CommonTests.run_cmd(
-            f'{cmd1} {py_filename} | {cmd2} > imports_{py_filename}'
-        )
+
+        with open(py_filename) as fp:
+            tree = ast.parse(fp.read())
+        imports = []
+        for node in tree.body:
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                imports.append(ast.get_source_segment(
+                    open(py_filename).read(), node))
+        with open(f'imports_{py_filename}', 'w') as fp:
+            imports = [
+                'import os', 'import sys',
+                'sys.path.insert(0, os.getcwd() + "/code_src")'
+            ] + imports
+            if notebook == 'multiband_photometry':
+                imports += ['import tractor']
+            fp.write('\n'.join([
+                re.sub(r'\n|\\', '', line) for line in imports]))
+
         CommonTests.run_cmd(
             f'{env_dir}/{env}/bin/python imports_{py_filename}'
         )
