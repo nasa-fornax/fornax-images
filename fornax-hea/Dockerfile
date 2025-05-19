@@ -20,7 +20,8 @@ RUN \
  # remove default uv activation
  sed -i '/bin\/activate/d' /etc/bash.bashrc \
  # activate DEFAULT_ENV
- && printf "\neval \"\$(conda shell.bash hook)\"\n\nconda activate $DEFAULT_ENV\n" >> /etc/bash.bashrc
+ && printf "\neval \"\$(conda shell.bash hook)\"\nconda activate $DEFAULT_ENV\n" >> /etc/bash.bashrc \
+ && printf "\nconda activate $DEFAULT_ENV\n" >> /usr/local/bin/before-notebook.d/10-set-default-env.sh
 USER $NB_USER
 
 # update PATH, so `which python` works correctly in the notebook
