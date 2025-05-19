@@ -19,16 +19,23 @@ for envfile in `ls conda-*.yml | grep -v lock`; do
         # create the environment if it doesn't exist
         mamba env list | grep -q "^[[:space:]]*$env " || mamba create -n ${env}
         conda env update -n ${env} -f $ENVFILE --solver libmamba
-    elif [[ "$env"=="$CONDA_ENV" ]]; then
-        echo "Defaulting to basic env ..." 
-        mamba create --name $env python=3.12 jupyterlab
     fi
-    if [ "$env" != "$CONDA_ENV" ]; then
+    if [ "$env" != "base" ]; then
         # add the environment as a jupyter kernel
-        # CONDA_ENV is defined in the dockerfile
+        # DEFAULT_ENV is defined in the dockerfile
         mamba install -n $env -y ipykernel
-        mamba run -n $env python -m ipykernel install --name $env --prefix $CONDA_DIR/envs/$CONDA_ENV
+        mamba run -n $env python -m ipykernel install --name $env --prefix $CONDA_DIR
+        # update PATH, so `which python` works correctly in the notebook
+        KERNEL_JSON="$CONDA_DIR/share/jupyter/kernels/$env/kernel.json"
+        # Insert env block after: "language": "python", so calling cli commands from notebooks works.
+        if [ "$env" == "heasoft" ]; then
+            sed -i -e 's/"language": "python",/"language": "python",\n "env": {"PATH": "$CONDA_DIR\/envs\/$env\/heasoft\/bin:$CONDA_DIR\/envs\/$env\/bin:${PATH}"},/' $KERNEL_JSON
+        else
+            sed -i -e 's/"language": "python",/"language": "python",\n "env": {"PATH": "$CONDA_DIR\/envs\/$env\/bin:${PATH}"},/' $KERNEL_JSON
+        fi
     fi
+    # save lock file
+    mamba env -n $env export > $CONDA_DIR/envs/$env/${env}-lock.yml
 done
 
 # clean
