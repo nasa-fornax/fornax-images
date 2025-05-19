@@ -12,7 +12,7 @@ IMAGE_ORDER = (
     'jupyter-base',
     'fornax-base',
     'fornax-main',
-    'heasoft'
+    'fornax-hea'
 )
 
 
