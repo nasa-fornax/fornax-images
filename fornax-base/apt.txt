@@ -9,3 +9,4 @@ build-essential
 gcc
 make
 gfortran
+jq

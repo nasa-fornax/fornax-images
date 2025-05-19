@@ -22,3 +22,10 @@ RUN \
  # activate DEFAULT_ENV
  && printf "\neval \"\$(conda shell.bash hook)\"\n\nconda activate $DEFAULT_ENV\n" >> /etc/bash.bashrc
 USER $NB_USER
+
+# update PATH, so `which python` works correctly in the notebook
+RUN \
+ KERNEL_JSON="$CONDA_DIR/share/jupyter/kernels/heasoft/kernel.json" \
+ && jq ".env = (.env // {}) | .env.PATH = \"\$CONDA_DIR/envs/heasoft/heasoft/bin:\$CONDA_DIR/envs/heasoft/bin:\$PATH\"" \
+    $KERNEL_JSON > /tmp/tmp.$$.json \
+ && mv /tmp/tmp.$$.json $KERNEL_JSON

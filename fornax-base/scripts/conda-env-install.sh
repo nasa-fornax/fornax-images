@@ -25,14 +25,11 @@ for envfile in `ls conda-*.yml | grep -v lock`; do
         # DEFAULT_ENV is defined in the dockerfile
         mamba install -n $env -y ipykernel
         mamba run -n $env python -m ipykernel install --name $env --prefix $CONDA_DIR
-        # update PATH, so `which python` works correctly in the notebook
+        # Run the kernel with 'conda run -n $env', so the etc/condat/activate.d scripts
+        # are called correctly; this is needed when jupyterlab is running outside the kernel
         KERNEL_JSON="$CONDA_DIR/share/jupyter/kernels/$env/kernel.json"
-        # Insert env block after: "language": "python", so calling cli commands from notebooks works.
-        if [ "$env" == "heasoft" ]; then
-            sed -i -e 's/"language": "python",/"language": "python",\n "env": {"PATH": "$CONDA_DIR\/envs\/$env\/heasoft\/bin:$CONDA_DIR\/envs\/$env\/bin:${PATH}"},/' $KERNEL_JSON
-        else
-            sed -i -e 's/"language": "python",/"language": "python",\n "env": {"PATH": "$CONDA_DIR\/envs\/$env\/bin:${PATH}"},/' $KERNEL_JSON
-        fi
+        jq ".argv = [\"$CONDA_DIR/bin/conda\", \"run\", \"-n\", \"$env\", \"python\"] + .argv[1:]" $KERNEL_JSON > /tmp/tmp.$$.json
+        mv /tmp/tmp.$$.json $KERNEL_JSON
     fi
     # save lock file
     mamba env -n $env export > $CONDA_DIR/envs/$env/${env}-lock.yml

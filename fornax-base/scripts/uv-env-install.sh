@@ -19,8 +19,8 @@ for envfile in `ls requirements-*.txt`; do
     uv run python -m ipykernel install --name $env --prefix $CONDA_DIR
     # update PATH, so `which python` works correctly in the notebook
     KERNEL_JSON="$CONDA_DIR/share/jupyter/kernels/$env/kernel.json"
-    # Insert env block after: "language": "python",q
-    sed -i -e 's/"language": "python",/"language": "python",\n "env": {"PATH": "$ENV_DIR\/$env\/bin:${PATH}"},/' $KERNEL_JSON
+    jq ".env = (.env // {}) | .env.PATH = \"$ENV_DIR/$env/bin:$PATH\"" $KERNEL_JSON > /tmp/tmp.$$.json
+    mv /tmp/tmp.$$.json $KERNEL_JSON
     uv pip freeze > $VIRTUAL_ENV/$ENVFILE
 done
 

@@ -1,5 +1,6 @@
 import sys
 import os
+import subprocess
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, conda_dir, env_dir  # noqa E402
@@ -34,3 +35,9 @@ def test_conda_env():
 def test_check_packages():
     import heasoftpy # noqa 401
     import xspec  # noqa 401
+
+
+def test_fversion():
+    subprocess.check_call("fversion")
+
+# TODO: add a test for running test_fversion inside a notebook
