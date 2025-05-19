@@ -24,6 +24,9 @@ at the start of every new session. To disable these updates, add an empty file c
 ---
 # Latest Changes
 
+## TBD
+- Switch to using a separate environment for each notebook
+
 ## 05/04/2025
 - Fix openvscode-server by using jupyter-openvscodeserver-proxy instead of jupyter-vscode-proxy.
 - Update packages to the latest possible.
