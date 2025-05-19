@@ -2,6 +2,7 @@ import sys
 import subprocess
 import os
 from pathlib import Path
+import contextlib
 
 conda_dir = os.environ.get('CONDA_DIR', '/opt/conda')
 env_dir = os.environ.get('ENV_DIR', '/opt/envs')
@@ -88,3 +89,14 @@ class CommonTests:
         result = CommonTests.run_cmd(diff_cmd)
         assert result.stdout == ''
         assert result.stderr == ''
+
+
+@contextlib.contextmanager
+def change_dir(destination):
+    """A context manager to change the current working directory."""
+    try:
+        current_dir = os.getcwd()
+        os.chdir(destination)
+        yield
+    finally:
+        os.chdir(current_dir)

@@ -2,11 +2,10 @@ import sys
 import os
 import ast
 import re
-import contextlib
 import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import CommonTests, conda_dir, env_dir  # noqa E402
+from common import CommonTests, conda_dir, env_dir, change_dir  # noqa E402
 
 
 notebook_dir = os.environ.get('NOTEBOOK_DIR', '/home/jovyan/notebooks')
@@ -34,17 +33,6 @@ notebooks = {
         'env': 'py-ml_agnzoo'
     }
 }
-
-
-@contextlib.contextmanager
-def change_dir(destination):
-    """A context manager to change the current working directory."""
-    try:
-        current_dir = os.getcwd()
-        os.chdir(destination)
-        yield
-    finally:
-        os.chdir(current_dir)
 
 
 def test_python_path():
