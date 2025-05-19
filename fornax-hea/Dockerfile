@@ -17,7 +17,7 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 ENV DEFAULT_ENV=heasoft
 USER root
 RUN \
- # remove conda hook
+ # remove default uv activation
  sed -i '/bin\/activate/d' /etc/bash.bashrc \
  # activate DEFAULT_ENV
  && printf "\neval \"\$(conda shell.bash hook)\"\n\nconda activate $DEFAULT_ENV\n" >> /etc/bash.bashrc
