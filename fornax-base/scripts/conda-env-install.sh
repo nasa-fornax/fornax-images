@@ -12,13 +12,13 @@ for envfile in `ls conda-*.yml | grep -v lock`; do
         echo "Found $ENVFILE, using it ..."
         # create the environment if it doesn't exist
         mamba env list | grep -q "^[[:space:]]*$env " || mamba create -n ${env}
-        conda env update -n ${env} -f $ENVFILE --solver libmamba
+        conda env update -q -n ${env} -f $ENVFILE --solver libmamba
     elif test -f conda-${env}.yml; then
         ENVFILE=conda-${env}.yml
         echo "Found $ENVFILE, using it ..."
         # create the environment if it doesn't exist
         mamba env list | grep -q "^[[:space:]]*$env " || mamba create -n ${env}
-        conda env update -n ${env} -f $ENVFILE --solver libmamba
+        conda env update -q -n ${env} -f $ENVFILE --solver libmamba
     fi
     if [ "$env" != "base" ]; then
         # add the environment as a jupyter kernel
