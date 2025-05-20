@@ -1,6 +1,5 @@
 vim
 nano
-emacs-nox
 fuse
 git
 curl
