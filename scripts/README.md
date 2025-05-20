@@ -1,42 +1,50 @@
-# Fornax Images Repo (beta)
+# Fornax Images Repo
 
 This repo houses Dockerfiles for building the Fornax Science Environment images.
-Each image is hosted in its directory. base-image is the base image that all
+Each image is hosted in its directory. fornax-base is the base image that all
 others start from.
 
-It also includes three GitHub workflows:
+It also includes the following GitHub workflows:
 
 - `image-build.yml`: build images whose code has changed in a push commit. The images
- will be tagged with branch name (e.g. `base-image:fix-issue-1` or `astro-default:fix-issue-34`).
+ will be tagged with branch name (e.g. `fornax-base:fix-issue-1` or `fornax-main:fix-issue-34`).
  The images will be built and pushed to the container registry of the repo.
 
  This happens for every GitHub branch, not just "main".
 
-  NB: when `base-image` changes, its dependencies will **not** be rebuilt against the new
-  `base-image` unless files change in that image itself.
+  NB: when `fornax-base` changes, its dependencies will **not** be rebuilt against the new
+  `fornax-base` unless files change in that image itself.
 
 - `release.yml`: runs on a release, and it tags the image from which the release is
  coming from (typically main) with a release tag and symbolic tag named 'stable'.
 
-- `check-build-code.yml`: A workflow that runs the tests of the building scripts and tagging machinery when
-  anything in "scripts" changes.
+- `check-build-code.yml`: A workflow that runs the tests of the building scripts and
+  tagging machinery when anything in "scripts" changes.
 
-- `run-tests.yml`: Running some tests using the demo notebooks.
+- `run-tests.yml`: Running some tests using the notebooks. Checking the environments,
+  checking that the required packages are installed, and that all imports work. No full run.
 
 For each image built, it is pushed to the GitHub container registry associated
 with this repository.
-When an new image is built, AWS endpoint is called to delete the cached equivalent in the ECR.
-The next pull from the ECR updates its cache and uses the newly-built image from github.
+When an new image is built, AWS endpoint is called to notify the aws ECR of an image change.
+The next pull from the ECR pulls newly-built image from github.
 
 See the "Packages" link on the right hand side of the main repository page for
 a list of images in the container registry.
 
 See the "Actions" tab of the repository to see the results of each workflow.
 
-NB: The code in this directory has only been tested with Python3.11 and better.
+# Notable Changes
 
-# Notable Changes After Moving to GH
+## 05-2025
+- Add a starting jupyter base image: `jupyter-base` instead of the one from jupyter stack.
+- Rename images to: `fornax-base`, `formax-main` and `fornax-hea`.
+- `formax-main` uses separate environments for each notebeook. Also, the `notebook`
+  environment is manged with `uv (pip)` rather than `conda` to resolve conflicts (#20).
+- Lock files are stored in the images. In `$CONDA_DIR/env?/` for conda and `$ENV_DIR/{env}`
+  for non-conda environments.
 
+## Pre-04-2025
 - We use GitHub Container Registry instead of Amazon's.
 
 - Instead of image names like `fornax_images:base-image-XYZ`, and
