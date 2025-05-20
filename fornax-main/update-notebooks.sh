@@ -23,3 +23,14 @@ for repo in ${notebook_repos[@]}; do
     fi
 done
 cd $HOME
+
+# change the default kernels in the notebooks;
+# remove once they are changed upstream
+cd $NOTEBOOK_DIR/fornax-demo-notebooks
+sed -i 's/display_name: notebook/display_name: py-multiband_photometry/' forced_photometry/multiband_photometry.md
+sed -i -e 's/display_name: notebook/display_name: py-light_curve_generator/' light_curves/light_curve_generator.md
+sed -i -e 's/display_name: notebook/display_name: py-light_curve_classifier/' light_curves/light_curve_classifier.md
+sed -i -e 's/display_name: notebook/display_name: py-ml_agnzoo/' light_curves/ML_AGNzoo.md
+sed -i -e 's/display_name: notebook/display_name: py-scale_up/' light_curves/scale_up.md
+sed -i -e 's/display_name: notebook/display_name: py-spectra_generator/' spectroscopy/spectra_generator.md
+cd $HOME
