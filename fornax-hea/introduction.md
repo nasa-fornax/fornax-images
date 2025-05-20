@@ -13,5 +13,9 @@ No high energy notebooks yet
 ---
 # Latest Changes
 
+## ??/05/2025
+- Jupyterlab is run in the conda base environment. The `notebook` contains general astronomy
+  tools (now managed with pip instead of conda).
+
 ## 24/04/2025
 - Add heasoft-6.35.1 from conda
