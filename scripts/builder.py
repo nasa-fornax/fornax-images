@@ -203,7 +203,10 @@ class Builder(TaskRunner):
                 raise ValueError(
                     f'Expected extra_tags to be a list, found {extra_tags}'
                 )
-            extra_tags_str = ' '.join([f'--tag {_tag}' for _tag in extra_tags])
+            extra_tags_str = ' '.join([
+                    f'--tag {self.get_full_tag(image, _tag)}'
+                    for _tag in extra_tags
+                ])
             extra_tags_str += ' '
 
         cmd_args = " ".join(cmd_args)
