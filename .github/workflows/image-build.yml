@@ -25,10 +25,6 @@ jobs:
       dir_changes: ${{ steps.changed-images.outputs.changed_dirs }}
 
     steps:
-      - name: Debug Event Payload
-        env:
-          EVENT_PAYLOAD: ${{ toJson(github.event) }}
-        run: echo "$EVENT_PAYLOAD"
 
       - name: Checkout repository
         uses: actions/checkout@v4
