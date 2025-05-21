@@ -3,6 +3,12 @@ name: Build and push images
 on:
   push:
     branches-ignore: ['releases/**']
+  workflow_dispatch:
+    inputs:
+      images:
+        description: 'Images to build of the form: ["image-1","image-2"]'
+        required: true
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -41,6 +47,7 @@ jobs:
           python-version: '3.12'
       
       - name: Changed Images
+        if: github.event_name == 'push'
         run: |
           cat <<EOF > tmp_github.json
           ${{ toJson(github) }}
@@ -48,6 +55,14 @@ jobs:
           changed_dirs=`python scripts/changed_images.py tmp_github.json --debug`
           echo "images_to_build = ${changed_dirs}"
           echo "images_to_build=$changed_dirs" >> $GITHUB_ENV
+      
+      - name: Manual Image Build
+        if: |
+          github.event_name == 'workflow_dispatch' && 
+          github.ref != 'refs/heads/main'
+        run: |
+          echo "images_to_build = ${{ inputs.images }}"
+          echo "images_to_build=${{ inputs.images }}" >> $GITHUB_ENV
       
       - name: Images to build
         id: images-to-build
