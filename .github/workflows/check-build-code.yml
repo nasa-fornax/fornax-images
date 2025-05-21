@@ -22,4 +22,5 @@ jobs:
       - name: Run builder tests
         id: test
         run: |
-           python3 tests/test_build_code.py
+           pip install pytest
+           pytest -v tests/test_build_code.py
