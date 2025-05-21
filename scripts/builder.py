@@ -134,7 +134,8 @@ class Builder(TaskRunner):
         full_tag = f'{self.registry}/{self.repository}/{image}:{tag}'
         return full_tag
 
-    def build(self, image, tag, build_args=None, extra_args=None):
+    def build(self, image, tag, build_args=None,
+              extra_args=None, extra_tags=None):
         """Build an image by calling 'docker build ..'
 
         Parameters:
@@ -151,6 +152,8 @@ class Builder(TaskRunner):
         extra_args: str
             Extra command line arguments to be passed to 'docker build'
             e.g. '--no-cache --network=host'
+        extra_tags: list or None
+            Extra tags for the image, e.g. latest or date-based
 
         """
         cmd_args = []
@@ -193,9 +196,20 @@ class Builder(TaskRunner):
         if extra_args:
             cmd_args.append(extra_args)
 
+        # any extra tags?
+        extra_tags_str = ''
+        if extra_tags is not None:
+            if not isinstance(extra_tags, list):
+                raise ValueError(
+                    f'Expected extra_tags to be a list, found {extra_tags}'
+                )
+            extra_tags_str = ' '.join([f'--tag {_tag}' for _tag in extra_tags])
+            extra_tags_str += ' '
+
         cmd_args = " ".join(cmd_args)
         full_tag = self.get_full_tag(image, tag)
-        build_cmd = f"docker build {cmd_args} --tag {full_tag} {image}"
+        build_cmd = (f"docker build {cmd_args} --tag {full_tag} "
+                     f"{extra_tags_str}{image}")
         self.out(f"Building {image} ...")
         self.run(build_cmd, timeout=10000)
 

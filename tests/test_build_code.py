@@ -124,6 +124,21 @@ class TestBuilder(unittest.TestCase):
                f'--tag {full_tag} {self.image}')
         self.assertEqual(cmd, output.split('::')[-1].strip())
 
+    def test_build__extra_tagss(self):
+        self.logger.handlers.clear()
+        extra_tag = 'extra-tag'
+        with patch('sys.stderr', new=StringIO()) as mock_out:
+            logging.basicConfig(level=logging.DEBUG)
+            self.builder_dry.build(self.image, self.tag,
+                                   extra_tags=[extra_tag])
+            output = mock_out.getvalue().strip()
+        full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
+        cmd = (f'docker build --build-arg REPOSITORY={self.repo} '
+               f'--build-arg REGISTRY={self.registry} '
+               f'--build-arg BASE_TAG={self.tag} '
+               f'--tag {full_tag} --tag {extra_tag} {self.image}')
+        self.assertEqual(cmd, output.split('::')[-1].strip())
+
     def test_build__push_not_str(self):
         self.logger.handlers.clear()
         with self.assertRaises(ValueError):
