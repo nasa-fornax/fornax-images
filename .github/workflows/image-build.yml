@@ -22,7 +22,7 @@ jobs:
       id-token: write
 
     outputs:
-      image_to_build: ${{ steps.changed-images.outputs.IMAGES_TO_BUILD }}
+      image_to_build: ${{ steps.images-to-build.outputs.IMAGES_TO_BUILD }}
 
     steps:
 
@@ -41,14 +41,17 @@ jobs:
           python-version: '3.12'
       
       - name: Changed Images
-        id: changed-images
         run: |
           cat <<EOF > tmp_github.json
           ${{ toJson(github) }}
           EOF
           changed_dirs=`python scripts/changed_images.py tmp_github.json --debug`
-          echo "IMAGES_TO_BUILD = ${changed_dirs}"
-          echo "IMAGES_TO_BUILD=$changed_dirs" >> $GITHUB_OUTPUT
+          echo "images_to_build = ${changed_dirs}"
+          echo "images_to_build=$changed_dirs" >> $GITHUB_ENV
+      
+      - name: Images to build
+        id: images-to-build
+        run: echo "IMAGES_TO_BUILD=${{ toJson(env.images_to_build) }}" >> $GITHUB_OUTPUT
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
@@ -60,7 +63,7 @@ jobs:
       - name: Build and push images
         id: push
         env:
-          IMAGES_TO_BUILD: ${{ steps.changed-images.outputs.IMAGES_TO_BUILD }}
+          IMAGES_TO_BUILD: ${{ steps.images-to-build.outputs.IMAGES_TO_BUILD }}
         run: |
           echo "IMAGES_TO_BUILD: $IMAGES_TO_BUILD"
           TAG="${{ github.head_ref || github.ref_name }}" 
