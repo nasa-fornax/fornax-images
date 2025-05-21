@@ -1,0 +1,12 @@
+bzip2
+ca-certificates
+locales
+netbase
+sudo
+tini
+wget
+curl
+
+fonts-liberation
+pandoc
+run-one

@@ -36,7 +36,6 @@ class TestTaskRunner(unittest.TestCase):
             self.builder_run.out(msg)
             output = mock_out.getvalue().strip()
         self.assertEqual(msg, output.split(':')[-1].strip())
-        self.logger.handlers.clear()
 
     def test_dryrun(self):
         out = self.builder_dry.run('ls', timeout=100, capture_output=True)
@@ -70,32 +69,34 @@ class TestBuilder(unittest.TestCase):
         )
 
     def test_check_tags(self):
+        self.logger.handlers.clear()
         with self.assertRaises(ValueError):
             self.builder_dry._check_tags('repo:tag')
         with self.assertRaises(ValueError):
             self.builder_dry._check_tags(['repo'])
         self.builder_dry._check_tags('tag')
-        self.logger.handlers.clear()
 
     def test_build__basic(self):
+        self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             self.builder_dry.build(self.image, self.tag)
             output = mock_out.getvalue().strip()
+            print(output)
         full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
         cmd = (f'docker build --build-arg REPOSITORY={self.repo} '
                f'--build-arg REGISTRY={self.registry} '
                f'--build-arg BASE_TAG={self.tag} '
                f'--tag {full_tag} {self.image}')
         self.assertEqual(cmd, output.split('::')[-1].strip())
-        self.logger.handlers.clear()
 
     def test_build__build_args_is_list(self):
+        self.logger.handlers.clear()
         with self.assertRaises(ValueError):
             self.builder_dry.build(self.image, self.tag, build_args='ENV=val')
-        self.logger.handlers.clear()
 
     def test_build__build_args(self):
+        self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             self.builder_dry.build(self.image, self.tag,
@@ -108,9 +109,9 @@ class TestBuilder(unittest.TestCase):
                f'--build-arg BASE_TAG={self.tag} '
                f'--tag {full_tag} {self.image}')
         self.assertEqual(cmd, output.split('::')[-1].strip())
-        self.logger.handlers.clear()
 
     def test_build__extra_args(self):
+        self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             self.builder_dry.build(self.image, self.tag,
@@ -122,19 +123,35 @@ class TestBuilder(unittest.TestCase):
                f'--build-arg BASE_TAG={self.tag} --some-par '
                f'--tag {full_tag} {self.image}')
         self.assertEqual(cmd, output.split('::')[-1].strip())
+
+    def test_build__extra_tagss(self):
         self.logger.handlers.clear()
+        extra_tag = 'extra-tag'
+        with patch('sys.stderr', new=StringIO()) as mock_out:
+            logging.basicConfig(level=logging.DEBUG)
+            self.builder_dry.build(self.image, self.tag,
+                                   extra_tags=[extra_tag])
+            output = mock_out.getvalue().strip()
+        full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
+        full_extra_tag = self.builder_dry.get_full_tag(self.image, extra_tag)
+        cmd = (f'docker build --build-arg REPOSITORY={self.repo} '
+               f'--build-arg REGISTRY={self.registry} '
+               f'--build-arg BASE_TAG={self.tag} '
+               f'--tag {full_tag} --tag {full_extra_tag} {self.image}')
+        self.assertEqual(cmd, output.split('::')[-1].strip())
 
     def test_build__push_not_str(self):
+        self.logger.handlers.clear()
         with self.assertRaises(ValueError):
             self.builder_dry.push(self.image, 123)
-        self.logger.handlers.clear()
 
     def test_build__push_wrong_format(self):
+        self.logger.handlers.clear()
         with self.assertRaises(ValueError):
             self.builder_dry.push(self.image, f'{self.image}:{self.tag}')
-        self.logger.handlers.clear()
 
     def test_build__push(self):
+        self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             self.builder_dry.push(self.image, self.tag)
@@ -142,7 +159,6 @@ class TestBuilder(unittest.TestCase):
         cmd = (f'docker push {self.registry}/{self.repo}/'
                f'{self.image}:{self.tag}')
         self.assertEqual(cmd, output.split('::')[-1].strip())
-        self.logger.handlers.clear()
 
     def test_build__release__tag_not_list(self):
         with self.assertRaises(ValueError):
@@ -167,16 +183,17 @@ class TestBuilder(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.builder_dry.release('tag', ['out'], images=['some_image'])
         # the following should work
-        self.builder_dry.release('tag', ['out'], ['base-image'])
+        self.builder_dry.release('tag', ['out'], ['fornax-base'])
 
     def test_build__release(self):
+        self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             self.builder_dry.release(
-                f'{self.tag}', [f'{self.tag}-out'], images=['base-image'])
+                f'{self.tag}', [f'{self.tag}-out'], images=['fornax-base'])
             output = mock_out.getvalue().strip()
-        source_tag = self.builder_dry.get_full_tag('base-image', self.tag)
-        release_tag = self.builder_dry.get_full_tag('base-image',
+        source_tag = self.builder_dry.get_full_tag('fornax-base', self.tag)
+        release_tag = self.builder_dry.get_full_tag('fornax-base',
                                                     f'{self.tag}-out')
         self.assertTrue(f'docker pull {source_tag}' in output)
         self.assertTrue(f'docker tag {source_tag} {release_tag}' in output)
@@ -192,13 +209,14 @@ class TestBuilder(unittest.TestCase):
     @patch('urllib.request.urlopen')
     def test_build__push_to_ecr(self, mock_urlopen):
         endpoint = 'http://some-endpoint'
-        image = 'base-image'
+        image = 'fornax-base'
         msg, status = 'mock response data', 202
         mock_response = MagicMock()
         mock_response.status = status
         mock_response.read.return_value = msg.encode()
         mock_response.__enter__.return_value = mock_response  # For 'with'
         mock_urlopen.return_value = mock_response
+        self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             self.builder_run.push_to_ecr(
@@ -215,11 +233,10 @@ class TestBuilder(unittest.TestCase):
         # check the printed messages
         self.assertTrue(f'returned status: {status}' in output)
         self.assertTrue(f'returned response: {msg}' in output)
-        self.logger.handlers.clear()
 
     def test_build__push_to_ecr_not_found(self):
         endpoint = 'http://some-endpoint'
-        image = 'base-image'
+        image = 'fornax-base'
         msg, status = 'Not Found', 404
         mock_urlopen = MagicMock()
         mock_urlopen.side_effect = urllib.error.HTTPError(
@@ -245,7 +262,7 @@ class TestBuilder(unittest.TestCase):
 
     def test_build__push_to_ecr_other_error(self):
         endpoint = 'http://some-endpoint'
-        image = 'base-image'
+        image = 'fornax-base'
         msg, status = 'Not Found', 403
         mock_urlopen = MagicMock()
         mock_urlopen.side_effect = urllib.error.HTTPError(
@@ -261,7 +278,7 @@ class TestBuilder(unittest.TestCase):
     @patch('urllib.request.urlopen')
     def test_build__push_to_ecr_multiple_images(self, mock_urlopen):
         endpoint = 'http://some-endpoint'
-        images = ['base-image', 'astro-default']
+        images = ['fornax-base', 'fornax-main']
         msg, status = 'mock response data', 202
         mock_response = MagicMock()
         mock_response.status = status
@@ -278,7 +295,7 @@ class TestBuilder(unittest.TestCase):
     @patch('urllib.request.urlopen')
     def test_build__push_to_multiple_ecr(self, mock_urlopen):
         endpoints = ['http://some-endpoint1', 'http://some-endpoint2']
-        image = 'base-image'
+        image = 'fornax-base'
         msg, status = 'mock response data', 202
         mock_response = MagicMock()
         mock_response.status = status
@@ -410,6 +427,7 @@ class TestChangedImages(unittest.TestCase):
                 'after': '2add5c8e038'
             }
         }
+        self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
             res = find_changed_images(push_event, self.runner)

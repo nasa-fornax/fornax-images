@@ -9,9 +9,10 @@ import time
 
 
 IMAGE_ORDER = (
-    'base-image',
-    'astro-default',
-    'heasoft'
+    'jupyter-base',
+    'fornax-base',
+    'fornax-main',
+    'fornax-hea'
 )
 
 
@@ -124,7 +125,7 @@ class Builder(TaskRunner):
         Parameters:
         -----------
         image: str
-            Image name (e.g. astro-default or heasoft)
+            Image name (e.g. fornax-main or heasoft)
         tag: str
             The image tag.
 
@@ -133,7 +134,8 @@ class Builder(TaskRunner):
         full_tag = f'{self.registry}/{self.repository}/{image}:{tag}'
         return full_tag
 
-    def build(self, image, tag, build_args=None, extra_args=None):
+    def build(self, image, tag, build_args=None,
+              extra_args=None, extra_tags=None):
         """Build an image by calling 'docker build ..'
 
         Parameters:
@@ -141,7 +143,7 @@ class Builder(TaskRunner):
         repo: str
             repository name
         image: str
-            The name of the image to be built (e.g. astro-default or heasoft)
+            The name of the image to be built (e.g. fornax-main or heasoft)
         tag: str
             The image tag.
         build_args: list
@@ -150,6 +152,8 @@ class Builder(TaskRunner):
         extra_args: str
             Extra command line arguments to be passed to 'docker build'
             e.g. '--no-cache --network=host'
+        extra_tags: list or None
+            Extra tags for the image, e.g. latest or date-based
 
         """
         cmd_args = []
@@ -166,9 +170,9 @@ class Builder(TaskRunner):
         build_args = [arg.strip() for arg in build_args]
 
         # add some defaults to build_args
-        # For base-image, the tags are external and should be updated
+        # For jupyter-base, the tags are external and should be updated
         # in the Dockerfile
-        if image != 'base-image':
+        if image != 'jupyter-base':
             mapping = {
                 'REPOSITORY': self.repository,
                 'REGISTRY': self.registry,
@@ -192,9 +196,23 @@ class Builder(TaskRunner):
         if extra_args:
             cmd_args.append(extra_args)
 
+        # any extra tags?
+        extra_tags_str = ''
+        if extra_tags is not None:
+            if not isinstance(extra_tags, list):
+                raise ValueError(
+                    f'Expected extra_tags to be a list, found {extra_tags}'
+                )
+            extra_tags_str = ' '.join([
+                    f'--tag {self.get_full_tag(image, _tag)}'
+                    for _tag in extra_tags
+                ])
+            extra_tags_str += ' '
+
         cmd_args = " ".join(cmd_args)
         full_tag = self.get_full_tag(image, tag)
-        build_cmd = f"docker build {cmd_args} --tag {full_tag} {image}"
+        build_cmd = (f"docker build {cmd_args} --tag {full_tag} "
+                     f"{extra_tags_str}{image}")
         self.out(f"Building {image} ...")
         self.run(build_cmd, timeout=10000)
 
@@ -204,7 +222,7 @@ class Builder(TaskRunner):
         Parameters:
         -----------
         image: str
-            The name of Image to be pushed (e.g. astro-default or heasoft)
+            The name of Image to be pushed (e.g. fornax-main or heasoft)
         tag: str
             The image tag.
 
@@ -341,7 +359,7 @@ class Builder(TaskRunner):
         Parameters
         ----------
         image: str
-            Image name (e.g. astro-default or heasoft)
+            Image name (e.g. fornax-main or heasoft)
         """
         self.out(f"Removing the lock files for {image}")
         lockfiles = glob.glob(f"{image}/conda-*lock.yml")
@@ -356,7 +374,7 @@ class Builder(TaskRunner):
         Parameters
         ----------
         image: str
-            The name of the image to be updated (e.g. astro-default or heasoft)
+            The name of the image to be updated (e.g. fornax-main or heasoft)
         tag: str
             The image tag.
         extra_args: str

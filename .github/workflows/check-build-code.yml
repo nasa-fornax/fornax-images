@@ -3,7 +3,7 @@ name: Run tests for the build scripts
 on:
   push:
     branches-ignore: ['releases/**']
-    paths: ['scripts/**']
+    paths: ['scripts/**', 'tests/test_build_code.py']
 
 jobs:
   run-tests:
@@ -22,4 +22,5 @@ jobs:
       - name: Run builder tests
         id: test
         run: |
-           python3 tests/test_build_code.py
+           pip install pytest
+           pytest -v tests/test_build_code.py
