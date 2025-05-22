@@ -1,3 +1,12 @@
+![GitHub Release](https://img.shields.io/github/v/release/nasa-fornax/fornax-images?label=Latest%20Release)
+
+![Static Badge](https://img.shields.io/badge/develop-blue)
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/nasa-fornax/fornax-images/develop?label=Last%20commit)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/nasa-fornax/fornax-images/image-build.yml?branch=develop&style=flat&label=build)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/nasa-fornax/fornax-images/run-tests.yml?branch=develop&style=flat&label=tests)
+
+---
+
 # fornax-images
 This repo contains the Docker images for the Fornax Platform deployments.
 It produces the jupyterhub computing environments.
