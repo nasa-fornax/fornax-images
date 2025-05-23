@@ -41,7 +41,7 @@ ENV PATH="${CONDA_DIR}/bin:${PATH}" \
     HOME="/home/${NB_USER}"
 
 # Copy scripts from the jupyter stack script
-ENV JUPYTER_STACK_URL=https://raw.githubusercontent.com/jupyter/docker-stacks/refs/heads/main/images
+ARG JUPYTER_STACK_URL=https://raw.githubusercontent.com/jupyter/docker-stacks/refs/heads/main/images
 RUN cd /usr/local/bin/ \
  && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/fix-permissions \
  && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/run-hooks.sh \
@@ -87,7 +87,7 @@ RUN bash /tmp/install-micromamba.sh \
 
 ## --- content from base-notebook -- ##
 
-ENV JUPYTER_PORT=8888
+ARG JUPYTER_PORT=8888
 EXPOSE $JUPYTER_PORT
 
 # Configure container startup
