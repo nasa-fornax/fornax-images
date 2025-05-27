@@ -4,13 +4,6 @@
 set -e 
 set -o pipefail
 
-# if NOTEBOOK_DIR is not defined; return or exit
-if test -z $BUILD_TRACTOR; then
-    # since this script is executed, we exit
-    echo "BUILD_TRACTOR not defined; exiting ..."
-    exit 0
-fi
-
 
 pythonenv=py-multiband_photometry
 astrometry_commit=1b7d716
