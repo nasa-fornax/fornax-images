@@ -13,10 +13,5 @@ LABEL org.opencontainers.image.description "Fornax Main Astronomy Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
 
-# add notebook updater script to run when jupyter starts
-USER root
-COPY --chmod=0755 update-notebooks.sh /usr/local/bin/before-notebook.d
-USER $NB_USER
-
 # For firefly
 ENV FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer

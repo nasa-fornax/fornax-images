@@ -30,6 +30,8 @@ at the start of every new session. To disable these updates, add an empty file c
   `py-light_curve_classifier`. These can be selected from the kernel drop down menu when the 
   notebook is launched. To activate one of these environments on the terminal, run:
   `source /opt/envs/py-multiband_photometry/bin/activate` for `py-multiband_photometry` for example.
+- Add fornax-labextension, which adds a Fornax top menu, items in the Launcher, and controls the
+  display of the `py-*` kernels in the launcher.
 - Jupyterlab is run in the conda base environment. The `notebook` contains general astronomy
   tools (now managed with pip instead of conda).
 
