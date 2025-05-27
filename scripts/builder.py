@@ -1,4 +1,6 @@
 import logging
+import os
+import shutil
 import subprocess
 import sys
 import glob
@@ -14,6 +16,10 @@ IMAGE_ORDER = (
     'fornax-main',
     'fornax-hea'
 )
+
+COMMON_FILES = [
+    'introduction.md'
+]
 
 
 class TaskRunner:
@@ -119,6 +125,27 @@ class Builder(TaskRunner):
                     raise ValueError(
                         f'tag: {release_tag} is not a str without :')
 
+    def _copy_common_files(self, image):
+        """Copy shared files so they can be used in the docker build
+
+        Parameters:
+        -----------
+        image: str
+            Name of the image we are building
+            (also name of the folder that contains the Dockerfile)
+        """
+        if not (os.path.exists(image) or
+                os.path.exists(f'{image}/Dockerfile')):
+            raise ValueError(f'image {image} does not exists')
+
+        # skip base images
+        if image in ['foranx-jupyter', 'fornax-main']:
+            return
+
+        for file in COMMON_FILES:
+            self.out(f"copying: {file} -> {image}")
+            shutil.copy(file, os.path.join(image, file))
+
     def get_full_tag(self, image, tag):
         """Return full tag that includes the registry and repository
 
@@ -143,7 +170,7 @@ class Builder(TaskRunner):
         repo: str
             repository name
         image: str
-            The name of the image to be built (e.g. fornax-main or heasoft)
+            The name of the image to be built (e.g. fornax-main or fornax-hea)
         tag: str
             The image tag.
         build_args: list
@@ -208,6 +235,10 @@ class Builder(TaskRunner):
                     for _tag in extra_tags
                 ])
             extra_tags_str += ' '
+
+        # before calling 'docker build', de-reference any symlinks
+        if not self.dryrun:
+            self._copy_common_files(image)
 
         cmd_args = " ".join(cmd_args)
         full_tag = self.get_full_tag(image, tag)
