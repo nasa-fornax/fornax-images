@@ -13,7 +13,7 @@ LABEL org.opencontainers.image.description "Fornax Main Astronomy Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
 # ensure the tractor build script runs
-ARG BUILD_TRACTOR=1
+ENV BUILD_TRACTOR=1
 
 # For firefly
 ENV FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer
