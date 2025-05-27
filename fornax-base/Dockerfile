@@ -95,8 +95,11 @@ RUN rm -r $HOME/build /tmp/*
 WORKDIR ${HOME}
 
 # Useful environment variables
-ENV NOTEBOOK_DIR=${HOME}/notebooks \
-    NOUPDATE=${HOME}/.no-notebook-update.txt
+ENV NOTEBOOK_DIR=/opt/notebooks \
+    NOUPDATE=${HOME}/.no-notebook-update.txt \
+    ADD_NOTEBOOKS=1
+# Run the pre-notebooks script to get a copy in the image
+RUN ADD_NOTEBOOKS=1 source /usr/local/bin/before-notebook.d/20-pre-notebook.sh
 
 # ==== Start ONBUILD commands ==== #
 # These run in images the inherit fornax-images
@@ -131,8 +134,7 @@ ONBUILD COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md* /opt/scripts/
 ONBUILD RUN cd /opt/scripts/ \
  && if test -f introduction.md; then \
   pandoc introduction.md -o introduction.html --standalone --metadata title="Welcome to Fornax Science Console!"; \
- fi \
- && touch introduction.html
+ fi
 
 ONBUILD RUN rm -r $HOME/build
 ONBUILD USER ${NB_USER}
