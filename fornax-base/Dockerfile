@@ -10,7 +10,7 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 
 
 
-ENV DEFAULT_ENV=notebook \
+ENV DEFAULT_ENV=python-main \
     ENV_DIR=/opt/envs
 
 
@@ -48,7 +48,7 @@ RUN cd build && bash /opt/scripts/apt-install.sh
 USER $NB_USER
 
 # add packages to base and notebook
-COPY --chown=$NB_UID:$NB_GID base-requirements.txt requirements-notebook.txt $HOME/build/
+COPY --chown=$NB_UID:$NB_GID base-requirements.txt requirements-$DEFAULT_ENV.txt $HOME/build/
 RUN mkdir -p $ENV_DIR \
  && cd build \
  && pip install --no-cache-dir uv \
