@@ -7,6 +7,7 @@ import pytest
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, conda_dir, env_dir, change_dir  # noqa E402
 
+default_kernel = 'python-main'
 
 notebook_dir = os.environ.get('NOTEBOOK_DIR', '/home/jovyan/notebooks')
 
@@ -36,19 +37,19 @@ notebooks = {
 
 
 def test_python_path():
-    CommonTests._test_python_path('notebook', is_conda=False)
+    CommonTests._test_python_path(default_kernel, is_conda=False)
 
 
 def test_which_python():
-    CommonTests._test_which_python('notebook', is_conda=False)
+    CommonTests._test_which_python(default_kernel, is_conda=False)
 
 
 def test_env_file():
-    CommonTests._test_uv_env_file('notebook')
+    CommonTests._test_uv_env_file(default_kernel)
 
 
 def test_env_vars():
-    assert os.environ['DEFAULT_ENV'] == 'notebook'
+    assert os.environ['DEFAULT_ENV'] == default_kernel
     assert os.environ['ENV_DIR'] == '/opt/envs'
     assert os.environ['ENV_DIR'] == env_dir
 
