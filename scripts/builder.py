@@ -135,16 +135,17 @@ class Builder(TaskRunner):
             (also name of the folder that contains the Dockerfile)
         """
         if not (os.path.exists(image) or
-                os.path.exists(f'{image}/Dockerfile')):
+                os.path.exists(f'{image}/Dockerfile')) and not self.dryrun:
             raise ValueError(f'image {image} does not exists')
 
         # skip base images
-        if image in ['foranx-jupyter', 'fornax-main']:
+        if image in ['foranx-jupyter', 'fornax-base']:
             return
 
         for file in COMMON_FILES:
             self.out(f"copying: {file} -> {image}")
-            shutil.copy(file, os.path.join(image, file))
+            if not self.dryrun:
+                shutil.copy(file, os.path.join(image, file))
 
     def get_full_tag(self, image, tag):
         """Return full tag that includes the registry and repository
@@ -237,8 +238,7 @@ class Builder(TaskRunner):
             extra_tags_str += ' '
 
         # before calling 'docker build', de-reference any symlinks
-        if not self.dryrun:
-            self._copy_common_files(image)
+        self._copy_common_files(image)
 
         cmd_args = " ".join(cmd_args)
         full_tag = self.get_full_tag(image, tag)
