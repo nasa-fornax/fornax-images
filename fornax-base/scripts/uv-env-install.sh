@@ -15,7 +15,7 @@ for envfile in `ls requirements-*.txt`; do
     export VIRTUAL_ENV=$ENV_DIR/$env
     uv venv $VIRTUAL_ENV
     uv pip install -r $ENVFILE
-    uv pip install ipykernel
+    uv pip install ipykernel pip
     uv run python -m ipykernel install --name $env --prefix $CONDA_DIR
     # update PATH, so `which python` works correctly in the notebook
     KERNEL_JSON="$CONDA_DIR/share/jupyter/kernels/$env/kernel.json"

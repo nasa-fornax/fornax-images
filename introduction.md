@@ -24,7 +24,7 @@ at the start of every new session. To disable these updates, add an empty file c
 ---
 # Latest Changes
 
-## ??/05/2025
+## ??/06/2025
 - Switch to using a separate environment for each notebook. Each notebook has a matching
   environment (or kernel) with a name that starts with `py-`, e.g. `py-multiband_photometry`,
   `py-light_curve_classifier`. These can be selected from the kernel drop down menu when the 
