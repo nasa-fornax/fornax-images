@@ -12,6 +12,7 @@ LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-imag
 LABEL org.opencontainers.image.description="Fornax Main Astronomy Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
+ENV DUMMY=1
 
 # For firefly
 ENV FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer
