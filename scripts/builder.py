@@ -14,6 +14,7 @@ IMAGE_ORDER = (
     'jupyter-base',
     'fornax-base',
     'fornax-main',
+    'astro-default',
     'fornax-hea'
 )
 
