@@ -3,7 +3,7 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, conda_dir, env_dir  # noqa E402
 
-default_kernel = 'python-main'
+default_kernel = 'python3'
 
 
 def test_python_path():

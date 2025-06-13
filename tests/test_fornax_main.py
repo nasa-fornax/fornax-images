@@ -7,7 +7,7 @@ import pytest
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, conda_dir, env_dir, change_dir  # noqa E402
 
-default_kernel = 'python-main'
+default_kernel = 'python3'
 
 notebook_dir = os.environ.get('NOTEBOOK_DIR', '/home/jovyan/notebooks')
 
