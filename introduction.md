@@ -32,7 +32,7 @@ at the start of every new session. To disable these updates, add an empty file c
   `source /opt/envs/py-multiband_photometry/bin/activate` for `py-multiband_photometry` for example.
 - Add fornax-labextension, which adds a Fornax top menu, items in the Launcher, and controls the
   display of the `py-*` kernels in the launcher.
-- Jupyterlab is run in the conda base environment. The default kernel `python-main` contains 
+- Jupyterlab is run in the conda base environment. The default kernel `python3` contains 
   general astronomy tools (now managed with pip instead of conda).
 
 
