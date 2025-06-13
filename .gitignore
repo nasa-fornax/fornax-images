@@ -1,5 +1,5 @@
 # fornax-specific
-fornax-*/introduction.md
+*-*/introduction.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
