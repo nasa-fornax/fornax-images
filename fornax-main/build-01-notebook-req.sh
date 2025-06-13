@@ -34,6 +34,8 @@ for req in `ls requirements_*`; do
 done
 
 rm requirements_*
+# pin numpy<2.3; issue: https://github.com/nasa-fornax/fornax-demo-notebooks/issues/431
+sed -i 's/numpy$/numpy<2.3/' requirements-py-ml_agnzoo.txt
 bash /opt/scripts/uv-env-install.sh 
 
 cd /tmp/
