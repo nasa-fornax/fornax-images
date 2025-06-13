@@ -10,7 +10,7 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 
 
 
-ENV DEFAULT_ENV=python-main \
+ENV DEFAULT_ENV=python3 \
     ENV_DIR=/opt/envs
 
 
@@ -54,7 +54,11 @@ RUN mkdir -p $ENV_DIR \
  && pip install --no-cache-dir uv \
  && pip install --no-cache-dir -r $HOME/build/base-requirements.txt \
  # && bash /opt/scripts/conda-env-install.sh
- && bash /opt/scripts/uv-env-install.sh
+ # install requirements for DEFAULT_ENV
+ && bash /opt/scripts/uv-env-install.sh \
+ # fix the display name of DEFAULT_ENV
+ && VIRTUAL_ENV=$ENV_DIR/$DEFAULT_ENV uv run python -m ipykernel install --name $DEFAULT_ENV \
+    --prefix $CONDA_DIR --display-name "$DEFAULT_ENV"
 
 # install code-server
 ENV CODE_EXECUTABLE=code-server
