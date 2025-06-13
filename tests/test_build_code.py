@@ -84,7 +84,8 @@ class TestBuilder(unittest.TestCase):
             output = mock_out.getvalue().strip()
             print(output)
         full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
-        cmd = (f'docker build --build-arg REPOSITORY={self.repo} '
+        cmd = ('docker build --platform=linux/amd64 '
+               f'--build-arg REPOSITORY={self.repo} '
                f'--build-arg REGISTRY={self.registry} '
                f'--build-arg BASE_TAG={self.tag} '
                f'--tag {full_tag} {self.image}')
@@ -103,7 +104,8 @@ class TestBuilder(unittest.TestCase):
                                    build_args=['ENV=val', 'ENV2=val'])
             output = mock_out.getvalue().strip()
         full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
-        cmd = (f'docker build --build-arg ENV=val --build-arg ENV2=val '
+        cmd = ('docker build --platform=linux/amd64 '
+               f'--build-arg ENV=val --build-arg ENV2=val '
                f'--build-arg REPOSITORY={self.repo} '
                f'--build-arg REGISTRY={self.registry} '
                f'--build-arg BASE_TAG={self.tag} '
@@ -118,7 +120,8 @@ class TestBuilder(unittest.TestCase):
                                    extra_args='--some-par')
             output = mock_out.getvalue().strip()
         full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
-        cmd = (f'docker build --build-arg REPOSITORY={self.repo} '
+        cmd = ('docker build --platform=linux/amd64 '
+               f'--build-arg REPOSITORY={self.repo} '
                f'--build-arg REGISTRY={self.registry} '
                f'--build-arg BASE_TAG={self.tag} --some-par '
                f'--tag {full_tag} {self.image}')
@@ -134,7 +137,8 @@ class TestBuilder(unittest.TestCase):
             output = mock_out.getvalue().strip()
         full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
         full_extra_tag = self.builder_dry.get_full_tag(self.image, extra_tag)
-        cmd = (f'docker build --build-arg REPOSITORY={self.repo} '
+        cmd = ('docker build --platform=linux/amd64 '
+               f'--build-arg REPOSITORY={self.repo} '
                f'--build-arg REGISTRY={self.registry} '
                f'--build-arg BASE_TAG={self.tag} '
                f'--tag {full_tag} --tag {full_extra_tag} {self.image}')
