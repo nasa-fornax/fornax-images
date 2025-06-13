@@ -242,8 +242,8 @@ class Builder(TaskRunner):
 
         cmd_args = " ".join(cmd_args)
         full_tag = self.get_full_tag(image, tag)
-        build_cmd = (f"docker build {cmd_args} --tag {full_tag} "
-                     f"{extra_tags_str}{image}")
+        build_cmd = (f"docker build --platform=linux/amd64 {cmd_args} "
+                     f"--tag {full_tag} {extra_tags_str}{image}")
         self.out(f"Building {image} ...")
         self.run(build_cmd, timeout=10000)
 
