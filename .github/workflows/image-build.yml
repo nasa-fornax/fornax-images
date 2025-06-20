@@ -93,6 +93,14 @@ jobs:
               --ecr-endpoint $ENDPOINT \
               --trigger-ecr \
               --push "$IMAGES_TO_BUILD"
+
+  export-environment-locks:
+    needs: build-and-push-images
+    uses: ./.github/workflows/export-locks.yml
+    secrets: inherit
+    with:
+      # pass the images that were built
+      images: ${{ needs.build-and-push-images.outputs.image_to_build }}
   
   test-images:
     needs: build-and-push-images
@@ -100,5 +108,5 @@ jobs:
     secrets: inherit
     if: "!contains(github.event.head_commit.message, '[skip-image-tests]')"
     with:
-      # pass the images that changed for testing
+      # pass the images that were built for testing
       images: ${{ needs.build-and-push-images.outputs.image_to_build }}

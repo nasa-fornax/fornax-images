@@ -1,0 +1,61 @@
+name: image-tests
+on:
+  # call from the image build pipeline
+  workflow_call:
+    inputs:
+      images:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      images:
+        description: 'Images of the form: ["image-1","image-2"]'
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  export-locks:
+    runs-on: ubuntu-latest
+    if: inputs.images != '[]'
+    strategy:
+      matrix:
+        image: ${{ fromJson(inputs.images) }}
+  
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: "Pull Image: ${{ matrix.image }}"
+        run: |
+          tag=${{ github.head_ref || github.ref_name }}
+          image=${{ matrix.image }}
+          docker pull ghcr.io/${{ github.repository }}/$image:$tag
+          docker tag ghcr.io/${{ github.repository }}/$image:$tag $image
+      
+      - name: Extract lock files
+        run: |
+          TAG="${{ github.head_ref || github.ref_name }}" 
+          python scripts/build.py --debug \
+              --registry "$REGISTRY" --repository "${{ github.repository }}" \
+              --tag $TAG --no-build --export-lock "${{ matrix.image }}"
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.image }}-environment-locks
+          path: ./${{ matrix.image }}_locks/*

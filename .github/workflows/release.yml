@@ -21,6 +21,9 @@ jobs:
       attestations: write
       id-token: write
 
+    outputs:
+      images: ${{ steps.images-list.outputs.IMAGE_LIST }}
+
     steps:
 
       - name: Debug Event Payload
@@ -52,4 +55,21 @@ jobs:
               --tag "${{ github.event.release.target_commitish }}" \
               --release "${{ github.event.release.tag_name }}" stable \
               --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }} \
-              --trigger-ecr
+              --trigger-ecr --export-locks
+
+      - name: print a list of all images
+        id: image-list
+        run: |
+          python -c 'import os, json; os.chdir("scripts"); \
+            import builder; print("IMAGE_LIST="+json.dumps(builder.IMAGE_ORDER[1:]))' \
+            >> $GITHUB_OUTPUT
+
+  export-environment-locks:
+    needs: build-and-push-images
+    uses: ./.github/workflows/export-locks.yml
+    secrets: inherit
+    with:
+      # pass the images that were built; do it this way so we can
+      # use strategy.matrix in the export-locks workflow, so each image
+      # lock files are exported in a separate job
+      images: ${{ needs.build-and-push-images.outputs.images }}

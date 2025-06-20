@@ -263,7 +263,7 @@ class Builder(TaskRunner):
         self.out(f"Pushing {full_tag} ...")
         self.run(push_command, timeout=1000)
 
-    def release(self, source_tag, release_tags, images=None):
+    def release(self, source_tag, release_tags, images=None, export_lock=False):
         """Make an image release by tagging the image with release_tags
 
         Parameters:
@@ -274,6 +274,8 @@ class Builder(TaskRunner):
             A list of target tag names for the release (no repo name)
         images: list or None
             The list of images to tag for release. By default, all images
+        export_lock: bool
+            If True, export the lock files with the release.
 
         """
         # check the passed tags
@@ -296,6 +298,9 @@ class Builder(TaskRunner):
             command = f'docker pull {full_source_tag}'
             self.out(f"Pulling {full_source_tag} ...")
             self.run(command, timeout=1000)
+
+            if export_lock:
+                self.export_lockfiles(image, source_tag)
 
             # loog through release tags
             for release_tag in release_tags:
@@ -462,9 +467,9 @@ class Builder(TaskRunner):
         if not isinstance(extra_args, str):
             raise ValueError(f'Expected str for extra_args; got: {extra_args}')
 
-        lock_dir = 'lock_files'
+        lock_dir = f'{image}_locks'
         self.out(f'exporting the lock files for {image} to ./{lock_dir}')
-        self.run(f'mkdir -p {lock_dir}', 1000)
+        self.run(f'mkdir -p {lock_dir}', 100)
         cmd = (f'docker run --entrypoint="" --rm -v $PWD/{lock_dir}:/host '
                f'--user `id -u` {extra_args} '
                f"{full_tag} bash -c 'cp $LOCK_DIR/* /host/'")

@@ -199,7 +199,7 @@ if __name__ == '__main__':
                 builder.push(image, time_tag)
 
     if release is not None:
-        builder.release(tag, release, images)
+        builder.release(tag, release, images, export_lock=export_lock)
 
     if trigger_ecr:
         builder.push_to_ecr(ecr_endpoint, tag, release, images)
