@@ -11,7 +11,8 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 
 
 ENV DEFAULT_ENV=python3 \
-    ENV_DIR=/opt/envs
+    ENV_DIR=/opt/envs \
+    LOCK_DIR=/opt/lock
 
 
 # cache location: use /tmp/ so we don't fill up $HOME
@@ -20,8 +21,9 @@ RUN mkdir -p $CACHE_DIR
 ENV XDG_CACHE_HOME=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
-    PIP_CACHE_DIR=$CACHE_DIR/pip
-RUN mkdir -p $PIP_CACHE_DIR
+    PIP_CACHE_DIR=$CACHE_DIR/pip \
+    UV_CACHE_DIR=$CACHE_DIR/uv
+RUN mkdir -p $PIP_CACHE_DIR $UV_CACHE_DIR
 
 # COPY the current content to $HOME/build
 RUN mkdir -p $HOME/build/
@@ -64,7 +66,9 @@ RUN mkdir -p $ENV_DIR \
 ENV CODE_EXECUTABLE=code-server
 RUN mamba install code-server \
  # update the lockfile
- && mamba env export > /opt/conda/base-lock.yml \
+ && mamba env export > $CONDA_DIR/base-lock.yml \
+ && mkdir -p $LOCK_DIR \
+ && cp $CONDA_DIR/base-lock.yml $LOCK_DIR \
  && mamba clean -yaf
 
 ## ------------------------------------#

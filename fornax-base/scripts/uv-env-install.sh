@@ -22,6 +22,9 @@ for envfile in `ls requirements-*.txt`; do
     jq ".env = (.env // {}) | .env.PATH = \"$ENV_DIR/$env/bin:$PATH\"" $KERNEL_JSON > /tmp/tmp.$$.json
     mv /tmp/tmp.$$.json $KERNEL_JSON
     uv pip freeze > $VIRTUAL_ENV/$ENVFILE
+    # also save it in one location
+    mkdir -p $LOCK_DIR
+    cp $VIRTUAL_ENV/$ENVFILE $LOCK_DIR
 done
 
 # clean

@@ -33,6 +33,9 @@ for envfile in `ls conda-*.yml | grep -v lock`; do
     fi
     # save lock file
     mamba env -n $env export > $CONDA_DIR/envs/$env/${env}-lock.yml
+    # also save it in one location
+    mkdir -p $LOCK_DIR
+    cp $CONDA_DIR/envs/$env/${env}-lock.yml $LOCK_DIR
 done
 
 # clean
