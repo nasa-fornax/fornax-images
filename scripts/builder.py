@@ -440,3 +440,32 @@ class Builder(TaskRunner):
                         lines.append(line)
                 with open(f"{image}/conda-{env_name}-lock.yml", "w") as fp:
                     fp.write("\n".join(lines))
+
+    def export_lockfiles(self, image, tag, extra_args=None):
+        """export the lock files from an image {image}:{tag}
+        Assumed to be in $LOCK_DIR
+
+        Parameters
+        ----------
+        image: str
+            The name of the image to be updated (e.g. fornax-main or heasoft)
+        tag: str
+            The image tag.
+        extra_args: str
+            Extra command line arguments to be passed to 'docker run'
+            e.g. '--network=host'
+
+        """
+        full_tag = self.get_full_tag(image, tag)
+
+        extra_args = extra_args or ''
+        if not isinstance(extra_args, str):
+            raise ValueError(f'Expected str for extra_args; got: {extra_args}')
+
+        lock_dir = 'lock_files'
+        self.out(f'exporting the lock files for {image} to ./{lock_dir}')
+        self.run(f'mkdir -p {lock_dir}', 1000)
+        cmd = (f'docker run --entrypoint="" --rm -v $PWD/{lock_dir}:/host '
+               f'--user `id -u` {extra_args} '
+               f"{full_tag} bash -c 'cp $LOCK_DIR/* /host/'")
+        self.run(cmd, 1000)
