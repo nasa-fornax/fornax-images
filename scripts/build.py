@@ -158,23 +158,34 @@ if __name__ == '__main__':
     builder.out(f'extra_pars: {extra_pars}', logging.DEBUG)
     builder.out('+++++++++++++', logging.DEBUG)
 
-    # if releasing, tag all images
+    # we are either building or releasing
     if release is not None:
-        images = list(IMAGE_ORDER)
+        # if releasing, tag all images
+        images = [
+            im for im in IMAGE_ORDER
+            if im.startswith('fornax')
+            and 'hea' not in im # TMPORARY
+        ]
 
-    # get a sorted list of images to build
-    to_build = []
-    for image in IMAGE_ORDER:
-        if image in images:
-            to_build.append(image)
+        # if in main, just re-tag from develop
+        if tag == 'main':
+            # this is strictly not a release,
+            # but using the release function for re-tagging
+            builder.release('develop', ['main'], images=None)
 
-    # if we are tagging to main; do not build
-    # just re-tag from develop
-    if tag == 'main':
-        # this is strictly not a release,
-        # but using the release function for re-tagging
-        builder.release('develop', ['main'], images=None)
+        # do the release
+        builder.release(tag, release, images)
+
+        if trigger_ecr:
+            builder.push_to_ecr(ecr_endpoint, tag, release, images)
+
     else:
+        # get a sorted list of images to build
+        to_build = []
+        for image in IMAGE_ORDER:
+            if image in images:
+                to_build.append(image)
+
         builder.out(f'Images to build: {to_build}', logging.DEBUG)
         time_tag = datetime.now().strftime('%Y%m%d_%H%M')
         for image in to_build:
@@ -190,16 +201,10 @@ if __name__ == '__main__':
 
             if update_lock:
                 builder.update_lockfiles(image, tag)
-
+            
             if export_lock:
                 builder.export_lockfiles(image, tag)
 
             if push:
                 builder.push(image, tag)
                 builder.push(image, time_tag)
-
-    if release is not None:
-        builder.release(tag, release, images, export_lock=export_lock)
-
-    if trigger_ecr:
-        builder.push_to_ecr(ecr_endpoint, tag, release, images)

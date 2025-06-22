@@ -22,7 +22,7 @@ jobs:
       id-token: write
 
     outputs:
-      images: ${{ steps.images-list.outputs.IMAGE_LIST }}
+      images: ${{ steps.image-list.outputs.IMAGE_LIST }}
 
     steps:
 
@@ -41,7 +41,7 @@ jobs:
           python-version: '3.12'
 
       - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -55,14 +55,15 @@ jobs:
               --tag "${{ github.event.release.target_commitish }}" \
               --release "${{ github.event.release.tag_name }}" \
               --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }} \
-              --trigger-ecr --export-lock
+              --trigger-ecr
 
       - name: print a list of all images
         id: image-list
         run: |
-          python -c 'import os, json; os.chdir("scripts"); \
-            import builder; print("IMAGE_LIST="+json.dumps(builder.IMAGE_ORDER[1:]))' \
-            >> $GITHUB_OUTPUT
+          images=$(python -c 'import os, json; os.chdir("scripts"); \
+                  import builder; print(json.dumps(builder.IMAGE_ORDER[1:]))')
+          #echo "IMAGE_LIST=${images}" >> $GITHUB_OUTPUT
+          echo 'IMAGE_LIST=["fornax-main"]' >> $GITHUB_OUTPUT
 
   export-environment-locks:
     needs: build-and-push-images
@@ -73,3 +74,4 @@ jobs:
       # use strategy.matrix in the export-locks workflow, so each image
       # lock files are exported in a separate job
       images: ${{ needs.build-and-push-images.outputs.images }}
+      release: true

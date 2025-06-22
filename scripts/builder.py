@@ -263,7 +263,7 @@ class Builder(TaskRunner):
         self.out(f"Pushing {full_tag} ...")
         self.run(push_command, timeout=1000)
 
-    def release(self, source_tag, release_tags, images=None, export_lock=False):
+    def release(self, source_tag, release_tags, images=None):
         """Make an image release by tagging the image with release_tags
 
         Parameters:
@@ -274,8 +274,6 @@ class Builder(TaskRunner):
             A list of target tag names for the release (no repo name)
         images: list or None
             The list of images to tag for release. By default, all images
-        export_lock: bool
-            If True, export the lock files with the release.
 
         """
         # check the passed tags
@@ -284,13 +282,7 @@ class Builder(TaskRunner):
         if images is not None and not isinstance(images, list):
             raise ValueError(f'Expected images to be a list; got {images}')
 
-        # get a list of images to release
-        default_release_images = [
-            im for im in IMAGE_ORDER
-            if im.startswith('fornax')
-            and 'hea' not in im # TMPORARY
-        ]
-        to_release = images if images is not None else default_release_images
+        to_release = images if images is not None else list(IMAGE_ORDER)
         for image in to_release:
             if image not in IMAGE_ORDER:
                 raise ValueError(f'Unknow Requested image {image}.')
@@ -303,9 +295,6 @@ class Builder(TaskRunner):
             command = f'docker pull {full_source_tag}'
             self.out(f"Pulling {full_source_tag} ...")
             self.run(command, timeout=1000)
-
-            if export_lock:
-                self.export_lockfiles(image, source_tag)
             
             # if we are releasing from main, add a stable tag
             if source_tag == 'main' and 'stable' not in release_tags:

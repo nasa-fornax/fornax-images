@@ -6,12 +6,21 @@ on:
       images:
         required: true
         type: string
+      release:
+        required: false
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       images:
         description: 'Images of the form: ["image-1","image-2"]'
         required: true
         type: string
+      release:
+        description: 'Is this a release?'
+        required: false
+        type: boolean
+        default: false
 
 env:
   REGISTRY: ghcr.io
@@ -34,7 +43,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -59,3 +68,10 @@ jobs:
         with:
           name: ${{ matrix.image }}-environment-locks
           path: ./${{ matrix.image }}_locks/*
+      
+      - name: Upload lock files to the release
+        if: inputs.release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ matrix.image }}-environment-locks
+          files: ./${{ matrix.image }}_locks/
