@@ -285,7 +285,12 @@ class Builder(TaskRunner):
             raise ValueError(f'Expected images to be a list; got {images}')
 
         # get a list of images to release
-        to_release = images if images is not None else list(IMAGE_ORDER)
+        default_release_images = [
+            im for im in IMAGE_ORDER
+            if im.startswith('fornax')
+            and 'hea' not in im # TMPORARY
+        ]
+        to_release = images if images is not None else default_release_images
         for image in to_release:
             if image not in IMAGE_ORDER:
                 raise ValueError(f'Unknow Requested image {image}.')
@@ -301,6 +306,10 @@ class Builder(TaskRunner):
 
             if export_lock:
                 self.export_lockfiles(image, source_tag)
+            
+            # if we are releasing from main, add a stable tag
+            if source_tag == 'main' and 'stable' not in release_tags:
+                release_tags.append('stable')
 
             # loog through release tags
             for release_tag in release_tags:
@@ -351,6 +360,10 @@ class Builder(TaskRunner):
         for image in images_to_process:
             if image not in IMAGE_ORDER:
                 raise ValueError(f'Unknow Requested image {image}.')
+        
+        # if we are releasing from main, add a stable tag
+        if source_tag == 'main' and 'stable' not in release_tags:
+            release_tags.append('stable')
 
         # Loop through the images and collect parameters to params
         params = []

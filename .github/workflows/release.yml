@@ -53,9 +53,9 @@ jobs:
           python scripts/build.py --debug --no-build \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.event.release.target_commitish }}" \
-              --release "${{ github.event.release.tag_name }}" stable \
+              --release "${{ github.event.release.tag_name }}" \
               --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }} \
-              --trigger-ecr --export-locks
+              --trigger-ecr --export-lock
 
       - name: print a list of all images
         id: image-list
