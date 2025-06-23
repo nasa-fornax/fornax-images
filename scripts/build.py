@@ -94,6 +94,12 @@ if __name__ == '__main__':
     )
 
     ap.add_argument(
+        '--list-images', action='store_true',
+        help='Print a list of available images, excluding jupyter-base',
+        default=False
+    )
+
+    ap.add_argument(
         '--debug', action='store_true',
         help='Print debug messages',
         default=False
@@ -117,6 +123,17 @@ if __name__ == '__main__':
     no_build = args.no_build
     build_args = args.build_args
     extra_pars = args.extra_pars
+    list_images = args.list_images
+
+    if list_images:
+        # print available images
+        image_list = [
+            image for image in IMAGE_ORDER
+            if image != 'jupyter-base'
+            and image == 'fornax-main'  # TEMPORARY: only main for now
+        ]
+        print(json.dumps(image_list))
+        sys.exit(0)
 
     # in case images is of the form: '["dir_1", "dir_2"]'
     if len(images) == 1 and '[' in images[0]:
@@ -161,11 +178,11 @@ if __name__ == '__main__':
     # we are either building or releasing
     if release is not None:
         # if releasing, tag all images
-        images = [
-            im for im in IMAGE_ORDER
-            if im.startswith('fornax')
-            and 'hea' not in im # TMPORARY
-        ]
+        if images is None:
+            images = [
+                im for im in IMAGE_ORDER
+                if im.startswith('fornax')
+            ]
 
         # if in main, just re-tag from develop
         if tag == 'main':
@@ -174,7 +191,7 @@ if __name__ == '__main__':
             builder.release('develop', ['main'], images=None)
 
         # do the release
-        builder.release(tag, release, images)
+        builder.release(tag, release, images, export_lock)
 
         if trigger_ecr:
             builder.push_to_ecr(ecr_endpoint, tag, release, images)
@@ -201,9 +218,6 @@ if __name__ == '__main__':
 
             if update_lock:
                 builder.update_lockfiles(image, tag)
-            
-            if export_lock:
-                builder.export_lockfiles(image, tag)
 
             if push:
                 builder.push(image, tag)

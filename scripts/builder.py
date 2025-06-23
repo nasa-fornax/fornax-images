@@ -263,7 +263,7 @@ class Builder(TaskRunner):
         self.out(f"Pushing {full_tag} ...")
         self.run(push_command, timeout=1000)
 
-    def release(self, source_tag, release_tags, images=None):
+    def release(self, source_tag, release_tags, images=None, export_lock=False):
         """Make an image release by tagging the image with release_tags
 
         Parameters:
@@ -274,6 +274,8 @@ class Builder(TaskRunner):
             A list of target tag names for the release (no repo name)
         images: list or None
             The list of images to tag for release. By default, all images
+        export_lock: bool
+            If True, export the lock files from the image after release
 
         """
         # check the passed tags
@@ -299,6 +301,9 @@ class Builder(TaskRunner):
             # if we are releasing from main, add a stable tag
             if source_tag == 'main' and 'stable' not in release_tags:
                 release_tags.append('stable')
+            
+            if export_lock:
+                self.export_lockfiles(image, source_tag)
 
             # loog through release tags
             for release_tag in release_tags:

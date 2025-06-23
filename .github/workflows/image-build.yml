@@ -93,14 +93,6 @@ jobs:
               --ecr-endpoint $ENDPOINT \
               --trigger-ecr \
               --push "$IMAGES_TO_BUILD"
-
-  export-environment-locks:
-    needs: build-and-push-images
-    uses: ./.github/workflows/export-locks.yml
-    secrets: inherit
-    with:
-      # pass the images that were built
-      images: ${{ needs.build-and-push-images.outputs.image_to_build }}
   
   test-images:
     needs: build-and-push-images
