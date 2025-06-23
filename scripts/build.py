@@ -130,7 +130,6 @@ if __name__ == '__main__':
         image_list = [
             image for image in IMAGE_ORDER
             if image != 'jupyter-base'
-            and image == 'fornax-main'  # TEMPORARY: only main for now
         ]
         print(json.dumps(image_list))
         sys.exit(0)
