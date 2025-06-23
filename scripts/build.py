@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
     ap.add_argument(
         '--list-images', action='store_true',
-        help='Print a list of available images, excluding jupyter-base',
+        help='Print a list of releasable images, excluding jupyter-base',
         default=False
     )
 
@@ -129,7 +129,7 @@ if __name__ == '__main__':
         # print available images
         image_list = [
             image for image in IMAGE_ORDER
-            if image != 'jupyter-base'
+            if image not in ['jupyter-base', 'fornax-base']
         ]
         print(json.dumps(image_list))
         sys.exit(0)
