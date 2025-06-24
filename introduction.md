@@ -24,7 +24,7 @@ at the start of every new session. To disable these updates, add an empty file c
 ---
 # Latest Changes
 
-## ??/06/2025
+## ??/07/2025
 - Switch to using a separate environment for each notebook. Each notebook has a matching
   environment (or kernel) with a name that starts with `py-`, e.g. `py-multiband_photometry`,
   `py-light_curve_classifier`. These can be selected from the kernel drop down menu when the 
@@ -34,6 +34,8 @@ at the start of every new session. To disable these updates, add an empty file c
   display of the `py-*` kernels in the launcher.
 - Jupyterlab is run in the conda base environment. The default kernel `python3` contains 
   general astronomy tools (now managed with pip instead of conda).
+- Lock files that list the packages in each environment are stored in the folder `$LOCK_DIR`.
+  The same files are also available on github for every image release.
 
 
 ## 05/04/2025

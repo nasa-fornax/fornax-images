@@ -36,6 +36,15 @@ See the "Actions" tab of the repository to see the results of each workflow.
 
 # Notable Changes
 
+## 06-2025
+- Lock files are copied to a single location `$LOCK_DIR`.
+- Lock files are also released with every image release and available as github release assets.
+- fornax-labextension is installed from a release on github rather from git (faster).
+- re-organize build/release code in build.py so they are independent.
+- refactor the release ci to handle lock files
+- Some notebook requirement files need numpy<2.3; pinned temporary until things are fixed upstream.
+- the introduction.md file is now a single file that is used in all images.
+
 ## 05-2025
 - Add a starting jupyter base image: `jupyter-base` instead of the one from jupyter stack.
 - Rename images to: `fornax-base`, `formax-main` and `fornax-hea`.
