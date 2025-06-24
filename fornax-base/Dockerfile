@@ -62,6 +62,15 @@ RUN mkdir -p $ENV_DIR \
  && VIRTUAL_ENV=$ENV_DIR/$DEFAULT_ENV uv run python -m ipykernel install --name $DEFAULT_ENV \
     --prefix $CONDA_DIR --display-name "$DEFAULT_ENV"
 
+# install fornax-labextension
+RUN cd /tmp/ \
+ && whlurl=`curl -s "https://api.github.com/repos/nasa-fornax/fornax-labextension/releases/latest" \
+    | jq -r '.assets[] | select(.name | endswith(".whl")) | .browser_download_url'` \
+ && whlfile=`basename $whlurl` \
+ && curl -sSLO $whlurl \
+ && pip install --no-cache-dir ./$whlfile \
+ && rm $whlfile
+
 # install code-server
 ENV CODE_EXECUTABLE=code-server
 RUN mamba install code-server \

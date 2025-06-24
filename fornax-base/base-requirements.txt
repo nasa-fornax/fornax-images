@@ -7,4 +7,3 @@ jupyter-vscode-proxy
 jupyter_cpu_alive
 nbgitpuller
 dask-labextension
-git+https://github.com/nasa-fornax/fornax-labextension.git
