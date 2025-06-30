@@ -1,0 +1,9 @@
+jupytext
+jupyterlab_execute_time
+jupyter-resource-usage
+jupyterlab-git
+jupyterlab-myst
+jupyter-vscode-proxy
+jupyter_cpu_alive
+nbgitpuller
+dask-labextension

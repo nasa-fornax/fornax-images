@@ -1,8 +1,14 @@
-name: Build and push images
+name: Image Build
 
 on:
   push:
     branches-ignore: ['releases/**']
+  workflow_dispatch:
+    inputs:
+      images:
+        description: 'Images to build of the form: ["image-1","image-2"]'
+        required: true
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -22,13 +28,9 @@ jobs:
       id-token: write
 
     outputs:
-      dir_changes: ${{ steps.changed-images.outputs.changed_dirs }}
+      image_to_build: ${{ steps.images-to-build.outputs.IMAGES_TO_BUILD }}
 
     steps:
-      - name: Debug Event Payload
-        env:
-          EVENT_PAYLOAD: ${{ toJson(github.event) }}
-        run: echo "$EVENT_PAYLOAD"
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,18 +47,29 @@ jobs:
           python-version: '3.12'
       
       - name: Changed Images
-        id: changed-images
+        if: github.event_name == 'push'
         run: |
           cat <<EOF > tmp_github.json
           ${{ toJson(github) }}
           EOF
           changed_dirs=`python scripts/changed_images.py tmp_github.json --debug`
-          echo "changed_dirs = ${changed_dirs}"
-          echo "changed_dirs=$changed_dirs" >> $GITHUB_OUTPUT
-
+          echo "images_to_build = ${changed_dirs}"
+          echo "images_to_build=$changed_dirs" >> $GITHUB_ENV
+      
+      - name: Manual Image Build
+        if: |
+          github.event_name == 'workflow_dispatch' && 
+          github.ref != 'refs/heads/main'
+        run: |
+          echo "images_to_build = ${{ inputs.images }}"
+          echo "images_to_build=${{ toJson(inputs.images) }}" >> $GITHUB_ENV
+      
+      - name: Images to build
+        id: images-to-build
+        run: echo "IMAGES_TO_BUILD=${{ toJson(env.images_to_build) }}" >> $GITHUB_OUTPUT
 
       - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -65,9 +78,9 @@ jobs:
       - name: Build and push images
         id: push
         env:
-          DIR_CHANGES: ${{ steps.changed-images.outputs.changed_dirs }}
+          IMAGES_TO_BUILD: ${{ steps.images-to-build.outputs.IMAGES_TO_BUILD }}
         run: |
-          echo "DIR_CHANGES: $DIR_CHANGES"
+          echo "IMAGES_TO_BUILD: $IMAGES_TO_BUILD"
           TAG="${{ github.head_ref || github.ref_name }}" 
           if [[ "$TAG" == "main" || "$TAG" == "develop" ]]; then
             ENDPOINT="${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }}"
@@ -79,7 +92,7 @@ jobs:
               --tag $TAG \
               --ecr-endpoint $ENDPOINT \
               --trigger-ecr \
-              --push "$DIR_CHANGES"
+              --push "$IMAGES_TO_BUILD"
   
   test-images:
     needs: build-and-push-images
@@ -87,5 +100,5 @@ jobs:
     secrets: inherit
     if: "!contains(github.event.head_commit.message, '[skip-image-tests]')"
     with:
-      # pass the images that changed for testing
-      images: ${{ needs.build-and-push-images.outputs.dir_changes }}
+      # pass the images that were built for testing
+      images: ${{ needs.build-and-push-images.outputs.image_to_build }}

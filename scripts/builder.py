@@ -1,4 +1,6 @@
 import logging
+import os
+import shutil
 import subprocess
 import sys
 import glob
@@ -9,10 +11,15 @@ import time
 
 
 IMAGE_ORDER = (
-    'base-image',
-    'astro-default',
-    'heasoft'
+    'jupyter-base',
+    'fornax-base',
+    'fornax-main',
+    'fornax-hea'
 )
+
+COMMON_FILES = [
+    'introduction.md'
+]
 
 
 class TaskRunner:
@@ -118,13 +125,35 @@ class Builder(TaskRunner):
                     raise ValueError(
                         f'tag: {release_tag} is not a str without :')
 
+    def _copy_common_files(self, image):
+        """Copy shared files so they can be used in the docker build
+
+        Parameters:
+        -----------
+        image: str
+            Name of the image we are building
+            (also name of the folder that contains the Dockerfile)
+        """
+        if not (os.path.exists(image) or
+                os.path.exists(f'{image}/Dockerfile')) and not self.dryrun:
+            raise ValueError(f'image {image} does not exists')
+
+        # skip base images
+        if image in ['foranx-jupyter', 'fornax-base']:
+            return
+
+        for file in COMMON_FILES:
+            self.out(f"copying: {file} -> {image}")
+            if not self.dryrun:
+                shutil.copy(file, os.path.join(image, file))
+
     def get_full_tag(self, image, tag):
         """Return full tag that includes the registry and repository
 
         Parameters:
         -----------
         image: str
-            Image name (e.g. astro-default or heasoft)
+            Image name (e.g. fornax-main or heasoft)
         tag: str
             The image tag.
 
@@ -133,7 +162,8 @@ class Builder(TaskRunner):
         full_tag = f'{self.registry}/{self.repository}/{image}:{tag}'
         return full_tag
 
-    def build(self, image, tag, build_args=None, extra_args=None):
+    def build(self, image, tag, build_args=None,
+              extra_args=None, extra_tags=None):
         """Build an image by calling 'docker build ..'
 
         Parameters:
@@ -141,7 +171,7 @@ class Builder(TaskRunner):
         repo: str
             repository name
         image: str
-            The name of the image to be built (e.g. astro-default or heasoft)
+            The name of the image to be built (e.g. fornax-main or fornax-hea)
         tag: str
             The image tag.
         build_args: list
@@ -150,6 +180,8 @@ class Builder(TaskRunner):
         extra_args: str
             Extra command line arguments to be passed to 'docker build'
             e.g. '--no-cache --network=host'
+        extra_tags: list or None
+            Extra tags for the image, e.g. latest or date-based
 
         """
         cmd_args = []
@@ -166,9 +198,9 @@ class Builder(TaskRunner):
         build_args = [arg.strip() for arg in build_args]
 
         # add some defaults to build_args
-        # For base-image, the tags are external and should be updated
+        # For jupyter-base, the tags are external and should be updated
         # in the Dockerfile
-        if image != 'base-image':
+        if image != 'jupyter-base':
             mapping = {
                 'REPOSITORY': self.repository,
                 'REGISTRY': self.registry,
@@ -192,9 +224,26 @@ class Builder(TaskRunner):
         if extra_args:
             cmd_args.append(extra_args)
 
+        # any extra tags?
+        extra_tags_str = ''
+        if extra_tags is not None:
+            if not isinstance(extra_tags, list):
+                raise ValueError(
+                    f'Expected extra_tags to be a list, found {extra_tags}'
+                )
+            extra_tags_str = ' '.join([
+                    f'--tag {self.get_full_tag(image, _tag)}'
+                    for _tag in extra_tags
+                ])
+            extra_tags_str += ' '
+
+        # before calling 'docker build', de-reference any symlinks
+        self._copy_common_files(image)
+
         cmd_args = " ".join(cmd_args)
         full_tag = self.get_full_tag(image, tag)
-        build_cmd = f"docker build {cmd_args} --tag {full_tag} {image}"
+        build_cmd = (f"docker build --platform=linux/amd64 {cmd_args} "
+                     f"--tag {full_tag} {extra_tags_str}{image}")
         self.out(f"Building {image} ...")
         self.run(build_cmd, timeout=10000)
 
@@ -204,7 +253,7 @@ class Builder(TaskRunner):
         Parameters:
         -----------
         image: str
-            The name of Image to be pushed (e.g. astro-default or heasoft)
+            The name of Image to be pushed (e.g. fornax-main or heasoft)
         tag: str
             The image tag.
 
@@ -214,7 +263,7 @@ class Builder(TaskRunner):
         self.out(f"Pushing {full_tag} ...")
         self.run(push_command, timeout=1000)
 
-    def release(self, source_tag, release_tags, images=None):
+    def release(self, source_tag, release_tags, images=None, export_lock=False):
         """Make an image release by tagging the image with release_tags
 
         Parameters:
@@ -225,6 +274,8 @@ class Builder(TaskRunner):
             A list of target tag names for the release (no repo name)
         images: list or None
             The list of images to tag for release. By default, all images
+        export_lock: bool
+            If True, export the lock files from the image after release
 
         """
         # check the passed tags
@@ -233,7 +284,6 @@ class Builder(TaskRunner):
         if images is not None and not isinstance(images, list):
             raise ValueError(f'Expected images to be a list; got {images}')
 
-        # get a list of images to release
         to_release = images if images is not None else list(IMAGE_ORDER)
         for image in to_release:
             if image not in IMAGE_ORDER:
@@ -247,6 +297,13 @@ class Builder(TaskRunner):
             command = f'docker pull {full_source_tag}'
             self.out(f"Pulling {full_source_tag} ...")
             self.run(command, timeout=1000)
+            
+            # if we are releasing from main, add a stable tag
+            if source_tag == 'main' and 'stable' not in release_tags:
+                release_tags.append('stable')
+            
+            if export_lock:
+                self.export_lockfiles(image, source_tag)
 
             # loog through release tags
             for release_tag in release_tags:
@@ -297,6 +354,10 @@ class Builder(TaskRunner):
         for image in images_to_process:
             if image not in IMAGE_ORDER:
                 raise ValueError(f'Unknow Requested image {image}.')
+        
+        # if we are releasing from main, add a stable tag
+        if source_tag == 'main' and 'stable' not in release_tags:
+            release_tags.append('stable')
 
         # Loop through the images and collect parameters to params
         params = []
@@ -341,7 +402,7 @@ class Builder(TaskRunner):
         Parameters
         ----------
         image: str
-            Image name (e.g. astro-default or heasoft)
+            Image name (e.g. fornax-main or heasoft)
         """
         self.out(f"Removing the lock files for {image}")
         lockfiles = glob.glob(f"{image}/conda-*lock.yml")
@@ -356,7 +417,7 @@ class Builder(TaskRunner):
         Parameters
         ----------
         image: str
-            The name of the image to be updated (e.g. astro-default or heasoft)
+            The name of the image to be updated (e.g. fornax-main or heasoft)
         tag: str
             The image tag.
         extra_args: str
@@ -391,3 +452,32 @@ class Builder(TaskRunner):
                         lines.append(line)
                 with open(f"{image}/conda-{env_name}-lock.yml", "w") as fp:
                     fp.write("\n".join(lines))
+
+    def export_lockfiles(self, image, tag, extra_args=None):
+        """export the lock files from an image {image}:{tag}
+        Assumed to be in $LOCK_DIR
+
+        Parameters
+        ----------
+        image: str
+            The name of the image to be updated (e.g. fornax-main or heasoft)
+        tag: str
+            The image tag.
+        extra_args: str
+            Extra command line arguments to be passed to 'docker run'
+            e.g. '--network=host'
+
+        """
+        full_tag = self.get_full_tag(image, tag)
+
+        extra_args = extra_args or ''
+        if not isinstance(extra_args, str):
+            raise ValueError(f'Expected str for extra_args; got: {extra_args}')
+
+        lock_dir = f'{image}_locks'
+        self.out(f'exporting the lock files for {image} to ./{lock_dir}')
+        self.run(f'mkdir -p {lock_dir}', 100)
+        cmd = (f'docker run --entrypoint="" --rm -v $PWD/{lock_dir}:/host '
+               f'--user `id -u` {extra_args} '
+               f"{full_tag} bash -c 'cp $LOCK_DIR/* /host/'")
+        self.run(cmd, 1000)

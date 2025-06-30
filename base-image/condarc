@@ -1,8 +1,0 @@
-auto_update_conda: false
-show_channel_urls: true
-channels:
-  - conda-forge
-envs_dirs:
-  - /opt/conda/envs
-pkgs_dirs:
-    - /tmp/cache/conda

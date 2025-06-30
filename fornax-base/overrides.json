@@ -4,6 +4,10 @@
       "markdown": "Jupytext Notebook"
     }
   },
+  "@jupyterlab/notebook-extension:tracker": {
+    "autoStartDefaultKernel": true,
+    "recordTiming": true
+  },
   "dask-labextension:plugin": {
     "autoStartClient": true
   },

@@ -19,16 +19,23 @@ for envfile in `ls conda-*.yml | grep -v lock`; do
         # create the environment if it doesn't exist
         mamba env list | grep -q "^[[:space:]]*$env " || mamba create -n ${env}
         conda env update -q -n ${env} -f $ENVFILE --solver libmamba
-    elif [[ "$env"=="$CONDA_ENV" ]]; then
-        echo "Defaulting to basic env ..." 
-        mamba create --name $env python=3.12 jupyterlab
     fi
-    if [ "$env" != "$CONDA_ENV" ]; then
+    if [ "$env" != "base" ]; then
         # add the environment as a jupyter kernel
-        # CONDA_ENV is defined in the dockerfile
+        # DEFAULT_ENV is defined in the dockerfile
         mamba install -n $env -y ipykernel
-        mamba run -n $env python -m ipykernel install --name $env --prefix $CONDA_DIR/envs/$CONDA_ENV
+        mamba run -n $env python -m ipykernel install --name $env --prefix $CONDA_DIR
+        # Run the kernel with 'conda run -n $env', so the etc/condat/activate.d scripts
+        # are called correctly; this is needed when jupyterlab is running outside the kernel
+        KERNEL_JSON="$CONDA_DIR/share/jupyter/kernels/$env/kernel.json"
+        jq ".argv = [\"$CONDA_DIR/bin/conda\", \"run\", \"-n\", \"$env\", \"python\"] + .argv[1:]" $KERNEL_JSON > /tmp/tmp.$$.json
+        mv /tmp/tmp.$$.json $KERNEL_JSON
     fi
+    # save lock file
+    mamba env -n $env export > $CONDA_DIR/envs/$env/${env}-lock.yml
+    # also save it in one location
+    mkdir -p $LOCK_DIR
+    cp $CONDA_DIR/envs/$env/${env}-lock.yml $LOCK_DIR
 done
 
 # clean

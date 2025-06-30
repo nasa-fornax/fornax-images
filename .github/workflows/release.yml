@@ -9,36 +9,56 @@ env:
 
 jobs:
 
-  build-and-push-images:
+  prep-release:
     runs-on: ubuntu-latest
 
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in
     # this job.
     permissions:
-
       contents: read
-      packages: write
+      packages: read
       attestations: write
-      id-token: write
+    
+    outputs:
+      images: ${{ steps.image-list.outputs.IMAGE_LIST }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+    
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: print a list of images
+        id: image-list
+        run: |
+          images=$(python scripts/build.py --list-images)
+          echo "Image List: ${images}"
+          echo "IMAGE_LIST=${images}" >> $GITHUB_OUTPUT
 
-      - name: Debug Event Payload
-        env:
-          EVENT_PAYLOAD: ${{ toJson(github.event) }}
-        run: echo "$EVENT_PAYLOAD"
+        
+  release-images:
+    needs: prep-release
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.prep-release.outputs.images) }}
+
+    steps:
 
       - name: Checkout repository
         uses: actions/checkout@v4
         
       - name: Setup Python
         uses: actions/setup-python@v5
-        id: setup_python
         with:
           python-version: '3.12'
 
       - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -50,6 +70,20 @@ jobs:
           python scripts/build.py --debug --no-build \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.event.release.target_commitish }}" \
-              --release "${{ github.event.release.tag_name }}" stable \
+              --release "${{ github.event.release.tag_name }}" \
               --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }} \
-              --trigger-ecr
+              --trigger-ecr --export-lock "${{ matrix.image }}"
+            
+            # pack lock files into a zip file
+            zip -r "${{ matrix.image }}-environment-locks.zip" "${{ matrix.image }}_locks"
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.image }}-environment-locks
+          path: ./${{ matrix.image }}-environment-locks.zip
+      
+      - name: Upload lock files to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./${{ matrix.image }}-environment-locks.zip
