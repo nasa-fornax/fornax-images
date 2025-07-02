@@ -16,12 +16,12 @@ for envfile in `ls requirements-*.txt`; do
     uv venv $VIRTUAL_ENV
     uv pip install -r $ENVFILE
     uv pip install ipykernel pip
-    uv run python -m ipykernel install --name $env --prefix $CONDA_DIR
+    uv run python -m ipykernel install --name $env --prefix $PIXI_HOME/envs/$JUPYTER_ENV
     # update PATH, so `which python` works correctly in the notebook
-    KERNEL_JSON="$CONDA_DIR/share/jupyter/kernels/$env/kernel.json"
+    KERNEL_JSON="$PIXI_HOME/envs/$JUPYTER_ENV/share/jupyter/kernels/$env/kernel.json"
     jq ".env = (.env // {}) | .env.PATH = \"$ENV_DIR/$env/bin:$PATH\"" $KERNEL_JSON > /tmp/tmp.$$.json
     mv /tmp/tmp.$$.json $KERNEL_JSON
-    uv pip freeze > $VIRTUAL_ENV/$ENVFILE
+    uv pip list --format=freeze > $VIRTUAL_ENV/$ENVFILE
     # also save it in one location
     mkdir -p $LOCK_DIR
     cp $VIRTUAL_ENV/$ENVFILE $LOCK_DIR
@@ -29,5 +29,4 @@ done
 
 # clean
 uv cache clean
-pip cache purge
 

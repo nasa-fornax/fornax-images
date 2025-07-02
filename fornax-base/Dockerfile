@@ -33,8 +33,8 @@ USER root
 
 # jupyter overrides
 COPY --chown=$NB_UID:$NB_GID overrides.json $HOME/build/
-RUN mkdir -p $CONDA_DIR/share/jupyter/lab/settings/ \
- && mv ~/build/overrides.json $CONDA_DIR/share/jupyter/lab/settings/ \
+RUN mkdir -p $PIXI_HOME/envs/$JUPYTER_ENV/share/jupyter/lab/settings/ \
+ && mv ~/build/overrides.json $PIXI_HOME/envs/$JUPYTER_ENV/share/jupyter/lab/settings/ \
  # Disable the announcement extension
  && jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
 
@@ -50,17 +50,15 @@ RUN cd build && bash /opt/scripts/apt-install.sh
 USER $NB_USER
 
 # add packages to base and notebook
-COPY --chown=$NB_UID:$NB_GID base-requirements.txt requirements-$DEFAULT_ENV.txt $HOME/build/
+COPY --chown=$NB_UID:$NB_GID jupyter-requirements.txt requirements-$DEFAULT_ENV.txt $HOME/build/
 RUN mkdir -p $ENV_DIR \
  && cd build \
- && pip install --no-cache-dir uv \
- && pip install --no-cache-dir -r $HOME/build/base-requirements.txt \
- # && bash /opt/scripts/conda-env-install.sh
+ && uv pip install --no-cache-dir -r $HOME/build/jupyter-requirements.txt \
  # install requirements for DEFAULT_ENV
  && bash /opt/scripts/uv-env-install.sh \
  # fix the display name of DEFAULT_ENV
  && VIRTUAL_ENV=$ENV_DIR/$DEFAULT_ENV uv run python -m ipykernel install --name $DEFAULT_ENV \
-    --prefix $CONDA_DIR --display-name "$DEFAULT_ENV"
+    --prefix $PIXI_HOME/envs/$JUPYTER_ENV --display-name "$DEFAULT_ENV"
 
 # install fornax-labextension
 RUN cd /tmp/ \
@@ -68,23 +66,22 @@ RUN cd /tmp/ \
     | jq -r '.assets[] | select(.name | endswith(".whl")) | .browser_download_url'` \
  && whlfile=`basename $whlurl` \
  && curl -sSLO $whlurl \
- && pip install --no-cache-dir ./$whlfile \
+ && uv pip install --no-cache-dir ./$whlfile \
  && rm $whlfile
 
 # install code-server
 ENV CODE_EXECUTABLE=code-server
-RUN mamba install code-server \
+RUN pixi global install --environment $JUPYTER_ENV $CODE_EXECUTABLE  \
  # update the lockfile
- && mamba env export > $CONDA_DIR/base-lock.yml \
+ && uv pip list --format=freeze > $PIXI_HOME/envs/$JUPYTER_ENV/$JUPYTER_ENV-lock.txt \
  && mkdir -p $LOCK_DIR \
- && cp $CONDA_DIR/base-lock.yml $LOCK_DIR \
- && mamba clean -yaf
+ && cp $PIXI_HOME/envs/$JUPYTER_ENV/$JUPYTER_ENV-lock.txt $LOCK_DIR \
+ && pixi clean cache -y
 
 ## ------------------------------------#
 
 # add a script to run before the jupyter session
 USER root
-RUN mv /opt/conda/bin/uv /opt/conda/bin/uvx /usr/local/bin/
 COPY --chmod=0755 pre-notebook.sh /usr/local/bin/before-notebook.d/20-pre-notebook.sh
 USER $NB_USER
 
@@ -92,10 +89,7 @@ USER $NB_USER
 # because ~/.bashrc is not loaded when user space is mounted
 # Also, add it to before-notebook.d main script
 USER root
-ENV PATH=$CONDA_DIR/envs/$CONDA_ENV/bin:$PATH
 RUN cat $HOME/.bashrc >> /etc/bash.bashrc \
- # remove conda hook
- && sed -i '/conda shell.bash hook/d' /etc/bash.bashrc \
  # activate DEFAULT_ENV
  && printf "\nsource $ENV_DIR/$DEFAULT_ENV/bin/activate\n" >> /etc/bash.bashrc \
  && printf "\nsource $ENV_DIR/$DEFAULT_ENV/bin/activate\n" >> /usr/local/bin/before-notebook.d/10-set-default-env.sh \
