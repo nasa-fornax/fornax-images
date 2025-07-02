@@ -15,3 +15,8 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 
 # For firefly
 ENV FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer
+
+# TEMP: remove /opt/
+USER root
+RUN rm -rf /opt/
+USER ${NB_USER}
