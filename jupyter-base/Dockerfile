@@ -12,6 +12,7 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 ARG NB_USER="jovyan"
 ARG NB_UID="1000"
 ARG NB_GID="100"
+ARG PIXI_HOME="/opt/pixi"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -28,16 +29,16 @@ RUN apt-get update --yes \
  && locale-gen
 
 # Configure environment
-ENV CONDA_DIR=/opt/conda \
+ENV PIXI_HOME=${PIXI_HOME} \
     SHELL=/bin/bash \
-    NB_USER="${NB_USER}" \
+    NB_USER=${NB_USER} \
     NB_UID=${NB_UID} \
     NB_GID=${NB_GID} \
     LC_ALL=C.UTF-8 \
     LANG=C.UTF-8 \
     LANGUAGE=C.UTF-8
 
-ENV PATH="${CONDA_DIR}/bin:${PATH}" \
+ENV PATH="${PIXI_HOME}/bin:${PATH}" \
     HOME="/home/${NB_USER}"
 
 # Copy scripts from the jupyter stack script
@@ -55,8 +56,7 @@ RUN cd /usr/local/bin/ \
 ENTRYPOINT ["tini", "-g", "--", "start.sh"]
 
 # Enable prompt color
-RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashrc \
- && echo 'eval "$(conda shell.bash hook)"' >> /etc/skel/.bashrc
+RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashrc
 
 # Delete existing user with UID="${NB_UID}" if it exists
 RUN if grep -q "${NB_UID}" /etc/passwd; then \
@@ -68,19 +68,23 @@ RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
  && sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers \
  && sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers \
  && useradd --no-log-init --create-home --shell /bin/bash --uid "${NB_UID}" --no-user-group "${NB_USER}" \
- && mkdir -p "${CONDA_DIR}" \
- && chown "${NB_USER}:${NB_GID}" "${CONDA_DIR}" \
  && chmod g+w /etc/passwd \
- && fix-permissions "${CONDA_DIR}" \
+ && mkdir -p $PIXI_HOME \
+ && fix-permissions "${PIXI_HOME}" \
  && fix-permissions "/home/${NB_USER}"
 
 USER ${NB_UID}
 ARG PYTHON_VERSION=3.12
 
-# Install micromamba
-COPY --chown=$NB_UID:$NB_GID install-micromamba.sh /tmp/
-RUN bash /tmp/install-micromamba.sh \
- && rm /tmp/install-micromamba.sh
+# Install pixi
+ENV PATH="${PIXI_HOME}/bin:${PATH}"
+RUN curl -fsSL https://pixi.sh/install.sh | bash \
+ && pixi global install --environment base --expose jupyter --expose python --expose uv --expose jupyterhub-singleuser \
+    "python=${PYTHON_VERSION}" uv \
+    "jupyterlab==4.3.6" \
+    "jupyterhub==5.2.1" \
+    "notebook==7.3.3" \
+ && pixi clean cache -y
 
 ## ----- end of docker-stacks-foundation ----- ##
 ## ------------------------------------------- ##
@@ -100,6 +104,9 @@ RUN cd /usr/local/bin/ \
  && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/start-singleuser.py \
  && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/docker_healthcheck.py \
  && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/jupyter_server_config.py \
+ # ensure the start scripts use the correct jupyter
+ && sed -i "s|\"jupyter|\"$PIXI_HOME/bin/jupyter|g" start-notebook.py \
+ && sed -i "s|\"jupyter|\"$PIXI_HOME/bin/jupyter|g" start-singleuser.py \
  && chmod +x start-notebook.py start-singleuser.py \
  && mkdir -p /etc/jupyter/ \
  && mv docker_healthcheck.py jupyter_server_config.py /etc/jupyter/
@@ -115,17 +122,13 @@ ENV DASK_ROOT_CONFIG=${CONDA_DIR}/etc
 ## -------------------------------- ##
 
 ## -- install jupyter -- ##
-RUN mamba install --yes \
-     "jupyterlab==4.3.6" \
-     "jupyterhub==5.2.1" \
-     "notebook==7.3.3" \
- && jupyter server --generate-config \
- && mamba clean -yaf \
+USER $NB_USER
+RUN jupyter server --generate-config \
+ && pixi clean cache -y \
  && jupyter lab clean \
  && rm -rf "/home/${NB_USER}/.cache/yarn" \
- && fix-permissions "${CONDA_DIR}" \
- && fix-permissions "/home/${NB_USER}" \
- && mamba env export > $CONDA_DIR/base-lock.yml
+ && fix-permissions "${PIXI_HOME}" \
+ && fix-permissions "/home/${NB_USER}"
 
-USER $NB_USER
+ USER $NB_USER
 WORKDIR $HOME
