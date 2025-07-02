@@ -19,6 +19,13 @@ FROM ${REGISTRY}/${REPOSITORY}/fornax-main:develop
 # TEMP: remove /opt/
 USER root
 RUN rm -rf /opt/ \
- && rm -rf /usr/local/bin/before-notebook.d/10-set-default-env.sh
+ && rm -rf /usr/local/bin/before-notebook.d/* \
+ && sed -i '/activate/d' /etc/bash.bashrc \
+ && mkdir -p /opt2/ \
+ && fix-permissions /opt2
 
 USER ${NB_USER}
+ENV PATH=/opt2/py3/bin:$PATH
+RUN cd /opt2/ \
+ && uv venv py3 \
+ && VIRTUAL_ENV=/opt2/py3 uv pip install jupyterlab jupyterhub
