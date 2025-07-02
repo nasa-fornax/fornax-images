@@ -77,9 +77,10 @@ USER ${NB_UID}
 ARG PYTHON_VERSION=3.12
 
 # Install pixi
-ENV PATH="${PIXI_HOME}/bin:${PATH}"
+ENV PATH="${PIXI_HOME}/bin:${PATH}" \
+    JUPYTER_ENV=jupyter
 RUN curl -fsSL https://pixi.sh/install.sh | bash \
- && pixi global install --environment base --expose jupyter --expose python --expose uv --expose jupyterhub-singleuser \
+ && pixi global install --environment $JUPYTER_ENV --expose jupyter --expose python --expose uv --expose jupyterhub-singleuser \
     "python=${PYTHON_VERSION}" uv \
     "jupyterlab==4.3.6" \
     "jupyterhub==5.2.1" \
