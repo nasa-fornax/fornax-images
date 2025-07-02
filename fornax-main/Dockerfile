@@ -18,5 +18,7 @@ FROM ${REGISTRY}/${REPOSITORY}/fornax-main:develop
 
 # TEMP: remove /opt/
 USER root
-RUN rm -rf /opt/
+RUN rm -rf /opt/ \
+ && rm -rf /usr/local/bin/before-notebook.d/10-set-default-env.sh
+
 USER ${NB_USER}
