@@ -126,7 +126,7 @@ ONBUILD USER $NB_USER
 
 
 # setup conda and uv environments
-ONBUILD RUN cd build && bash /opt/scripts/conda-env-install.sh && bash /opt/scripts/uv-env-install.sh
+ONBUILD RUN cd build && bash /opt/scripts/uv-env-install.sh
 # and ensure the correct display name
 # ONBUILD RUN mamba run -n $CONDA_ENV python -m ipykernel install --sys-prefix --display-name "$CONDA_ENV"
 # ----------------------- #
