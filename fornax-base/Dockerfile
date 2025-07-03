@@ -73,7 +73,10 @@ USER $NB_USER
 
 # install DEFAULT_ENV
 COPY --chown=$NB_UID:$NB_GID requirements-$DEFAULT_ENV.txt /tmp/
-RUN cd /tmp/ && bash /usr/local/bin/uv-env-install.sh
+RUN cd /tmp/ && bash /usr/local/bin/uv-env-install.sh \
+ # fix the display name of DEFAULT_ENV
+ && $ENV_DIR/$DEFAULT_ENV/bin/python -m ipykernel install --name $DEFAULT_ENV \
+    --prefix $JUPYTER_DIR --display-name "$DEFAULT_ENV"
 
 # add a script to run before the jupyter session
 USER root
