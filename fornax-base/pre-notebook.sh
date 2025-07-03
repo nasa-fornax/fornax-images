@@ -29,13 +29,13 @@ for repo in ${notebook_repos[@]}; do
     name=`echo $repo | sed 's#.*/\([^/]*\)\.git#\1#'`
     if ! test -f $NOUPDATE; then
         # use nbgitpuller
-        timeout $timeout $CONDA_DIR/bin/gitpuller $repo main $name
+        timeout $timeout $JUPYTER_DIR/bin/gitpuller $repo main $name
     fi
 done
 
 # change the default kernels in the notebooks;
 # remove once they are changed upstream
-if $CONDA_DIR/bin/jupyter kernelspec list  | grep multiband_photometry; then
+if $JUPYTER_DIR/bin/jupyter kernelspec list  | grep multiband_photometry; then
     cd $NOTEBOOK_DIR/fornax-demo-notebooks
     jupytext --set-kernel py-multiband_photometry forced_photometry/multiband_photometry.md
     jupytext --set-kernel py-light_curve_generator light_curves/light_curve_generator.md
@@ -47,8 +47,8 @@ fi
 # ----------- #
 
 # bring in the intro page
-if test -f /opt/scripts/introduction.html; then
-    cp /opt/scripts/introduction.html $NOTEBOOK_DIR
+if test -f $JUPYTER_DIR/introduction.html; then
+    cp $JUPYTER_DIR/introduction.html $NOTEBOOK_DIR
 fi
 # remove any old introduction.md
 if test -f $NOTEBOOK_DIR/introduction.md; then
