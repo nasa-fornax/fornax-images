@@ -66,16 +66,15 @@ RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
  && sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers \
  && useradd --no-log-init --create-home --shell /bin/bash --uid "${NB_UID}" --no-user-group "${NB_USER}" \
  && chmod g+w /etc/passwd \
- && fix-permissions /opt/ \
- && fix-permissions "/home/${NB_USER}"
+ && fix-permissions /opt/
 
 # Install uv & micromamba
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
- && mv $HOME/.local/bin/uv* /usr/local/bin \
+RUN cd /tmp/ \
+ && curl -LsSf https://astral.sh/uv/install.sh | sh \
+ && mv $HOME/.local/bin/uv* /usr/local/bin/ \
  && rm -rf $HOME/.local/bin \
  && sed -i '/\.local\/bin/d' $HOME/.bashrc \
  # micromamba
- && cd /tmp/ \
  && curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
  && mv bin/micromamba /usr/local/bin/ \
  && rm -rf bin
@@ -109,7 +108,6 @@ RUN cd /usr/local/bin/ \
 
 HEALTHCHECK --interval=3s --timeout=1s --start-period=3s --retries=3 \
     CMD /etc/jupyter/docker_healthcheck.py || exit 1
-RUN fix-permissions /etc/jupyter/ /home/${NB_USER} /opt/
 
 USER ${NB_UID}
 
@@ -117,15 +115,22 @@ USER ${NB_UID}
 ## -------------------------------- ##
 
 ## -- install jupyter -- ##
-ARG PYTHON_VERSION=3.12
-ENV PYTHON_VERSION=${PYTHON_VERSION}
-RUN uv venv $JUPYTER_DIR --python $PYTHON_VERSION \
+ENV PYTHON_VERSION=3.12 \
+    ENV_DIR=/opt/envs
+ENV UV_PYTHON_INSTALL_DIR=${ENV_DIR}/.uv
+RUN uv python install $PYTHON_VERSION \
+ && uv venv $JUPYTER_DIR \
  && export VIRTUAL_ENV=$JUPYTER_DIR \
  && uv pip install "jupyterlab==4.*" "jupyterhub==5.*" \
  && uv clean \
  && jupyter lab clean \
- && fix-permissions /opt/ $HOME \
- && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt
+ && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
+ && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete
+
+USER root
+RUN fix-permissions /etc/jupyter/ /home/${NB_USER} /opt/ \
+ && cat $HOME/.bashrc >> /etc/bash.bashrc \
+ && rm -r $HOME/.*
 
 USER $NB_USER
 WORKDIR $HOME
