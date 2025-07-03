@@ -1,8 +1,8 @@
 name: Image Build
 
 on:
-  push:
-    branches-ignore: ['releases/**']
+  # push:
+  #   branches-ignore: ['releases/**']
   workflow_dispatch:
     inputs:
       images:
