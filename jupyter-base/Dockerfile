@@ -28,7 +28,7 @@ RUN apt-get update --yes \
  && locale-gen
 
 # Configure environment
-ENV CONDA_DIR=/opt/conda \
+ENV JUPYTER_DIR=/opt/jupyter \
     SHELL=/bin/bash \
     NB_USER="${NB_USER}" \
     NB_UID=${NB_UID} \
@@ -37,7 +37,7 @@ ENV CONDA_DIR=/opt/conda \
     LANG=C.UTF-8 \
     LANGUAGE=C.UTF-8
 
-ENV PATH="${CONDA_DIR}/bin:${PATH}" \
+ENV PATH="${JUPYTER_DIR}/bin:${PATH}" \
     HOME="/home/${NB_USER}"
 
 # Copy scripts from the jupyter stack script
@@ -46,17 +46,14 @@ RUN cd /usr/local/bin/ \
  && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/fix-permissions \
  && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/run-hooks.sh \
  && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/start.sh \
- && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/10activate-conda-env.sh \
  && chmod a+rx fix-permissions start.sh \
- && mkdir -p start-notebook.d before-notebook.d \
- && mv 10activate-conda-env.sh start-notebook.d
+ && mkdir -p start-notebook.d before-notebook.d
 
 # Configure container entrypoint
 ENTRYPOINT ["tini", "-g", "--", "start.sh"]
 
 # Enable prompt color
-RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashrc \
- && echo 'eval "$(conda shell.bash hook)"' >> /etc/skel/.bashrc
+RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashrc
 
 # Delete existing user with UID="${NB_UID}" if it exists
 RUN if grep -q "${NB_UID}" /etc/passwd; then \
@@ -68,19 +65,22 @@ RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
  && sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers \
  && sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers \
  && useradd --no-log-init --create-home --shell /bin/bash --uid "${NB_UID}" --no-user-group "${NB_USER}" \
- && mkdir -p "${CONDA_DIR}" \
- && chown "${NB_USER}:${NB_GID}" "${CONDA_DIR}" \
  && chmod g+w /etc/passwd \
- && fix-permissions "${CONDA_DIR}" \
+ && fix-permissions /opt/ \
  && fix-permissions "/home/${NB_USER}"
 
-USER ${NB_UID}
-ARG PYTHON_VERSION=3.12
+# Install uv & micromamba
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
+ && mv $HOME/.local/bin/uv* /usr/local/bin \
+ && rm -rf $HOME/.local/bin \
+ && sed -i '/\.local\/bin/d' $HOME/.bashrc \
+ # micromamba
+ && cd /tmp/ \
+ && curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
+ && mv bin/micromamba /usr/local/bin/ \
+ && rm -rf bin
 
-# Install micromamba
-COPY --chown=$NB_UID:$NB_GID install-micromamba.sh /tmp/
-RUN bash /tmp/install-micromamba.sh \
- && rm /tmp/install-micromamba.sh
+
 
 ## ----- end of docker-stacks-foundation ----- ##
 ## ------------------------------------------- ##
@@ -101,6 +101,9 @@ RUN cd /usr/local/bin/ \
  && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/docker_healthcheck.py \
  && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/jupyter_server_config.py \
  && chmod +x start-notebook.py start-singleuser.py \
+ # make sure we start the correct jupyter
+ && sed -i "s|\"jupyter|\"$JUPYTER_DIR/bin/jupyter|g" start-notebook.py \
+ && sed -i "s|\"jupyter|\"$JUPYTER_DIR/bin/jupyter|g" start-singleuser.py \
  && mkdir -p /etc/jupyter/ \
  && mv docker_healthcheck.py jupyter_server_config.py /etc/jupyter/
 
@@ -108,24 +111,21 @@ HEALTHCHECK --interval=3s --timeout=1s --start-period=3s --retries=3 \
     CMD /etc/jupyter/docker_healthcheck.py || exit 1
 RUN fix-permissions /etc/jupyter/ /home/${NB_USER} /opt/
 
-# set DASK_ROOT_CONFIG a directory writable by the user
-ENV DASK_ROOT_CONFIG=${CONDA_DIR}/etc
+USER ${NB_UID}
 
 ## ----- end of base-notebook ----- ##
 ## -------------------------------- ##
 
 ## -- install jupyter -- ##
-RUN mamba install --yes \
-     "jupyterlab==4.3.6" \
-     "jupyterhub==5.2.1" \
-     "notebook==7.3.3" \
- && jupyter server --generate-config \
- && mamba clean -yaf \
+ARG PYTHON_VERSION=3.12
+ENV PYTHON_VERSION=${PYTHON_VERSION}
+RUN uv venv $JUPYTER_DIR --python $PYTHON_VERSION \
+ && export VIRTUAL_ENV=$JUPYTER_DIR \
+ && uv pip install "jupyterlab==4.*" "jupyterhub==5.*" \
+ && uv clean \
  && jupyter lab clean \
- && rm -rf "/home/${NB_USER}/.cache/yarn" \
- && fix-permissions "${CONDA_DIR}" \
- && fix-permissions "/home/${NB_USER}" \
- && mamba env export > $CONDA_DIR/base-lock.yml
+ && fix-permissions /opt/ $HOME \
+ && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt
 
 USER $NB_USER
 WORKDIR $HOME
