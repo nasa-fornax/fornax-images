@@ -6,12 +6,10 @@
   },
   "@jupyterlab/notebook-extension:tracker": {
     "autoStartDefaultKernel": true,
-    "recordTiming": true
+    "recordTiming": true,
+    "windowingMode": "defer"
   },
   "dask-labextension:plugin": {
     "autoStartClient": true
-  },
-  "@jupyterlab/notebook-extension": {
-    "scrollHeadingToTop": false
   }
 }
