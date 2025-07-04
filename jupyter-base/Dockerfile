@@ -53,7 +53,9 @@ RUN cd /usr/local/bin/ \
 ENTRYPOINT ["tini", "-g", "--", "start.sh"]
 
 # Enable prompt color
-RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashrc
+RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashrc \
+ && echo 'eval "$(micromamba shell hook --shell bash)"' >> /etc/skel/.bashrc \
+ && echo 'eval "$(micromamba shell hook --shell bash)"' > /usr/local/bin/before-notebook.d/10activate-conda-env.sh 
 
 # Delete existing user with UID="${NB_UID}" if it exists
 RUN if grep -q "${NB_UID}" /etc/passwd; then \
@@ -69,6 +71,7 @@ RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
  && fix-permissions /opt/
 
 # Install uv & micromamba
+ENV MAMBA_ROOT_PREFIX=/opt/
 RUN cd /tmp/ \
  && curl -LsSf https://astral.sh/uv/install.sh | sh \
  && mv $HOME/.local/bin/uv* /usr/local/bin/ \
