@@ -13,13 +13,13 @@ for envfile in `ls conda-*.yml`; do
         exit 1
     fi
     echo "Creating $env ..."
-    micromamba create -y -n $env -f $ENVFILE -r $ENV_DIR/.. --use-uv
+    micromamba create -y -n $env -f $ENVFILE --use-uv
 
     # add our useful packages
-    micromamba install -n $env -y -r $ENV_DIR/.. ipykernel pip
+    micromamba install -n $env -y ipykernel pip
 
     # add the environment as a jupyter kernel
-    micromamba run -n $env -r $ENV_DIR/.. python -m ipykernel install --name $env --prefix $JUPYTER_DIR
+    micromamba run -n $env python -m ipykernel install --name $env --prefix $JUPYTER_DIR
     
     # Run the kernel with 'conda run -n $env', so the etc/condat/activate.d scripts
     # are called correctly; this is needed when jupyterlab is running outside the kernel
@@ -27,7 +27,7 @@ for envfile in `ls conda-*.yml`; do
     jq ".argv = [\"/usr/local/bin/micromamba\", \"run\", \"-n\", \"$env\", \"-r\", \"$ENV_DIR/..\", \"python\"] + .argv[1:]" $KERNEL_JSON > /tmp/tmp.$$.json
     mv /tmp/tmp.$$.json $KERNEL_JSON
     # save lock file
-    micromamba env -n $env -r $ENV_DIR/.. export > $ENV_DIR/$env/${env}-lock.yml
+    micromamba env -n $env export > $ENV_DIR/$env/${env}-lock.yml
     # also save it in one location
     mkdir -p $LOCK_DIR
     cp $ENV_DIR/$env/${env}-lock.yml $LOCK_DIR
