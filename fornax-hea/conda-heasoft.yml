@@ -5,6 +5,5 @@ channels:
   - nodefaults
 dependencies:
   - python=3.12
-  - heasoft=6.35.1
-  - pytest
+  - heasoft=6.35.*
 prefix: /opt/conda/envs/heasoft
