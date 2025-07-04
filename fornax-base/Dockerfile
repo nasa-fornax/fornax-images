@@ -87,8 +87,14 @@ USER $NB_USER
 # because ~/.bashrc is not loaded when user space is mounted
 # Also, add it to before-notebook.d main script
 USER root
-RUN printf "\nsource \$ENV_DIR/\$DEFAULT_ENV/bin/activate\n" >> /etc/bash.bashrc \
- && printf "\nsource \$ENV_DIR/\$DEFAULT_ENV/bin/activate\n" >> /usr/local/bin/before-notebook.d/10-set-default-env.sh \
+RUN echo "if [ -f \$ENV_DIR/\$DEFAULT_ENV/bin/activate ]; then" > /tmp/activate.sh \
+ && echo "  source \$ENV_DIR/\$DEFAULT_ENV/bin/activate" >> /tmp/activate.sh \
+ && echo "else" >> /tmp/activate.sh \
+ && echo "  micromamba activate \$DEFAULT_ENV" >> /tmp/activate.sh \
+ && echo "fi" >> /tmp/activate.sh \
+ && echo "" >> /tmp/activate.sh \
+ && cat /tmp/activate.sh >> /etc/bash.bashrc \
+ && cat /tmp/activate.sh  >> /usr/local/bin/before-notebook.d/10activate-conda-env.sh \
  && rm -r /tmp/*
 
 # reset user and location
@@ -114,7 +120,7 @@ RUN ADD_NOTEBOOKS=1 bash /usr/local/bin/before-notebook.d/20-pre-notebook.sh
 
 # Install OS packages and then clean up
 ONBUILD RUN mkdir -p $HOME/build
-ONBUILD COPY --chown=$NB_UID:$NB_GID apt* build-* $HOME/build/
+ONBUILD COPY --chown=$NB_UID:$NB_GID apt* build-* requirements-* conda-* $HOME/build/
 ONBUILD USER root
 ONBUILD RUN mkdir -p build && cd build && bash /usr/local/bin/apt-install.sh
 ONBUILD USER $NB_USER
@@ -122,7 +128,8 @@ ONBUILD USER $NB_USER
 
 
 # setup uv environments
-ONBUILD RUN cd build && bash /usr/local/bin/uv-env-install.sh
+ONBUILD RUN cd build && bash /usr/local/bin/uv-env-install.sh \
+ && bash /usr/local/bin/conda-env-install.sh
 # ----------------------- #
 
 # Any other build-* scripts; e.g. build tractor, heasoft etc #
