@@ -56,7 +56,7 @@ class CommonTests:
 
     @staticmethod
     def _test_conda_env_file(env, ref_yml):
-        result = CommonTests.run_cmd(f'mamba env export -n {env}')
+        result = CommonTests.run_cmd(f'micromamba env export -n {env}')
         lines = []
         include = False
         for line in result.stdout.split('\n'):
