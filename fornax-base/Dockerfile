@@ -11,7 +11,7 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 
 
 ENV DEFAULT_ENV=python3 \
-    LOCK_DIR=/opt/lock
+    LOCK_DIR=$ENV_DIR/lock
 
 
 # cache location: use /tmp/ so we don't fill up $HOME
