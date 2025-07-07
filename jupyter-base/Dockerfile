@@ -120,7 +120,7 @@ USER ${NB_UID}
 ## -- install jupyter -- ##
 ENV PYTHON_VERSION=3.12 \
     ENV_DIR=/opt/envs
-ENV UV_PYTHON_INSTALL_DIR=${ENV_DIR}/.uv
+ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python
 RUN uv python install $PYTHON_VERSION \
  && uv venv $JUPYTER_DIR \
  && export VIRTUAL_ENV=$JUPYTER_DIR \
