@@ -89,8 +89,10 @@ USER $NB_USER
 USER root
 RUN echo "if [ -f \$ENV_DIR/\$DEFAULT_ENV/bin/activate ]; then" > /tmp/activate.sh \
  && echo "  source \$ENV_DIR/\$DEFAULT_ENV/bin/activate" >> /tmp/activate.sh \
- && echo "else" >> /tmp/activate.sh \
+ && echo "elif [ -d \$ENV_DIR/\$DEFAULT_ENV/conda-meta ]; then" >> /tmp/activate.sh \
  && echo "  micromamba activate \$DEFAULT_ENV" >> /tmp/activate.sh \
+ && echo "else" >> /tmp/activate.sh \
+ && echo "  echo DEFAULT_ENV=\$DEFAULT_ENV not found" >> /tmp/activate.sh \
  && echo "fi" >> /tmp/activate.sh \
  && echo "" >> /tmp/activate.sh \
  && cat /tmp/activate.sh >> /etc/bash.bashrc \
