@@ -116,6 +116,12 @@ ENV NOTEBOOK_DIR=/opt/notebooks \
 # Run the pre-notebooks script to get a copy in the image
 RUN ADD_NOTEBOOKS=1 bash /usr/local/bin/before-notebook.d/20-pre-notebook.sh
 
+# SUPPORT_DATA_MOUNT can be passed from JH. The location of the mount point for support data
+# SUPPORT_DATA_DIR: is what scripts should use. It is fixed here.
+ARG SUPPORT_DATA_MOUNT=/shared-storage/support-data
+ENV SUPPORT_DATA_DIR=/opt/support-data
+RUN ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
+
 # ==== Start ONBUILD commands ==== #
 # These run in images the inherit fornax-images
 # ================================ #
