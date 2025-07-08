@@ -24,7 +24,7 @@ at the start of every new session. To disable these updates, add an empty file c
 ---
 # Latest Changes
 
-## 25.07??
+## 25.0708
 - Fix notebook scrolling jumps (caused by jupyterlab-myst) by setting a default windowing mode in the notebook app.
 - Change location of installed software to allow for portability. Lock files are now
   under `LOCK_DIR=$ENV_DIR/lock`
