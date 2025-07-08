@@ -130,4 +130,4 @@ RUN mamba install --yes \
 USER $NB_USER
 WORKDIR $HOME
 
-ENV BUILD=1
+ENV BUILD=2
