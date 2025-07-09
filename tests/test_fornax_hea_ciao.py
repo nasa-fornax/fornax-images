@@ -39,5 +39,5 @@ def test_check_packages():
     import ciao_contrib  # noqa 401
 
 
-def test_fversion():
+def test_version():
     subprocess.check_call("ciaover")

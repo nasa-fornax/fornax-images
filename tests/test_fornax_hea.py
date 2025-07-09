@@ -53,4 +53,6 @@ def test_ciao():
     script_dir = os.path.dirname(__file__)
     result = CommonTests.run_cmd(('micromamba run -n ciao pytest -v -s '
                                   f'{script_dir}/test_fornax_hea_ciao.py'))
+    print()
     print(result.stdout)
+    print()
