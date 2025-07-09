@@ -31,7 +31,6 @@ bash /usr/local/bin/conda-env-install.sh
 
 
 # delete data; create simlinks below
-rm -rf $ENV_DIR/fermi/share/fermitools/data
 rm -rf $ENV_DIR/fermi/share/fermitools/refdata
 
 # Remove these files
@@ -42,7 +41,6 @@ rm -rf $ENV_DIR/fermi/share/fermitools/refdata
 FERMITOOLS_VERSION=$(micromamba list fermitools -p $ENV_DIR/fermi --json | jq -r '.[0].version')
 
 # link data files
-ln -sf $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}/data $ENV_DIR/fermi/share/fermitools/data
 ln -sf $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}/refdata $ENV_DIR/fermi/share/fermitools/refdata
 
 # clean
