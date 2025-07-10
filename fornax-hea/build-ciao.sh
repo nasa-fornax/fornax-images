@@ -8,7 +8,7 @@ fi
 
 # install ciao; do it in a script instead of yml file so
 # get more control over the spectral data files
-WORKDIR=/tmp/caio
+WORKDIR=/tmp/ciao
 mkdir -p $WORKDIR
 cd $WORKDIR
 
