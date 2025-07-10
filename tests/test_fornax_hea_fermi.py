@@ -21,8 +21,7 @@ def test_which_python():
 
 
 def test_env_vars():
-    assert os.environ['ENV_DIR'] == '/opt/envs'
-    assert os.environ['ENV_DIR'] == uv_root
+    assert os.environ['ENV_DIR'] == '/opt/envs' == uv_root
 
 
 def test_base_env():
