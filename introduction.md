@@ -24,12 +24,14 @@ at the start of every new session. To disable these updates, add an empty file c
 ---
 # Latest Changes
 
-## 25.0709
+## 25.0711
 - Fix notebook scrolling jumps (caused by jupyterlab-myst) by setting a default windowing mode in the notebook app.
 - Change location of installed software to allow for portability. Lock files are now
   under `LOCK_DIR=$ENV_DIR/lock`
 - Add Chandra and Fermi analysis software to the high energy image. Both these tools require
   'support_data' which now available in `/shared-storage/support-data`
+- Add a script `update-notebooks.sh` that the user can run instead of doing the update
+  at startup (can slow the startup).
 
 ## 25.0630
 - Switch to using a separate environment for each notebook. Each notebook has a matching

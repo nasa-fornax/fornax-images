@@ -80,7 +80,7 @@ RUN cd /tmp/ && bash /usr/local/bin/uv-env-install.sh \
 
 # add a script to run before the jupyter session
 USER root
-COPY --chmod=0755 pre-notebook.sh /usr/local/bin/before-notebook.d/20-pre-notebook.sh
+COPY --chmod=0777 update-notebooks.sh /usr/local/bin/update-notebooks.sh
 USER $NB_USER
 
 # Make $DEFAULT_ENV default; do it at the global level
@@ -110,11 +110,9 @@ VOLUME /opt/workspace
 
 
 # Useful environment variables
-ENV NOTEBOOK_DIR=/opt/notebooks \
-    NOUPDATE=${HOME}/.no-notebook-update.txt \
-    ADD_NOTEBOOKS=1
+ENV NOTEBOOK_DIR=/opt/notebooks
 # Run the pre-notebooks script to get a copy in the image
-RUN ADD_NOTEBOOKS=1 bash /usr/local/bin/before-notebook.d/20-pre-notebook.sh
+RUN bash /usr/local/bin/update-notebooks.sh
 
 # SUPPORT_DATA_MOUNT can be passed from JH. The location of the mount point for support data
 # SUPPORT_DATA_DIR: is what scripts should use. It is fixed here.
