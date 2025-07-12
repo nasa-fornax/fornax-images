@@ -38,7 +38,7 @@ COPY --chown=$NB_UID:$NB_GID overrides.json $JUPYTER_DIR/share/jupyter/lab/setti
 RUN fix-permissions /opt/
 
 # Install OS packages and then clean up
-COPY --chown=$NB_UID:$NB_GID scripts/*.sh /usr/local/bin/
+COPY --chown=$NB_UID:$NB_GID --chmod=0777 scripts/*.sh /usr/local/bin/
 # Read apt.txt line by line, and execute apt-get install for each line
 COPY --chown=$NB_UID:$NB_GID apt.txt .
 RUN bash /usr/local/bin/apt-install.sh && rm apt.txt
