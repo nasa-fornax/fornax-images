@@ -1,6 +1,5 @@
 import sys
 import os
-import subprocess
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
@@ -21,7 +20,7 @@ def test_which_python():
 
 
 def test_env_vars():
-    assert os.environ['ENV_DIR'] == '/opt/envs' == uv_root
+    assert os.environ['ENV_DIR'] == uv_root
 
 
 def test_base_env():

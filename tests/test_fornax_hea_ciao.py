@@ -21,7 +21,6 @@ def test_which_python():
 
 
 def test_env_vars():
-    assert os.environ['ENV_DIR'] == '/opt/envs'
     assert os.environ['ENV_DIR'] == uv_root
 
 
@@ -40,4 +39,4 @@ def test_check_packages():
 
 
 def test_version():
-    subprocess.check_call("ciaover")
+    subprocess.check_call(["ciaover"])

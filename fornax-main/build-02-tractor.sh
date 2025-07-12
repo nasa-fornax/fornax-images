@@ -15,6 +15,7 @@ export VIRTUAL_ENV=$ENV_DIR/$pythonenv
 # We need cython
 source $VIRTUAL_ENV/bin/activate
 uv pip install cython setuptools numpy
+TARGET_DIR=`ls -d ${VIRTUAL_ENV}/lib/python3.??/site-packages`
 
 # Install astrometry.net and tractor
 cd /tmp
@@ -26,15 +27,14 @@ make
 make py
 make extra
 make install INSTALL_DIR=${VIRTUAL_ENV}
-mv ${VIRTUAL_ENV}/lib/python/astrometry \
-   ${VIRTUAL_ENV}/lib/python3.??/site-packages/
+mv ${VIRTUAL_ENV}/lib/python/astrometry $TARGET_DIR
 
 cd /tmp
 git clone https://github.com/dstndstn/tractor.git
 cd tractor
 git checkout $tractor_commit
 python setup.py build_ext --inplace --with-cython
-uv pip install --no-cache-dir . --no-build-isolation  --target ${VIRTUAL_ENV}/lib/python3.??/site-packages/
+uv pip install --no-cache-dir . --no-build-isolation  --target $TARGET_DIR
 cd $HOME
 rm -rf /tmp/astrometry.net /tmp/tractor
 
