@@ -12,6 +12,7 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 ARG NB_USER="jovyan"
 ARG NB_UID="1000"
 ARG NB_GID="100"
+ARG PYTHON_VERSION=3.12
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -22,6 +23,7 @@ RUN apt-get update --yes \
  # `apt-get upgrade` is run to patch known vulnerabilities in system packages
  && apt-get upgrade --yes \
  && xargs -a /tmp/apt.txt apt-get install -y --no-install-recommends \
+ && apt-get install -y --no-install-recommends python$PYTHON_VERSION\
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/apt.txt \
  && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
  && echo "C.UTF-8 UTF-8" >> /etc/locale.gen \
@@ -35,7 +37,8 @@ ENV JUPYTER_DIR=/opt/jupyter \
     NB_GID=${NB_GID} \
     LC_ALL=C.UTF-8 \
     LANG=C.UTF-8 \
-    LANGUAGE=C.UTF-8
+    LANGUAGE=C.UTF-8 \
+    PYTHON_VERSION=${PYTHON_VERSION}
 
 ENV PATH="${JUPYTER_DIR}/bin:${PATH}" \
     HOME="/home/${NB_USER}"
@@ -122,9 +125,7 @@ USER ${NB_UID}
 ## -- install jupyter -- ##
 ENV PYTHON_VERSION=3.12 \
     ENV_DIR=/opt/envs
-ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python
-RUN uv python install $PYTHON_VERSION \
- && uv venv $JUPYTER_DIR \
+RUN uv venv $JUPYTER_DIR --no-managed-python \
  && export VIRTUAL_ENV=$JUPYTER_DIR \
  && uv pip install "jupyterlab==4.*" "jupyterhub==5.*" \
  && uv clean \
