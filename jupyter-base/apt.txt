@@ -6,7 +6,5 @@ sudo
 tini
 wget
 curl
-
-fonts-liberation
-pandoc
 run-one
+fonts-liberation

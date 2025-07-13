@@ -107,7 +107,9 @@ RUN cd /usr/local/bin/ \
  && sed -i "s|\"jupyter|\"$JUPYTER_DIR/bin/jupyter|g" start-notebook.py \
  && sed -i "s|\"jupyter|\"$JUPYTER_DIR/bin/jupyter|g" start-singleuser.py \
  && mkdir -p /etc/jupyter/ \
- && mv docker_healthcheck.py jupyter_server_config.py /etc/jupyter/
+ && mv docker_healthcheck.py jupyter_server_config.py /etc/jupyter/ \
+ && fix-permissions /etc/jupyter/ /home/${NB_USER} /opt/ \
+ && cat $HOME/.bashrc >> /etc/bash.bashrc
 
 HEALTHCHECK --interval=3s --timeout=1s --start-period=3s --retries=3 \
     CMD /etc/jupyter/docker_healthcheck.py || exit 1
@@ -129,11 +131,6 @@ RUN uv python install $PYTHON_VERSION \
  && jupyter lab clean \
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
  && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete
-
-USER root
-RUN fix-permissions /etc/jupyter/ /home/${NB_USER} /opt/ \
- && cat $HOME/.bashrc >> /etc/bash.bashrc \
- && rm -r $HOME/.*
 
 USER $NB_USER
 WORKDIR $HOME
