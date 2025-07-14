@@ -80,7 +80,7 @@ RUN cd /tmp/ && bash /usr/local/bin/uv-env-install.sh \
 
 # add a script to run before the jupyter session
 USER root
-COPY --chmod=0777 update-notebooks.sh /usr/local/bin/update-notebooks.sh
+COPY --chmod=0777 --chown=$NB_UID:$NB_GID scripts/*.sh update-notebooks.sh link-notebooks.sh /usr/local/bin/
 USER $NB_USER
 
 # Make $DEFAULT_ENV default; do it at the global level
@@ -97,6 +97,7 @@ RUN echo "if [ -f \$ENV_DIR/\$DEFAULT_ENV/bin/activate ]; then" > /tmp/activate.
  && echo "" >> /tmp/activate.sh \
  && cat /tmp/activate.sh >> /etc/bash.bashrc \
  && cat /tmp/activate.sh  >> /usr/local/bin/before-notebook.d/10activate-conda-env.sh \
+ && echo "bash /usr/local/bin/link-notebooks.sh" >> /usr/local/bin/before-notebook.d/20-link-notebooks.sh \
  && rm -r /tmp/*
 
 # reset user and location
