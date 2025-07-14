@@ -4,8 +4,7 @@ fuse
 git
 curl
 zip
-build-essential
 gcc
 make
 gfortran
-jq
+pandoc
