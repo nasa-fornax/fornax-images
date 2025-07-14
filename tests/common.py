@@ -4,8 +4,9 @@ import os
 from pathlib import Path
 import contextlib
 
-conda_dir = os.environ.get('CONDA_DIR', '/opt/conda')
-env_dir = os.environ.get('ENV_DIR', '/opt/envs')
+uv_root = os.environ.get('ENV_DIR', '/opt/envs')
+jupyter_env = 'jupyter'
+jupyter_root = '/opt'
 
 
 class CommonTests:
@@ -24,17 +25,8 @@ class CommonTests:
         return result
 
     @staticmethod
-    def _get_env_root(env, is_conda):
-        """return root path to the environment"""
-        root = f'{conda_dir}/envs' if is_conda else env_dir
-        if is_conda and (env in [None, '']):
-            root = conda_dir
-        return root
-
-    @staticmethod
-    def _test_python_path(env, is_conda=False):
+    def _test_python_path(env, root):
         version = f'{sys.version_info.major}.{sys.version_info.minor}'
-        root = CommonTests._get_env_root(env, is_conda)
         assert (
             Path(sys.executable) in
             [Path(f'{root}/{env}/bin/python'),
@@ -43,37 +35,28 @@ class CommonTests:
         )
 
     @staticmethod
-    def _test_which_python(env, is_conda=False):
+    def _test_which_python(env, root):
         path = CommonTests.run_cmd('which python')
-        root = CommonTests._get_env_root(env, is_conda)
         assert (
             Path(path.stdout.strip()) ==
             Path(f'{root}/{env}/bin/python')
         )
 
     @staticmethod
-    def _test_conda_prefix(env):
-        assert 'CONDA_PREFIX' in os.environ
-        assert (
-            os.environ['CONDA_PREFIX'] ==
-            f'{conda_dir}/envs/{env}'
-        )
-
-    @staticmethod
-    def _test_uv_env_file(uvenv):
-        env = {'VIRTUAL_ENV': f'{env_dir}/{uvenv}'}
+    def _test_uv_env_file(uvenv, root):
+        env = {'VIRTUAL_ENV': f'{root}/{uvenv}'}
         txt_file = f'/tmp/tmp_{uvenv}.txt'
-        result = CommonTests.run_cmd(f'uv pip freeze > {txt_file}',
-                                     env=env)
+        result = CommonTests.run_cmd(
+            f'uv pip list --format=freeze > {txt_file}', env=env)
         diff_cmd = (
-            f'diff {txt_file} {env_dir}/{uvenv}/requirements-{uvenv}.txt')
+            f'diff {txt_file} {root}/{uvenv}/requirements-{uvenv}.txt')
         result = CommonTests.run_cmd(diff_cmd)
         assert result.stdout == ''
         assert result.stderr == ''
 
     @staticmethod
     def _test_conda_env_file(env, ref_yml):
-        result = CommonTests.run_cmd(f'mamba env export -n {env}')
+        result = CommonTests.run_cmd(f'micromamba env export -n {env}')
         lines = []
         include = False
         for line in result.stdout.split('\n'):

@@ -24,7 +24,14 @@ at the start of every new session. To disable these updates, add an empty file c
 ---
 # Latest Changes
 
-## 30/06/2025
+## 25.0714
+- Fix notebook scrolling jumps (caused by jupyterlab-myst) by setting a default windowing mode in the notebook app.
+- Change location of installed software to allow for portability. Lock files are now
+  under `LOCK_DIR=$ENV_DIR/lock`
+- Add a script `update-notebooks.sh` that the user can run instead of doing the update
+  at startup (can slow the startup).
+
+## 25.0630
 - Switch to using a separate environment for each notebook. Each notebook has a matching
   environment (or kernel) with a name that starts with `py-`, e.g. `py-multiband_photometry`,
   `py-light_curve_classifier`. These can be selected from the kernel drop down menu when the 
@@ -38,16 +45,16 @@ at the start of every new session. To disable these updates, add an empty file c
   The same files are also available on github for every image release.
 
 
-## 05/04/2025
+## 25.0504
 - Fix openvscode-server by using jupyter-openvscodeserver-proxy instead of jupyter-vscode-proxy.
 - Update packages to the latest possible.
 
-## 03/20/2025
+## 25.0320
 - Add jdaviz (and dependencies) to support JWST notebooks.
 - Update python to 3.12 (and iupyterlab==4.3.6, jupyterhub==5.2.1, notebook==7.3.3).
 - Update various other packages to the latest.
 
-## 11/26/2024
+## 24.1126
 - The primary conda environment is changed to `notebook`. It is the environment
 where the notebooks should be run. With this change, the dask extension should
 work naturally.

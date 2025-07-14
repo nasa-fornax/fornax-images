@@ -16,19 +16,24 @@ The following is a general description of the images:
 - Each image is in its own directory (e.g. `fornax-base` and `fornax-main`).
 
 - `jupyter-base` is a custom jupyterlab image that matches the 
-  [base-notebook](https://github.com/jupyter/docker-stacks/tree/main/images/base-notebook).
+  [base-notebook](https://github.com/jupyter/docker-stacks/tree/main/images/base-notebook)
+  in the jupyter stack.
 
 - `fornax-base` is a base image for other images in fornax. Other images should use 
   it as a starting point.
   
-- Jupyterlab is installed in the base conda environment.
-  Basic astronomy and analysis packages are installed in a environment called `notebook`,
+- Jupyterlab is installed in an environment called `jupyter` in $ENV_DIR/jupyter.
+  Basic astronomy and analysis packages are installed in a environment called `python3`,
   which is the default environment for running analysis.
   
 - Each demo notebook has its own environment. These environments
   are created during the build using the `requirements.txt` files associated with
   individual notebooks (managed with `uv`).
   Notebook environment have names: `py-{notebook-name}`.
+
+- `pre-notebook.sh` is a script that runs before a jupyter server is started.
+
+- `overrides.json` contains any jupyter settings that need to be set by default.
   
 - The `scripts/build.py` script is used when building the images. The script has many options.
   Run `python scripts/build.py -h` for detailed help. Example runs include:
@@ -44,18 +49,14 @@ defined in `fornax-base/Dockerfile`, which include:
   - If `apt.txt` exits, it will be parsed for the list of the system software to be installed with `apt-get`.
   - If `build-*` files exist, the scripts are run during the build.
   - If `conda-{env}.yml` exists, it is used to create a conda environment called `{env}`.
-  - Additionally, if `conda-{env}-lock.yml` exists, it locks the versions of the installed libraries.
-    To create this `-lock` file, or updated it, pass `--update-lock` to the
-    build script `scripts/build.py`. This will first create or update the conda environment
-    from the `conda-{env}.yml` file, then generate a new `conda-{env}-lock.yml` from the installed packages.
   - If `requirements-{env}.txt` exists, it is used to create a virtual python
     environment `{env}` (using `uv venv`). Experience showed that having packages managed with `pip`
     rather than `conda`, reduces the chance of conflicts. Conda-managed environments can create
     the undesired situations (e.g. #20) where conda install a version of a package and pip install another one.
-  - If `introduction.md` file exists in an image folder, it is converted to html with `pandoc` and
-    copied to `/opt/scritps` in the image. During session startup, the `pre-notebook.sh` script
-    makes a copy in the user's `~/notebooks`. This can be served as a landing page by setting
-    `JUPYTERHUB_DEFAULT_URL` the jupyterhub deployment code.
+  - The `introduction.md` file is shared between the main fornax images. During the build, its copied
+    to the image folder and converted to an html file (with `pandoc`) that is included in the image.
+    the `pre-notebook` script copies is from `$JUPYTER_DIR/introduction.html` to `$NOTEBOOK_DIR` when
+    the notebook server starts.
 
 # The images
 - `jupyter-base`: is a custom jupyterlab image that matches the 
