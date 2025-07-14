@@ -46,21 +46,21 @@ def test_fversion():
 # TODO: add a test for running test_fversion inside a notebook
 
 
-def test_ciao():
-    """Tests for ciao; call separately"""
-    script_dir = os.path.dirname(__file__)
-    result = CommonTests.run_cmd(('micromamba run -n ciao pytest -v -s '
-                                  f'{script_dir}/test_fornax_hea_ciao.py'))
-    print()
-    print(result.stdout)
-    print()
+# def test_ciao():
+#     """Tests for ciao; call separately"""
+#     script_dir = os.path.dirname(__file__)
+#     result = CommonTests.run_cmd(('micromamba run -n ciao pytest -v -s '
+#                                   f'{script_dir}/test_fornax_hea_ciao.py'))
+#     print()
+#     print(result.stdout)
+#     print()
 
 
-def test_fermi():
-    """Tests for fermi; call separately"""
-    script_dir = os.path.dirname(__file__)
-    result = CommonTests.run_cmd(('micromamba run -n fermi pytest -v -s '
-                                  f'{script_dir}/test_fornax_hea_fermi.py'))
-    print()
-    print(result.stdout)
-    print()
+# def test_fermi():
+#     """Tests for fermi; call separately"""
+#     script_dir = os.path.dirname(__file__)
+#     result = CommonTests.run_cmd(('micromamba run -n fermi pytest -v -s '
+#                                   f'{script_dir}/test_fornax_hea_fermi.py'))
+#     print()
+#     print(result.stdout)
+#     print()
