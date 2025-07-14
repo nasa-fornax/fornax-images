@@ -8,4 +8,3 @@ wget
 curl
 run-one
 fonts-liberation
-python3.12
