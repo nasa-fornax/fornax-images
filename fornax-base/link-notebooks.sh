@@ -19,3 +19,8 @@ fi
 if ! test -d $home_nb_dir; then
     ln -s $NOTEBOOK_DIR $home_nb_dir
 fi
+
+# bring in the intro page
+if test -f $JUPYTER_DIR/introduction.html && ! test -L $NOTEBOOK_DIR/introduction.html; then
+    cp $JUPYTER_DIR/introduction.html $NOTEBOOK_DIR
+fi
