@@ -10,12 +10,16 @@ pythonenv=py-multiband_photometry
 astrometry_commit=1b7d716
 tractor_commit=8059ae0
 
-export VIRTUAL_ENV=$ENV_DIR/$pythonenv
 
-# We need cython
-source $VIRTUAL_ENV/bin/activate
-uv pip install cython setuptools numpy
-TARGET_DIR=`ls -d ${VIRTUAL_ENV}/lib/python3.??/site-packages`
+source $ENV_DIR/$pythonenv/bin/activate
+TARGET_DIR=`ls -d $ENV_DIR/$pythonenv/lib/python3.??/site-packages/`
+
+
+# We need some packages
+micromamba install -y -p $ENV_DIR/base \
+   make gcc cairo expat netpbm libpng zlib swig cfitsio binutils pkg-config
+uv pip install cython setuptools
+export PKG_CONFIG_PATH=/opt/envs/base
 
 # Install astrometry.net and tractor
 cd /tmp
@@ -27,17 +31,23 @@ make
 make py
 make extra
 make install INSTALL_DIR=${VIRTUAL_ENV}
-mv ${VIRTUAL_ENV}/lib/python/astrometry $TARGET_DIR
+mv $ENV_DIR/$pythonenv/lib/python/astrometry $TARGET_DIR
 
 cd /tmp
 git clone https://github.com/dstndstn/tractor.git
 cd tractor
 git checkout $tractor_commit
 python setup.py build_ext --inplace --with-cython
-uv pip install --no-cache-dir . --no-build-isolation  --target $TARGET_DIR
+uv pip install --no-cache . --no-build-isolation  --target ${TARGET_DIR}
 cd $HOME
 rm -rf /tmp/astrometry.net /tmp/tractor
 
 # update the freeze file
 uv pip list --format=freeze > $VIRTUAL_ENV/requirements-py-multiband_photometry.txt
+
+# clean up
+uv pip uninstall cython setuptools
+micromamba uninstall -y -p $ENV_DIR/base \
+   make gcc binutils pkg-config expat swig netpbm libpng zlib
+micromamba clean -yaf
 uv cache clean
