@@ -84,5 +84,9 @@ VOLUME /opt/workspace
 # SUPPORT_DATA_MOUNT can be set by JH
 RUN ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
 
+## ----- From fornax-main ----- ##
+# For firefly
+ENV FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer
+
 USER ${NB_UID}
 WORKDIR $HOME
