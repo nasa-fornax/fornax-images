@@ -42,12 +42,13 @@ uv pip install --no-cache . --no-build-isolation  --target ${TARGET_DIR}
 cd $HOME
 rm -rf /tmp/astrometry.net /tmp/tractor
 
-# update the freeze file
-uv pip list --format=freeze > $VIRTUAL_ENV/requirements-py-multiband_photometry.txt
-
 # clean up
 uv pip uninstall cython setuptools
 micromamba uninstall -y -p $ENV_DIR/base \
    make gcc binutils pkg-config expat swig netpbm libpng zlib
+
+# update the freeze file
+uv pip list --format=freeze > $VIRTUAL_ENV/requirements-py-multiband_photometry.txt
+
 micromamba clean -yaf
 uv cache clean
