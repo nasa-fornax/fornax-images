@@ -14,7 +14,8 @@ IMAGE_ORDER = (
     'jupyter-base',
     'fornax-base',
     'fornax-main',
-    'fornax-hea'
+    'fornax-hea',
+    'fornax-slim'
 )
 
 COMMON_FILES = [
