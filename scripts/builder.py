@@ -409,15 +409,18 @@ class Builder(TaskRunner):
         tag: str
             The image tag.
         """
-        if images is None or len(images) == 0:
+        if (
+            images is None or len(images) == 0 or
+            (isinstance(images, list) and images[0] == '')
+        ):
             images = ['fornax-main', 'fornax-hea']
         for image in images:
             full_tag = self.get_full_tag(image, tag)
             cmd = (f'docker run --rm --entrypoint tar {full_tag} '
-                   '-cf - /opt/envs | tar -xf -')
+                   f'-czf - /opt/envs > envs_{image}.tgz')
             _ = self.run(cmd, timeout=10000)
-        cmd = 'tar -zcf opt_envs.tgz opt/envs'
-        _ = self.run(cmd, timeout=1000)
+        #cmd = 'tar -zcf opt_envs.tgz opt/envs'
+        #_ = self.run(cmd, timeout=1000)
 
     def remove_lockfiles(self, image):
         """Remove conda lock files from an image
