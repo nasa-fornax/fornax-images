@@ -203,7 +203,7 @@ class TestBuilder(unittest.TestCase):
         self.assertTrue(f'docker tag {source_tag} {release_tag}' in output)
         self.assertTrue(f'docker push {release_tag}' in output)
         self.logger.handlers.clear()
-    
+
     def test__export_envs(self):
         self.logger.handlers.clear()
         with patch('sys.stderr', new=StringIO()) as mock_out:
