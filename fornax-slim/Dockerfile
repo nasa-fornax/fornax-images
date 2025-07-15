@@ -3,7 +3,7 @@ ARG BASE_TAG=latest
 ARG REPOSITORY=nasa-fornax/fornax-images
 ARG REGISTRY=ghcr.io
 
-FROM ${REGISTRY}/${REPOSITORY}/fornax-main:${BASE_TAG} as base
+FROM ${REGISTRY}/${REPOSITORY}/fornax-base:${BASE_TAG} as base
 
 FROM scratch
 
@@ -21,6 +21,7 @@ COPY --from=base /root /root
 COPY --from=base /run /run
 COPY --from=base /sbin /sbin
 COPY --from=base /var /var
+RUN mkdir -p /tmp/ && chmod 777 /tmp/
 
 ## ---- from jupyter-base ---- ##
 
