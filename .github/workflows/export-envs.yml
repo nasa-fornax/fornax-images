@@ -1,6 +1,9 @@
 name: Export software environments
 
 on:
+  push:
+    branches:
+      - compact
   workflow_dispatch:
     inputs:
       images:
