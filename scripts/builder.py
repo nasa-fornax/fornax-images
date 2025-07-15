@@ -409,7 +409,10 @@ class Builder(TaskRunner):
         tag: str
             The image tag.
         """
-        if images is None or len(images) == 0:
+        if (
+            images is None or len(images) == 0 or
+            (isinstance(images, list) and images[0] == '')
+        ):
             images = ['fornax-main', 'fornax-hea']
         for image in images:
             full_tag = self.get_full_tag(image, tag)
