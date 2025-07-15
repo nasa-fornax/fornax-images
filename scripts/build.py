@@ -100,6 +100,12 @@ if __name__ == '__main__':
     )
 
     ap.add_argument(
+        '--extract-envs', action='store_true',
+        help='Extract the /opt/envs directory',
+        default=False
+    )
+
+    ap.add_argument(
         '--debug', action='store_true',
         help='Print debug messages',
         default=False
@@ -124,6 +130,7 @@ if __name__ == '__main__':
     build_args = args.build_args
     extra_pars = args.extra_pars
     list_images = args.list_images
+    extract_envs = args.extract_envs
 
     if list_images:
         # print available images
@@ -149,7 +156,7 @@ if __name__ == '__main__':
     builder = Builder(repository, logger, dryrun=dryrun, registry=registry)
 
     # get current branch name as default tag
-    if (len(images) or release is not None) and tag is None:
+    if extract_envs or (len(images) or release is not None) and tag is None:
         out = builder.run(
             'git branch --show-current', timeout=100, capture_output=True
         )
@@ -172,7 +179,12 @@ if __name__ == '__main__':
     builder.out(f'no_build: {no_build}', logging.DEBUG)
     builder.out(f'build_args: {build_args}', logging.DEBUG)
     builder.out(f'extra_pars: {extra_pars}', logging.DEBUG)
+    builder.out(f'extract_envs: {extract_envs}', logging.DEBUG)
     builder.out('+++++++++++++', logging.DEBUG)
+
+    if extract_envs:
+        builder.export_envs(images, tag)
+        sys.exit(0)
 
     # we are either building or releasing
     if release is not None:
