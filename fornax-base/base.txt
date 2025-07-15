@@ -1,10 +1,7 @@
 vim
 nano
-fuse
 git
-curl
 zip
-gcc
-make
-gfortran
 pandoc
+jq
+code-server
