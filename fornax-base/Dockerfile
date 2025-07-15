@@ -61,14 +61,14 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && mkdir -p $LOCK_DIR \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt
 
-## -- Install code-server binary -- ##
-RUN curl -fsSL -o code-server.tar.gz \
-        https://github.com/coder/code-server/releases/download/v4.101.2/code-server-4.101.2-linux-amd64.tar.gz \
- && tar -zxf code-server.tar.gz \
- && rm code-server.tar.gz \
- && mkdir -p $ENV_DIR/other \
- && mv code-server-* $ENV_DIR/other/code-server
-## -------------------------------- ##
+# Install system packages with micromamba
+# we use microconda instead of apt, so they are portable
+COPY --chown=$NB_UID:$NB_GID base.txt /tmp/
+RUN micromamba create -y -p $ENV_DIR/base python=$PYTHON_VERSION \
+ && xargs -a /tmp/base.txt micromamba install -y -p $ENV_DIR/base \
+ && micromamba clean -yaf && rm /tmp/base.txt \
+ && micromamba env export -p $ENV_DIR/base > $ENV_DIR/base/base-lock.yml \
+ && cp $ENV_DIR/base/base-lock.yml $LOCK_DIR/
 
 ## install DEFAULT_ENV ##
 COPY --chown=$NB_UID:$NB_GID requirements-$DEFAULT_ENV.txt /tmp/
@@ -77,13 +77,6 @@ RUN cd /tmp/ && bash /usr/local/bin/uv-env-install.sh \
  && $ENV_DIR/$DEFAULT_ENV/bin/python -m ipykernel install --name $DEFAULT_ENV \
     --prefix $JUPYTER_DIR --display-name "$DEFAULT_ENV"
 ## ------------------- ##
-
-# Install system packages with micromamba
-# we use microconda instead of apt, so we can
-# move them to they are portable
-RUN micromamba create -y -p $ENV_DIR/base python=$PYTHON_VERSION \
-        vim nano git zip pandoc \
- && micromamba clean -yaf
 
 
 # Make $DEFAULT_ENV default; do it at the global level
@@ -132,7 +125,7 @@ ONBUILD RUN mkdir -p $HOME/build
 ONBUILD COPY --chown=$NB_UID:$NB_GID apt* base* build-* requirements-* conda-* $HOME/build/
 ONBUILD USER root
 ONBUILD RUN cd build \
-         && if test -f base.txt; then \
+         && if test -f apt.txt; then \
             xargs bash /usr/local/bin/apt-install.sh; \
             rm apt.txt; \
          fi
