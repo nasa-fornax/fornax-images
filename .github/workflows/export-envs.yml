@@ -53,9 +53,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: opt_envs.tgz
-          path: ./opt_envs.tgz
-      
-      - name: Upload lock files to the release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ./${{ matrix.image }}-environment-locks.zip
+          path: ./envs_*.tgz
