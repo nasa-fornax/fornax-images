@@ -1,10 +1,9 @@
 import sys
 import os
-import re
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
-from common import uv_root, jupyter_env, jupyter_root  # noqa E402
+from common import env_root, jupyter_env, jupyter_root  # noqa E402
 
 
 notebook_dir = os.environ.get('NOTEBOOK_DIR', '/home/jovyan/fornax-notebooks')

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import contextlib
 
-uv_root = os.environ.get('ENV_DIR', '/opt/envs')
+env_root = os.environ.get('ENV_DIR', '/opt/envs')
 jupyter_env = 'jupyter'
 jupyter_root = '/opt'
 
@@ -56,7 +56,7 @@ class CommonTests:
 
     @staticmethod
     def _test_conda_env_file(env, ref_yml):
-        result = CommonTests.run_cmd(f'micromamba env export -n {env}')
+        result = CommonTests.run_cmd(f'micromamba env export -p {env_root}/{env}')
         lines = []
         include = False
         for line in result.stdout.split('\n'):
