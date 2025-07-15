@@ -417,10 +417,10 @@ class Builder(TaskRunner):
         for image in images:
             full_tag = self.get_full_tag(image, tag)
             cmd = (f'docker run --rm --entrypoint tar {full_tag} '
-                   '-cf - /opt/envs | tar -xf -')
+                   f'-czf - /opt/envs > envs_{image}.tgz')
             _ = self.run(cmd, timeout=10000)
-        cmd = 'tar -zcf opt_envs.tgz opt/envs'
-        _ = self.run(cmd, timeout=1000)
+        #cmd = 'tar -zcf opt_envs.tgz opt/envs'
+        #_ = self.run(cmd, timeout=1000)
 
     def remove_lockfiles(self, image):
         """Remove conda lock files from an image
