@@ -52,7 +52,7 @@ jobs:
       - name: "Run tests inside the image: ${{ matrix.image }}"
         run: |
           image=${{ matrix.image }}
-          if [ $image == "jupyter-base" ]; then
+          if [[ "$image" == "jupyter-base" || "$image" == "fornax-slim" ]]; then
             testcmd="python "
           else
             testcmd="pytest -s -v "

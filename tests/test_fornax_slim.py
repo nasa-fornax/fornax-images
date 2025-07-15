@@ -1,8 +1,6 @@
 import sys
 import os
-import ast
 import re
-import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
