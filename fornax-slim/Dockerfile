@@ -4,6 +4,8 @@ ARG REPOSITORY=nasa-fornax/fornax-images
 ARG REGISTRY=ghcr.io
 
 FROM ${REGISTRY}/${REPOSITORY}/fornax-base:${BASE_TAG} as base
+FROM ${REGISTRY}/${REPOSITORY}/fornax-main:${BASE_TAG} as fornax_main
+FROM ${REGISTRY}/${REPOSITORY}/fornax-hea:${BASE_TAG} as fornax_hea
 
 FROM scratch
 
@@ -22,6 +24,10 @@ COPY --from=base /run /run
 COPY --from=base /sbin /sbin
 COPY --from=base /var /var
 RUN mkdir -p /tmp/ && chmod 777 /tmp/
+
+# copy kernel files
+COPY --from=fornax_main /opt/jupyter/share/jupyter/kernels/ /opt/jupyter/share/jupyter/kernels
+COPY --from=fornax_hea /opt/jupyter/share/jupyter/kernels/ /opt/jupyter/share/jupyter/kernels
 
 ## ---- from jupyter-base ---- ##
 
