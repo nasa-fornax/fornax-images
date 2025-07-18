@@ -206,13 +206,14 @@ class TestBuilder(unittest.TestCase):
 
     def test__export_envs(self):
         self.logger.handlers.clear()
+        image = 'fornax-main'
         with patch('sys.stderr', new=StringIO()) as mock_out:
             logging.basicConfig(level=logging.DEBUG)
-            self.builder_dry.export_envs(['fornax-main'], self.tag)
+            self.builder_dry.export_envs([image], self.tag)
             output = mock_out.getvalue().strip()
-        full_tag = self.builder_dry.get_full_tag('fornax-main', self.tag)
-        self.assertTrue(f'docker run --rm --entrypoint tar {full_tag} -cf - /opt/envs | tar -xf -' in output)
-        self.assertTrue(f'tar -zcf opt_envs.tgz opt/envs' in output)
+        full_tag = self.builder_dry.get_full_tag(image, self.tag)
+        self.assertTrue((f'docker run --rm --entrypoint tar {full_tag} '
+                         f'-czf - /opt/envs > envs_{image}.tgz') in output)
         self.logger.handlers.clear()
 
     def test_build__push_to_ecr__no_endpoint(self):
