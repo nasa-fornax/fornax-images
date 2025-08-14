@@ -50,6 +50,47 @@ ln -sf $SUPPORT_DATA_DIR/ciao-${CIAO_VERSION}/spectral/modelData $ENV_DIR/ciao/s
 # link caldb.
 ln -sf $SUPPORT_DATA_DIR/ciao-caldb-${CIAO_VERSION}/CALDB $ENV_DIR/ciao/CALDB
 
+
+# Writing scripts to ensure the CALDB and HEASoft PFILES paths are properly set up when the CIAO environment is loaded
+####### CALDB #######
+# Start with the CALDB activation and deactivation scripts - necessary because the CIAO-packaged Chandra CALDB has
+#  been moved, and isn't where the conda version of CIAO expects
+cat << EOF > /opt/envs/ciao/etc/conda/activate.d/ciao-caldb_activate.sh
+#!/bin/bash
+# Manually set the environment variables required to point to Chandra's CIAO CALDB.
+export CALDB=/shared-storage/support-data/ciao-caldb-4.12.0/CALDB
+export CALDBCONFIG=$CALDB/software/tools/caldb.config
+export CALDBALIAS=$CALDB/software/tools/alias_config.fits
+EOF
+
+# Also include a deactivation script for CALDB environment variables
+cat << EOF > /opt/envs/ciao/etc/conda/deactivate.d/ciao-caldb_deactivate.sh
+#!/bin/bash
+# We unset all the CALDB-related environment variables, as we manually set them up when the CIAO conda environment 
+#  was loaded in.
+unset CALDB
+unset CALDBCONFIG
+unset CALDBALIAS
+EOF
+#####################
+
+###### PFILES #######
+# HEASoft software (like the 'nh' tool) cannot find base parameter files to copy by looking in the CIAO
+#  'params' directory, causing errors when those tools are to be used. We add the HEASoft environment 
+#  base-pfile-storage-directory to the PFILES environment variable path, which solves this issue
+cat << EOF > /opt/envs/ciao/etc/conda/activate.d/ciao-pfiles_activate.sh
+#!/bin/bash
+# Intended to solve parameter file copying issues for HEASoft tools when using the CIAO conda environment
+export PFILES="$PFILES:/opt/envs/heasoft/heasoft/syspfiles"
+EOF
+#####################
+
+# Finally, we ensure that the activation/deactivation scripts are executable
+chmod +x /opt/envs/ciao/etc/conda/activate.d/ciao-caldb_activate.sh
+chmod +x /opt/envs/ciao/etc/conda/deactivate.d/ciao-caldb_deactivate.sh
+chmod +x /opt/envs/ciao/etc/conda/activate.d/ciao-pfiles_activate.sh
+
+
 # clean
 cd $HOME
 rm -rf $WORKDIR
