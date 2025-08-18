@@ -37,6 +37,10 @@ export SAS_PERL=/usr/bin/perl
 #  set in this script, but we can trust that it will be
 export SAS_PYTHON=$ENV_DIR/sas/bin/python
 
+# This is where we will be putting the calibration files for XMM
+export SAS_CCF=$SUPPORT_DATA_DIR/xmm_sas/
+
+##### DOWNLOADING SAS #####
 # SAS will be downloaded from HEASARC - this is the base for the populated URL
 base_sas_link=https://heasarc.gsfc.nasa.gov/FTP/xmm/software/sas/${sas_version}/Linux/Ubuntu${ubuntu_version}/
 
@@ -47,9 +51,14 @@ base_sas_link=https://heasarc.gsfc.nasa.gov/FTP/xmm/software/sas/${sas_version}/
 
 # HARD CODED - this is the non-generalised file link to the tar of SAS I'm working with right now (22.1.0 for Ubuntu 24.04)
 sas_file=sas_${sas_version}-a8f2c2afa-20250304-ubuntu${ubuntu_version}-gcc13.3.0-x86_64.tgz
+# HARD CODED - This is the non-generalised name of the directory that XMM-SAS gets 'built' in
+sas_install_dir=xmmsas_22.1.0-a8f2c2afa-20250304
 
 # Assembling the download link
 sas_link=$base_sas_link${sas_file}
+###########################
+
+
 ###########################################################
 
 
@@ -101,7 +110,7 @@ micromamba run -n sas ./install.sh
 ###########################################################
 
 
-################ Add (de)activation scripts ###############
+################ Add conda (de)activation scripts ###############
 # This script sets up SAS and handles additional environment variable setting
 
 cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-general_activate.sh
@@ -116,14 +125,31 @@ export SAS_PYTHON=$ENV_DIR/sas/bin/python
 #  we will get errors about not being able to find libsm.so.6 
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ENV_DIR/sas/lib"
 
-# WILL HAVE TO CHANGE THIS WHEN I FIGURE OUT WHERE IT ACTUALLY LIVES
-export SAS_DIR=/tmp/sas/xmmsas_22.1.0-a8f2c2afa-20250304
+# Any attempted init of SAS will fail without this path being set
+export SAS_DIR=$ENV_DIR/sas/${sas_install_dir}
 source $SAS_DIR/setsas.sh
 EOF
 
+cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-ccf_activate.sh
+#!/usr/bin/bash
+
+# This sets the environment variable for the XMM Current Calibration Files (CCF)
+export SAS_CCF=${SAS_CCF}
+EOF
 ###########################################################
 
 
+################# Moving install directory ################
+# 
+mv /tmp/sas/${sas_install_dir} $ENV_DIR/sas/${sas_install_dir}
+###########################################################
+
+
+
+##################### Download XMM CCF ####################
+# We download it straight into the support data directory
+rsync -v -a --delete --delete-after --force --include='*.CCF' --exclude='*/' sasdev-xmm.esac.esa.int::XMM_VALID_CCF $SAS_CCF
+###########################################################
 
 ###################### Final clean up #####################
 cd $HOME
