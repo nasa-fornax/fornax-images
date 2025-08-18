@@ -102,6 +102,23 @@ micromamba run -n sas ./install.sh
 
 
 ################ Add (de)activation scripts ###############
+# This script sets up SAS and handles additional environment variable setting
+
+cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-general_activate.sh
+#!/usr/bin/bash
+
+# SAS can be very particular about Perl - this is the path we set when SAS was 'built'
+export SAS_PERL=/usr/bin/perl
+# And this is the conda environment we set up for it
+export SAS_PYTHON=$ENV_DIR/sas/bin/python
+
+# Adds the SAS conda environment library to the library path
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ENV_DIR/sas/lib"
+
+# WILL HAVE TO CHANGE THIS WHEN I FIGURE OUT WHERE IT ACTUALLY LIVES
+export SAS_DIR=/tmp/sas/xmmsas_22.1.0-a8f2c2afa-20250304
+source $SAS_DIR/setsas.sh
+EOF
 
 ###########################################################
 
