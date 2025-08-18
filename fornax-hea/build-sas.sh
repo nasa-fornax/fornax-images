@@ -94,6 +94,7 @@ dependencies:
   - python=$py_version
   - heasoft=6.35.*
   - pytest
+  - rsync
 EOF
 
 # Use the yml to create the SAS env
@@ -104,6 +105,14 @@ bash /usr/local/bin/conda-env-install.sh
 # Other build scripts for Fornax images seem to use the uv package manager, so we 
 #  will as well - particularly the pip CLI version
 micromamba run -n sas uv pip install -r sas_python_packages.txt
+###########################################################
+
+
+############ Moving unpacked SAS and installing ###########
+# 
+mv /tmp/sas/${sas_install_dir} $ENV_DIR/sas/${sas_install_dir}
+
+cd $ENV_DIR/sas/${sas_install_dir}
 
 # Run the SAS install script, specifically in the environment we've just created
 micromamba run -n sas ./install.sh
@@ -119,16 +128,17 @@ cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-general_activate.sh
 # SAS can be very particular about Perl - this is the path we set when SAS was 'built'
 export SAS_PERL=/usr/bin/perl
 # And this is the conda environment we set up for it
-export SAS_PYTHON=$ENV_DIR/sas/bin/python
+export SAS_PYTHON=\$ENV_DIR/sas/bin/python
 
 # Adds the SAS conda environment library to the library path - without this
 #  we will get errors about not being able to find libsm.so.6 
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ENV_DIR/sas/lib"
+export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$ENV_DIR/sas/lib"
 
 # Any attempted init of SAS will fail without this path being set
-export SAS_DIR=$ENV_DIR/sas/${sas_install_dir}
-source $SAS_DIR/setsas.sh
+export SAS_DIR=\$ENV_DIR/sas/${sas_install_dir}
+source \$SAS_DIR/setsas.sh
 EOF
+
 
 cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-ccf_activate.sh
 #!/usr/bin/bash
@@ -139,16 +149,18 @@ EOF
 ###########################################################
 
 
-################# Moving install directory ################
-# 
-mv /tmp/sas/${sas_install_dir} $ENV_DIR/sas/${sas_install_dir}
-###########################################################
-
-
-
 ##################### Download XMM CCF ####################
-# We download it straight into the support data directory
-rsync -v -a --delete --delete-after --force --include='*.CCF' --exclude='*/' sasdev-xmm.esac.esa.int::XMM_VALID_CCF $SAS_CCF
+# We download it straight into the support data directory - this command cannot work on Fornax images without
+#  ensuring we install rsync through Conda, which is why we added it to the sas conda env
+micromamba run -n sas rsync -v -a --delete --delete-after --force --include='*.CCF' --exclude='*/' sasdev-xmm.esac.esa.int::XMM_VALID_CCF $SAS_CCF
+
+# Rather than the rsync method, we'll download all .CCF files from the HEASARC mirror
+#  of XMM calibration files using wget. This doesn't necessarily seem as safe
+#  as the rsync method, but will do for. This command is set up to recursively download level-1 (i.e. not going 
+#  down into sub-directories) files that have the .CCF extension. Sub-directories are not downloaded, and the files
+#  are put into the $SAS_CCF path set at the top of this script.
+# wget -r -l1 -nd --accept .CCF -P $SAS_CCF -e robots=off https://heasarc.gsfc.nasa.gov/FTP/caldb/data/xmm/ccf/
+
 ###########################################################
 
 ###################### Final clean up #####################
