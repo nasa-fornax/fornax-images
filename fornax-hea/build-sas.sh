@@ -122,8 +122,8 @@ micromamba run -n sas ./install.sh
 ##################### Download XMM CCF ####################
 # We download it straight into the support data directory - this command cannot work on Fornax images without
 #  ensuring we install rsync through Conda, which is why we added it to the sas conda env
-# mkdir -p $SUPPORT_DATA_DIR/xmm_sas/
-# micromamba run -n sas rsync -v -a --delete --delete-after --force --include='*.CCF' --exclude='*/' sasdev-xmm.esac.esa.int::XMM_VALID_CCF $SUPPORT_DATA_DIR/xmm_sas/
+mkdir -p $SUPPORT_DATA_DIR/xmm_sas/
+micromamba run -n sas rsync -v -a --delete --delete-after --force --include='*.CCF' --exclude='*/' sasdev-xmm.esac.esa.int::XMM_VALID_CCF $SUPPORT_DATA_DIR/xmm_sas/;
 
 # Rather than the rsync method, we'll download all .CCF files from the HEASARC mirror
 #  of XMM calibration files using wget. This doesn't necessarily seem as safe
@@ -135,8 +135,7 @@ micromamba run -n sas ./install.sh
 
 
 ################ Add conda (de)activation scripts ###############
-# This script sets up SAS and handles additional environment variable setting
-
+# These scripts set up SAS and handles additional environment variable setting
 cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-general_activate.sh
 #!/usr/bin/bash
 
@@ -160,6 +159,23 @@ cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-ccf_activate.sh
 
 # This sets the environment variable for the XMM Current Calibration Files (CCF)
 export SAS_CCF=${SAS_CCF}
+EOF
+
+######
+# This scripts unsets many of the environment variables set in the activation scripts
+# Honestly don't really know how much most of this matters, and am currently only getting the 
+#  environment variables that I know have been set, not those that the setsas.sh script sets
+cat <<EOF > $ENV_DIR/sas/etc/conda/deactivate.d/sas-general_deactivate.sh
+#!/usr/bin/bash
+
+unset SAS_PERL
+unset SAS_PYTHON
+
+# I _think_ this should be fine
+unset LD_LIBRARY_PATH
+
+unset SAS_DIR
+unset SAS_CCF
 EOF
 ###########################################################
 
