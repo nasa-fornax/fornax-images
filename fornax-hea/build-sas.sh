@@ -112,7 +112,8 @@ export SAS_PERL=/usr/bin/perl
 # And this is the conda environment we set up for it
 export SAS_PYTHON=$ENV_DIR/sas/bin/python
 
-# Adds the SAS conda environment library to the library path
+# Adds the SAS conda environment library to the library path - without this
+#  we will get errors about not being able to find libsm.so.6 
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ENV_DIR/sas/lib"
 
 # WILL HAVE TO CHANGE THIS WHEN I FIGURE OUT WHERE IT ACTUALLY LIVES
