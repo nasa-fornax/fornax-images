@@ -72,13 +72,11 @@ sas_link=$base_sas_link${sas_file}
 #################################
 
 
-
 ########### Download and unpack required files ############
 wget $sas_link \
 	&& tar xvf $sas_file \
 	&& rm -f $sas_file 
 ###########################################################
-
 
 
 ############# Setup the SAS Conda environment #############
@@ -109,13 +107,30 @@ micromamba run -n sas uv pip install -r sas_python_packages.txt
 
 
 ############ Moving unpacked SAS and installing ###########
-# 
-mv /tmp/sas/${sas_install_dir} $ENV_DIR/sas/${sas_install_dir}
-
-cd $ENV_DIR/sas/${sas_install_dir}
+# Moves all of the files unpacked from the SAS download into the conda environment directory
+#  for SAS - it is easier to install SAS in-situ, rather than installing it then moving it, as 
+#  some file paths get baked in during the installation process
+mv * $ENV_DIR/sas/
+# We must follow the unpacked files
+cd $ENV_DIR/sas/
 
 # Run the SAS install script, specifically in the environment we've just created
 micromamba run -n sas ./install.sh
+###########################################################
+
+
+##################### Download XMM CCF ####################
+# We download it straight into the support data directory - this command cannot work on Fornax images without
+#  ensuring we install rsync through Conda, which is why we added it to the sas conda env
+# mkdir -p $SUPPORT_DATA_DIR/xmm_sas/
+# micromamba run -n sas rsync -v -a --delete --delete-after --force --include='*.CCF' --exclude='*/' sasdev-xmm.esac.esa.int::XMM_VALID_CCF $SUPPORT_DATA_DIR/xmm_sas/
+
+# Rather than the rsync method, we'll download all .CCF files from the HEASARC mirror
+#  of XMM calibration files using wget. This doesn't necessarily seem as safe
+#  as the rsync method, but will do for. This command is set up to recursively download level-1 (i.e. not going 
+#  down into sub-directories) files that have the .CCF extension. Sub-directories are not downloaded, and the files
+#  are put into the $SAS_CCF path set at the top of this script.
+# wget -r -l1 -nd --accept .CCF -P $SAS_CCF -e robots=off https://heasarc.gsfc.nasa.gov/FTP/caldb/data/xmm/ccf/
 ###########################################################
 
 
@@ -149,46 +164,11 @@ EOF
 ###########################################################
 
 
-##################### Download XMM CCF ####################
-# We download it straight into the support data directory - this command cannot work on Fornax images without
-#  ensuring we install rsync through Conda, which is why we added it to the sas conda env
-micromamba run -n sas rsync -v -a --delete --delete-after --force --include='*.CCF' --exclude='*/' sasdev-xmm.esac.esa.int::XMM_VALID_CCF $SAS_CCF
-
-# Rather than the rsync method, we'll download all .CCF files from the HEASARC mirror
-#  of XMM calibration files using wget. This doesn't necessarily seem as safe
-#  as the rsync method, but will do for. This command is set up to recursively download level-1 (i.e. not going 
-#  down into sub-directories) files that have the .CCF extension. Sub-directories are not downloaded, and the files
-#  are put into the $SAS_CCF path set at the top of this script.
-# wget -r -l1 -nd --accept .CCF -P $SAS_CCF -e robots=off https://heasarc.gsfc.nasa.gov/FTP/caldb/data/xmm/ccf/
-
-###########################################################
-
 ###################### Final clean up #####################
+# In the /opt/envs/sas directory, where we copied the unpacked contents of the SAS download
+#  and installed them - time to clean up the left over files
+rm sas_python_packages.txt
+
 cd $HOME
-# rm -rf $WORKDIR
+rm -rf $WORKDIR
 ###########################################################
-
-
-
-
-# ORPHANED CODE FROM THE DONOR CIAO SCRIPT
-
-
-
-# delete the model data and caldb; create simlinks below
-# rm -rf $ENV_DIR/ciao/spectral/modelData
-# rm -rf $ENV_DIR/ciao/CALDB | true
-
-# # Remove these files
-# rm -rf $ENV_DIR/ciao/test
-# rm -rf $ENV_DIR/ciao/docs
-
-# Set SAS version
-# SAS_VERSION=$(micromamba list ciao -p $ENV_DIR/ciao --json | jq -r '.[0].version')
-## CALDB_VERSION=$(micromamba list caldb_main -p $ENV_DIR/ciao --json | jq -r '.[0].version')
-
-# # link modelData
-# ln -sf $SUPPORT_DATA_DIR/ciao-${CIAO_VERSION}/spectral/modelData $ENV_DIR/ciao/spectral/modelData
-# # link caldb.
-# ln -sf $SUPPORT_DATA_DIR/ciao-caldb-${CIAO_VERSION}/CALDB $ENV_DIR/ciao/CALDB
-
