@@ -158,7 +158,7 @@ cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-ccf_activate.sh
 #!/usr/bin/bash
 
 # This sets the environment variable for the XMM Current Calibration Files (CCF)
-export SAS_CCF=${SAS_CCF}
+export SAS_CCFPATH=${SAS_CCF}
 EOF
 
 ######
@@ -175,7 +175,7 @@ unset SAS_PYTHON
 unset LD_LIBRARY_PATH
 
 unset SAS_DIR
-unset SAS_CCF
+unset SAS_CCFPATH
 EOF
 ###########################################################
 
