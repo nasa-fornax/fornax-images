@@ -38,7 +38,7 @@ export SAS_PERL=/usr/bin/perl
 export SAS_PYTHON=$ENV_DIR/sas/bin/python
 
 # This is where we will be putting the calibration files for XMM
-export SAS_CCF=$SUPPORT_DATA_DIR/xmm_sas/
+export SAS_CCFPATH=$SUPPORT_DATA_DIR/xmm_ccf/
 
 ##### DOWNLOADING SAS #####
 # SAS will be downloaded from HEASARC - this is the base for the populated URL
@@ -122,15 +122,16 @@ micromamba run -n sas ./install.sh
 ##################### Download XMM CCF ####################
 # We download it straight into the support data directory - this command cannot work on Fornax images without
 #  ensuring we install rsync through Conda, which is why we added it to the sas conda env
+# The ';' on the end of the rsync call means that the rest of the script will proceed if this command fails
 mkdir -p $SUPPORT_DATA_DIR/xmm_sas/
-micromamba run -n sas rsync -v -a --delete --delete-after --force --include='*.CCF' --exclude='*/' sasdev-xmm.esac.esa.int::XMM_VALID_CCF $SUPPORT_DATA_DIR/xmm_sas/;
+micromamba run -n sas rsync -v -a --delete --delete-after --force --include='*.CCF' --exclude='*/' sasdev-xmm.esac.esa.int::XMM_VALID_CCF $SAS_CCFPATH;
 
 # Rather than the rsync method, we'll download all .CCF files from the HEASARC mirror
 #  of XMM calibration files using wget. This doesn't necessarily seem as safe
 #  as the rsync method, but will do for. This command is set up to recursively download level-1 (i.e. not going 
 #  down into sub-directories) files that have the .CCF extension. Sub-directories are not downloaded, and the files
-#  are put into the $SAS_CCF path set at the top of this script.
-# wget -r -l1 -nd --accept .CCF -P $SAS_CCF -e robots=off https://heasarc.gsfc.nasa.gov/FTP/caldb/data/xmm/ccf/
+#  are put into the $SAS_CCFPATH path set at the top of this script.
+# wget -r -l1 -nd --accept .CCF -P $SAS_CCFPATH -e robots=off https://heasarc.gsfc.nasa.gov/FTP/caldb/data/xmm/ccf/
 ###########################################################
 
 
@@ -158,7 +159,7 @@ cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-ccf_activate.sh
 #!/usr/bin/bash
 
 # This sets the environment variable for the XMM Current Calibration Files (CCF)
-export SAS_CCFPATH=${SAS_CCF}
+export SAS_CCFPATH=${SAS_CCFPATH}
 EOF
 
 ######
