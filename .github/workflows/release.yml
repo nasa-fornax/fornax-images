@@ -67,12 +67,12 @@ jobs:
       - name: Tag main images with release tags
         id: push
         run: |
+          # Add if needed: '--trigger-ecr --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }} \'
           python scripts/build.py --debug --no-build \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.event.release.target_commitish }}" \
               --release "${{ github.event.release.tag_name }}" \
-              --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }} \
-              --trigger-ecr --export-lock "${{ matrix.image }}"
+              --export-lock "${{ matrix.image }}"
             
             # pack lock files into a zip file
             zip -r "${{ matrix.image }}-environment-locks.zip" "${{ matrix.image }}_locks"

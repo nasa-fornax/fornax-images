@@ -24,6 +24,11 @@ at the start of every new session. To disable these updates, add an empty file c
 ---
 # Latest Changes
 
+## 25.0821
+- Update fornax-labextension to get the updated links.
+- Add ciao and fermitools to the high energy image.
+- Add `/opt/support-data` that points to a sharing location for data used by the software.
+
 ## 25.0714
 - Fix notebook scrolling jumps (caused by jupyterlab-myst) by setting a default windowing mode in the notebook app.
 - Change location of installed software to allow for portability. Lock files are now
