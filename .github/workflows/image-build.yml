@@ -87,11 +87,10 @@ jobs:
           else
             ENDPOINT="${{ secrets.ECR_ENDPOINT }}"
           fi
+          # Add if needed: '--trigger-ecr --ecr-endpoint $ENDPOINT'
           python scripts/build.py --debug \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag $TAG \
-              --ecr-endpoint $ENDPOINT \
-              --trigger-ecr \
               --push "$IMAGES_TO_BUILD"
   
   test-images:

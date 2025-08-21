@@ -36,6 +36,9 @@ See the "Actions" tab of the repository to see the results of each workflow.
 
 # Notable Changes
 
+## 08-2025
+- Disable --trigger-ecr in actions as pull-though cache is not working correctly
+
 ## 06-2025
 - Lock files are copied to a single location `$LOCK_DIR`.
 - Lock files are also released with every image release and available as github release assets.
