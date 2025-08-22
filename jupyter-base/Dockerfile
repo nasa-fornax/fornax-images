@@ -113,7 +113,7 @@ RUN cd /tmp/ \
 USER ${NB_UID}
 RUN uv venv $JUPYTER_DIR --no-managed-python \
  && export VIRTUAL_ENV=$JUPYTER_DIR \
- && uv pip install "jupyterlab==4.*" "jupyterhub==5.*" \
+ && uv pip install "jupyterlab==4.*" "jupyterhub==5.*" pytest \
  && uv clean \
  && jupyter lab clean \
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \

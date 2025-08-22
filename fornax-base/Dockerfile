@@ -46,8 +46,6 @@ USER $NB_USER
 COPY --chown=$NB_UID:$NB_GID jupyter-requirements.txt /tmp/
 RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && uv pip install --no-cache -r /tmp/jupyter-requirements.txt \
- # add pytest
- && uv pip install --no-cache pytest \
  # get the latest fornax-labextension
  && curl -s "https://api.github.com/repos/nasa-fornax/fornax-labextension/releases/latest" -o /tmp/latest.json \
  && whlurl=`python -c "import json; d = json.loads(open('/tmp/latest.json').read()); print(d['assets'][0]['browser_download_url'])"` \
