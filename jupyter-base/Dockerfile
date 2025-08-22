@@ -106,14 +106,15 @@ RUN cd /tmp/ \
  # micromamba
  && curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
  && mv bin/micromamba /usr/local/bin/ \
- && rm -rf bin
+ && rm -rf bin \
+ && cd $HOME && rm -rf .* *
 
 
 ## -- install jupyter -- ##
 USER ${NB_UID}
 RUN uv venv $JUPYTER_DIR --no-managed-python \
  && export VIRTUAL_ENV=$JUPYTER_DIR \
- && uv pip install "jupyterlab==4.*" "jupyterhub==5.*" \
+ && uv pip install "jupyterlab==4.*" "jupyterhub==5.*" pytest \
  && uv clean \
  && jupyter lab clean \
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
