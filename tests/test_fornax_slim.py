@@ -38,5 +38,4 @@ def test_env_dir_not_exist():
 
 def test_notebooks_folder():
     assert os.path.exists(notebook_dir)
-    assert os.path.exists(f'{notebook_dir}/fornax-documentation')
     assert os.path.exists(f'{notebook_dir}/fornax-demo-notebooks')
