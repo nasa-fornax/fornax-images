@@ -22,9 +22,9 @@ notebooks = {
         'file': 'fornax-demo-notebooks/light_curves/light_curve_classifier.md',
         'env': 'py-light_curve_classifier'
     },
-    'light_curve_generator': {
-        'file': 'fornax-demo-notebooks/light_curves/light_curve_generator.md',
-        'env': 'py-light_curve_generator'
+    'light_curve_collector': {
+        'file': 'fornax-demo-notebooks/light_curves/light_curve_collector.md',
+        'env': 'py-light_curve_collector'
     },
     'scale_up': {
         'file': 'fornax-demo-notebooks/light_curves/scale_up.md',
