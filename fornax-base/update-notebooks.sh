@@ -13,10 +13,6 @@ fi
 notebook_repos=(
     # main demo notebooks
     https://github.com/nasa-fornax/fornax-demo-notebooks.git
-    # Documentation
-    https://github.com/nasa-fornax/fornax-documentation.git
-    # lsdb notebeooks
-    https://github.com/lincc-frameworks/IVOA_2024_demo.git
 )
 
 mkdir -p $NOTEBOOK_DIR
