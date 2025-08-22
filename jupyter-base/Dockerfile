@@ -106,7 +106,8 @@ RUN cd /tmp/ \
  # micromamba
  && curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
  && mv bin/micromamba /usr/local/bin/ \
- && rm -rf bin
+ && rm -rf bin \
+ && cd $HOME && rm -rf .* *
 
 
 ## -- install jupyter -- ##
