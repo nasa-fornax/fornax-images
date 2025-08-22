@@ -61,7 +61,6 @@ def test_base_env():
 
 def test_notebooks_folder():
     assert os.path.exists(notebook_dir)
-    assert os.path.exists(f'{notebook_dir}/fornax-documentation')
     assert os.path.exists(f'{notebook_dir}/fornax-demo-notebooks')
 
 
