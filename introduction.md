@@ -26,6 +26,7 @@ at the start of every new session. To disable these updates, add an empty file c
 
 ## 25.0825 (dev)
 - Add 'Update Notebooks' to Fornax menu (fornax-labextension = 0.1.5).
+- Fix Firefly installation.
 - Update kernels for renamed notebook light_curve_generator -> light_curve_collector.
 - Build updates to allow for portable software environments (through AMI) and a slim final container image.
 
