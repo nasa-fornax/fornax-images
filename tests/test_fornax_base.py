@@ -33,3 +33,8 @@ def test_env_vars():
 
 def test_base_env():
     CommonTests._test_uv_env_file(jupyter_env, jupyter_root)
+
+
+def test_update_notebooks_script():
+    # needed by fornax-labextension >= 0.1.5
+    os.path.exists('/usr/local/bin/update-notebooks.sh')
