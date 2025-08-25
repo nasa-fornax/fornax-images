@@ -1,0 +1,7 @@
+vim
+nano
+git
+zip
+pandoc
+jq
+code-server

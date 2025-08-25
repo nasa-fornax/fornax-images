@@ -25,7 +25,7 @@ class TestTaskRunner(unittest.TestCase):
         self.logger = logger
 
     def test_run(self):
-        out = self.builder_run.run('pwd', timeout=100, capture_output=True)
+        out = self.builder_run.run('pwd -P', timeout=100, capture_output=True)
         self.assertEqual(out.stdout.strip().lower(), os.getcwd().lower())
 
     def test_out(self):
@@ -202,6 +202,18 @@ class TestBuilder(unittest.TestCase):
         self.assertTrue(f'docker pull {source_tag}' in output)
         self.assertTrue(f'docker tag {source_tag} {release_tag}' in output)
         self.assertTrue(f'docker push {release_tag}' in output)
+        self.logger.handlers.clear()
+
+    def test__export_envs(self):
+        self.logger.handlers.clear()
+        image = 'fornax-main'
+        with patch('sys.stderr', new=StringIO()) as mock_out:
+            logging.basicConfig(level=logging.DEBUG)
+            self.builder_dry.export_envs([image], self.tag)
+            output = mock_out.getvalue().strip()
+        full_tag = self.builder_dry.get_full_tag(image, self.tag)
+        self.assertTrue((f'docker run --rm --entrypoint tar {full_tag} '
+                         f'-czf - /opt/envs > envs_{image}.tgz') in output)
         self.logger.handlers.clear()
 
     def test_build__push_to_ecr__no_endpoint(self):

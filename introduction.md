@@ -24,6 +24,10 @@ at the start of every new session. To disable these updates, add an empty file c
 ---
 # Latest Changes
 
+## 25.0825 (dev)
+- Add 'Update Notebooks' to Fornax menu (fornax-labextension = 0.1.5).
+- Build updates to allow for portable software environments (through AMI) and a slim final container image.
+
 ## 25.0821
 - Update fornax-labextension to get the updated links.
 - Add ciao and fermitools to the high energy image.

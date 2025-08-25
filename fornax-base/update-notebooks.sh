@@ -13,10 +13,6 @@ fi
 notebook_repos=(
     # main demo notebooks
     https://github.com/nasa-fornax/fornax-demo-notebooks.git
-    # Documentation
-    https://github.com/nasa-fornax/fornax-documentation.git
-    # lsdb notebeooks
-    https://github.com/lincc-frameworks/IVOA_2024_demo.git
 )
 
 mkdir -p $NOTEBOOK_DIR
@@ -28,6 +24,12 @@ for repo in ${notebook_repos[@]}; do
     # use nbgitpuller
     timeout $timeout $JUPYTER_DIR/bin/gitpuller $repo main $name
 done
+
+# TEMPORARY fix for kernel names; remove once fixed upstream
+if $JUPYTER_DIR/bin/jupyter kernelspec list  | grep multiband_photometry; then
+    cd $NOTEBOOK_DIR/fornax-demo-notebooks
+    jupytext --set-kernel py-light_curve_collector light_curves/light_curve_collector.md
+fi
 
 # bring in the intro page
 if test -f $JUPYTER_DIR/introduction.html && ! test -L $NOTEBOOK_DIR/introduction.html; then
