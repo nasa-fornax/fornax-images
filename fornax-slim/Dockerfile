@@ -81,7 +81,9 @@ ENV DEFAULT_ENV=python3 \
     # scripts that rely on support data should use SUPPORT_DATA_DIR
     SUPPORT_DATA_DIR=/opt/support-data \
     # path
-    PATH=$ENV_DIR/base/bin:$PATH:$ENV_DIR/other/code-server/bin 
+    PATH=$ENV_DIR/base/bin:$PATH:$ENV_DIR/other/code-server/bin \
+    # For firefly
+    FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer
 
 # For outside mount when using outside fornax
 RUN mkdir -p /opt/workspace
@@ -92,8 +94,6 @@ VOLUME /opt/workspace
 RUN ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
 
 ## ----- From fornax-main ----- ##
-# For firefly
-ENV FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer
 
 USER ${NB_UID}
 WORKDIR $HOME
