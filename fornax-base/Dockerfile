@@ -161,6 +161,9 @@ ONBUILD RUN cd build \
  ; done
 # --------------------------- #
 
+# Update the notebooks
+ONBUILD RUN update-notebooks.sh
+
 
 ONBUILD RUN rm -r $HOME/build
 ONBUILD USER ${NB_USER}
