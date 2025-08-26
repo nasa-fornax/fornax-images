@@ -83,7 +83,9 @@ ENV DEFAULT_ENV=python3 \
     # path
     PATH=$ENV_DIR/base/bin:$PATH:$ENV_DIR/other/code-server/bin \
     # For firefly
-    FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer
+    FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
+    # for dask
+    DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/{port}/status"
 
 # For outside mount when using outside fornax
 RUN mkdir -p /opt/workspace

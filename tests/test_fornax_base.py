@@ -38,3 +38,13 @@ def test_base_env():
 def test_update_notebooks_script():
     # needed by fornax-labextension >= 0.1.5
     os.path.exists('/usr/local/bin/update-notebooks.sh')
+
+
+def test_firefly_basic():
+    assert 'FIREFLY_URL' in os.environ
+
+
+def test_dask_basic():
+    # need dask-distributed
+    import dask.distributed # noqa E402
+    assert 'DASK_DISTRIBUTED__DASHBOARD__LINK' in os.environ

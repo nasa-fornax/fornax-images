@@ -1,4 +1,3 @@
-dask[distributed]
 numpy
 scipy
 pandas
@@ -9,3 +8,5 @@ tqdm
 matplotlib
 seaborn
 pytest
+dask[distributed]
+bokeh
