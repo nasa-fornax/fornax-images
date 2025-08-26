@@ -107,6 +107,12 @@ USER $NB_USER
 RUN mkdir -p /opt/workspace
 VOLUME /opt/workspace
 
+# landing page; even an empty one
+COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md* $JUPYTER_DIR
+RUN cd $JUPYTER_DIR \
+    && if test -f introduction.md; then \
+      pandoc introduction.md -o introduction.html --standalone --metadata title="Welcome to Fornax Science Console!"; \
+    fi
 
 # Add the notebooks to the image
 RUN update-notebooks.sh && link-notebooks.sh
@@ -152,12 +158,6 @@ ONBUILD RUN cd build \
  ; done
 # --------------------------- #
 
-# landing page; even an empty one
-ONBUILD COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md* $JUPYTER_DIR
-ONBUILD RUN cd $JUPYTER_DIR \
- && if test -f introduction.md; then \
-  pandoc introduction.md -o introduction.html --standalone --metadata title="Welcome to Fornax Science Console!"; \
- fi
 
 ONBUILD RUN rm -r $HOME/build
 ONBUILD USER ${NB_USER}
