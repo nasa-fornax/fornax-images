@@ -112,7 +112,7 @@ RUN cd /tmp/ \
 
 ## -- install jupyter -- ##
 USER ${NB_UID}
-RUN uv venv $JUPYTER_DIR --no-managed-python \
+RUN uv venv $JUPYTER_DIR --no-managed-python -p /usr/bin/python$PYTHON_VERSION \
  && export VIRTUAL_ENV=$JUPYTER_DIR \
  && uv pip install "jupyterlab==4.*" "jupyterhub==5.*" pytest \
  && uv clean \

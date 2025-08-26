@@ -11,7 +11,8 @@ for envfile in `ls requirements-*.txt`; do
     fi
     echo "Found $ENVFILE, using it ..."
     export VIRTUAL_ENV=$ENV_DIR/$env
-    uv venv $VIRTUAL_ENV
+    # ensure we use the same python in jupyter so dask works
+    uv venv $VIRTUAL_ENV -p $ENV_DIR/base/bin/python$PYTHON_VERSION
     uv pip install -r $ENVFILE
     # add our useful packages
     uv pip install ipykernel pip

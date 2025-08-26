@@ -64,7 +64,8 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
 # Install system packages with micromamba
 # we use microconda instead of apt, so they are portable
 COPY --chown=$NB_UID:$NB_GID base.txt /tmp/
-RUN micromamba create -y -p $ENV_DIR/base python=$PYTHON_VERSION \
+RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
+ && micromamba create -y -p $ENV_DIR/base python=$PY_EXACT_VERSION \
  && xargs -a /tmp/base.txt micromamba install -y -p $ENV_DIR/base \
  && micromamba clean -yaf && rm /tmp/base.txt \
  && micromamba env export -p $ENV_DIR/base > $ENV_DIR/base/base-lock.yml \
