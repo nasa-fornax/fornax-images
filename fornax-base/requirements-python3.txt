@@ -1,4 +1,4 @@
-dask
+dask[distributed]
 numpy
 scipy
 pandas

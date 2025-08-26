@@ -21,9 +21,9 @@ terminal.
 ---
 # Latest Changes
 
-## 25.0825 (dev)
+## 25.0826 (dev)
 - Add 'Update Notebooks' to Fornax menu (fornax-labextension = 0.1.5).
-- Fix Firefly installation.
+- Fix Firefly and dask installations.
 - Update kernels for renamed notebook light_curve_generator -> light_curve_collector.
 - Build updates to allow for portable software environments (through AMI) and a slim final container image.
 
