@@ -140,7 +140,7 @@ class Builder(TaskRunner):
             raise ValueError(f'image {image} does not exists')
 
         # skip base images
-        if image in ['foranx-jupyter', 'fornax-base']:
+        if image in ['foranx-jupyter']:
             return
 
         for file in COMMON_FILES:
