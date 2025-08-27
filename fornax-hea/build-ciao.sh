@@ -57,7 +57,7 @@ ln -sf $SUPPORT_DATA_DIR/ciao-caldb-${CIAO_VERSION}/CALDB $ENV_DIR/ciao/CALDB
 #  package, we already have CALDB living somewhere else, and as such the conda activate.d script that calls the
 #  CALDB init script does not exist
 cat << EOF > $ENV_DIR/ciao/etc/conda/activate.d/caldb_main_activate.sh
-export CALDB=$CONDA_PREFIX/CALDB
+export CALDB=$ENV_DIR/ciao/CALDB
 export CALDBCONFIG="$CALDB/software/tools/caldb.config"
 export CALDBALIAS="$CALDB/software/tools/alias_config.fits"
 EOF
@@ -70,15 +70,9 @@ EOF
 cat << EOF > $ENV_DIR/ciao/etc/conda/activate.d/ciao-pfiles_activate.sh
 #!/bin/bash
 # Intended to solve parameter file copying issues for HEASoft tools when using the CIAO conda environment
-export PFILES="$PFILES:/opt/envs/heasoft/heasoft/syspfiles"
+export PFILES="$PFILES:$ENV_DIR/heasoft/heasoft/syspfiles"
 EOF
 #####################
-
-# Finally, we ensure that the activation/deactivation scripts are executable
-chmod +x /opt/envs/ciao/etc/conda/activate.d/ciao-caldb_activate.sh
-chmod +x /opt/envs/ciao/etc/conda/deactivate.d/ciao-caldb_deactivate.sh
-chmod +x /opt/envs/ciao/etc/conda/activate.d/ciao-pfiles_activate.sh
-
 
 # clean
 cd $HOME
