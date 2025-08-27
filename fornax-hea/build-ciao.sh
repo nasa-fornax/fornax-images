@@ -21,7 +21,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11
-  - ciao=4.17
+  - ciao
   - sherpa
   - ciao-contrib
   - marx
@@ -43,12 +43,12 @@ rm -rf $ENV_DIR/ciao/docs
 
 # get ciao version
 CIAO_VERSION=$(micromamba list ciao -p $ENV_DIR/ciao --json | jq -r '.[0].version')
-CALDB_VERSION=$(micromamba list caldb_main -p $ENV_DIR/ciao --json | jq -r '.[0].version')
+CALDB_VERSION=4.12.0
 
 # link modelData
 ln -sf $SUPPORT_DATA_DIR/ciao-${CIAO_VERSION}/spectral/modelData $ENV_DIR/ciao/spectral/modelData
 # link caldb.
-ln -sf $SUPPORT_DATA_DIR/ciao-caldb-${CIAO_VERSION}/CALDB $ENV_DIR/ciao/CALDB
+ln -sf $SUPPORT_DATA_DIR/ciao-caldb-${CALDB_VERSION}/CALDB $ENV_DIR/ciao/CALDB
 
 # clean
 cd $HOME
