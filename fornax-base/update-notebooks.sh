@@ -15,14 +15,21 @@ notebook_repos=(
     https://github.com/nasa-fornax/fornax-demo-notebooks.git
 )
 
+# Branch to pull from, preferably a curated, deployed branch rather than the development default
+deployed_branches=(
+    deployed_notebooks
+)
+
 mkdir -p $NOTEBOOK_DIR
 cd $NOTEBOOK_DIR
 # copy notebooks
 echo "Cloning the notebooks to $NOTEBOOK_DIR ..."
-for repo in ${notebook_repos[@]}; do
+for i in ${!notebook_repos[@]}; do
+    repo=${notebook_repos[i]}
+    branch=${deployed_branches[i]}
     name=`echo $repo | sed 's#.*/\([^/]*\)\.git#\1#'`
     # use nbgitpuller
-    timeout $timeout $JUPYTER_DIR/bin/gitpuller $repo main $name
+    timeout $timeout $JUPYTER_DIR/bin/gitpuller $repo $branch $name
 done
 
 # TEMPORARY fix for kernel names; remove once fixed upstream
