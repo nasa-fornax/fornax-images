@@ -22,7 +22,7 @@ echo "Cloning the notebooks to $NOTEBOOK_DIR ..."
 for repo in ${notebook_repos[@]}; do
     name=`echo $repo | sed 's#.*/\([^/]*\)\.git#\1#'`
     # use nbgitpuller
-    timeout $timeout $JUPYTER_DIR/bin/gitpuller $repo main $name
+    timeout $timeout $JUPYTER_DIR/bin/gitpuller $repo deployed_notebooks $name
 done
 
 # TEMPORARY fix for kernel names; remove once fixed upstream
