@@ -61,17 +61,6 @@ sas_link=$base_sas_link${sas_file}
 
 ###########################################################
 
-
-############# NOTES #############
-# Exact Perl version could be tricky - the SAS docs say 5.34.1, the Fornax
-#  version currently is v5.38.2. The exact right version isn't available through conda 
-#  as far as I can see. On the other hand, my local install of SAS has Perl v5.40.1
-#  and it seems to work fine, so won't worry about this right now
-#
-# Could we include SAS in the https://heasarc.gsfc.nasa.gov/FTP/software/conda channel?
-#################################
-
-
 ########### Download and unpack required files ############
 wget $sas_link \
 	&& tar xvf $sas_file \
@@ -119,12 +108,14 @@ micromamba run -n sas ./install.sh
 ###########################################################
 
 
+# TODO - finalize handling of calibration files. Not just XMM, but all missions. Current version of XMM CCF is
+#  stored in 'support-data', which will do for now
 ##################### Download XMM CCF ####################
 # We download it straight into the support data directory - this command cannot work on Fornax images without
 #  ensuring we install rsync through Conda, which is why we added it to the sas conda env
 # The ';' on the end of the rsync call means that the rest of the script will proceed if this command fails
-mkdir -p $SUPPORT_DATA_DIR/xmm_sas/
-micromamba run -n sas rsync -v -a --delete --delete-after --force --include='*.CCF' --exclude='*/' sasdev-xmm.esac.esa.int::XMM_VALID_CCF $SAS_CCFPATH;
+#mkdir -p $SUPPORT_DATA_DIR/xmm_sas/
+#micromamba run -n sas rsync -v -a --delete --delete-after --force --include='*.CCF' --exclude='*/' sasdev-xmm.esac.esa.int::XMM_VALID_CCF $SAS_CCFPATH;
 
 # Rather than the rsync method, we'll download all .CCF files from the HEASARC mirror
 #  of XMM calibration files using wget. This doesn't necessarily seem as safe
