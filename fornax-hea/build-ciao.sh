@@ -58,8 +58,8 @@ ln -sf $SUPPORT_DATA_DIR/ciao-caldb-${CALDB_VERSION}/CALDB $ENV_DIR/ciao/CALDB
 #  CALDB init script does not exist
 cat << EOF > $ENV_DIR/ciao/etc/conda/activate.d/caldb_main_activate.sh
 export CALDB=$ENV_DIR/ciao/CALDB
-export CALDBCONFIG="$CALDB/software/tools/caldb.config"
-export CALDBALIAS="$CALDB/software/tools/alias_config.fits"
+export CALDBCONFIG="\$CALDB/software/tools/caldb.config"
+export CALDBALIAS="\$CALDB/software/tools/alias_config.fits"
 EOF
 #####################
 
