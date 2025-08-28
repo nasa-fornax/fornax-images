@@ -25,7 +25,7 @@ rm -rf * > /dev/null 2>&1
 ############# Definition of software versions #############
 ubuntu_version=24.04
 sas_version=22.1.0
-py_version=3.12
+py_version=$PYTHON_VERSION
 ###########################################################
 
 
