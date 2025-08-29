@@ -108,6 +108,10 @@ micromamba run -n sas ./install.sh
 
 
 ################ Add conda (de)activation scripts ###############
+# Ensure that the directories we need actually exist
+mkdir -p $ENV_DIR/sas/etc/conda/activate.d
+mkdir -p $ENV_DIR/sas/etc/conda/deactivate.d
+
 # These scripts set up SAS and handles additional environment variable setting
 cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-general_activate.sh
 #!/usr/bin/bash
