@@ -34,4 +34,4 @@ def test_conda_env():
 
 
 def test_version():
-    subprocess.check_call(["sas --version"])
+    subprocess.check_call(["sas", "--version"])
