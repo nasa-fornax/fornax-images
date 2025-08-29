@@ -40,3 +40,9 @@ def test_check_packages():
 
 def test_version():
     subprocess.check_call(["ciaover"])
+
+def test_caldb():
+    assert 'CALDB' in os.environ
+    assert os.environ['CALDB'] != ''
+    assert 'CALDBCONFIG' in os.environ
+    assert 'CALDBALIAS' in os.environ
