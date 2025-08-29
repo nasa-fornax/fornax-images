@@ -90,7 +90,7 @@ bash /usr/local/bin/conda-env-install.sh
 #  the module that it wants for some included Python bits (e.g. pySAS)
 # Other build scripts for Fornax images seem to use the uv package manager, so we 
 #  will as well - particularly the pip CLI version
-micromamba run -n sas uv pip install -r sas_python_packages.txt
+micromamba run -n sas pip install -r sas_python_packages.txt --no-cache-dir
 ###########################################################
 
 
@@ -104,14 +104,6 @@ cd $ENV_DIR/sas/
 
 # Run the SAS install script, specifically in the environment we've just created
 micromamba run -n sas ./install.sh
-###########################################################
-
-
-# TODO - finalize handling of calibration files. Not just XMM, but all missions. Current version of XMM CCF is
-#  stored in 'support-data', which will do for now
-# CCFs are available on the S3 bucket, so we could pull from there
-##################### Download XMM CCF ####################
-
 ###########################################################
 
 
