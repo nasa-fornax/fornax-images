@@ -46,4 +46,4 @@ def test_ccf():
     # Check if the stderr has any entries in it - it shouldn't if all went well
     assert len(output) == 0
     # If we're here we need to clean up the output file from the cifbuild call
-    os.remo#ve('ccf.cif')
+    os.remove('ccf.cif')
