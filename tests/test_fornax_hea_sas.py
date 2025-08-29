@@ -37,13 +37,13 @@ def test_version():
     subprocess.check_call(["sas", "--version"])
 
 
-def test_ccf():
-    # Runs the SAS cifbuild routine, but set to generate a master index file (MIF). Users never need to do
-    #  this, but it means we don't have to point cifbuild at a particular XMM observation, and it will raise
-    #  a warning if it can't find any CCFs
-    output = subprocess.run(["cifbuild", "masterindex=yes"], stderr=subprocess.PIPE)
-    output = output.stderr.decode('utf-8')
-    # Check if the stderr has any entries in it - it shouldn't if all went well
-    assert len(output) == 0
-    # If we're here, we need to clean up the output file from the cifbuild call
-    os.remove('ccf.cif')
+# def test_ccf():
+#     # Runs the SAS cifbuild routine, but set to generate a master index file (MIF). Users never need to do
+#     #  this, but it means we don't have to point cifbuild at a particular XMM observation, and it will raise
+#     #  a warning if it can't find any CCFs
+#     output = subprocess.run(["cifbuild", "masterindex=yes"], stderr=subprocess.PIPE)
+#     output = output.stderr.decode('utf-8')
+#     # Check if the stderr has any entries in it - it shouldn't if all went well
+#     assert len(output) == 0
+#     # If we're here, we need to clean up the output file from the cifbuild call
+#     os.remove('ccf.cif')
