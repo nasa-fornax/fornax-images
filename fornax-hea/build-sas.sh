@@ -81,7 +81,6 @@ dependencies:
   - python=$py_version
   - heasoft=6.35.*
   - pytest
-  - rsync
 EOF
 
 # Use the yml to create the SAS env
@@ -110,19 +109,9 @@ micromamba run -n sas ./install.sh
 
 # TODO - finalize handling of calibration files. Not just XMM, but all missions. Current version of XMM CCF is
 #  stored in 'support-data', which will do for now
+# CCFs are available on the S3 bucket, so we could pull from there
 ##################### Download XMM CCF ####################
-# We download it straight into the support data directory - this command cannot work on Fornax images without
-#  ensuring we install rsync through Conda, which is why we added it to the sas conda env
-# The ';' on the end of the rsync call means that the rest of the script will proceed if this command fails
-#mkdir -p $SUPPORT_DATA_DIR/xmm_sas/
-#micromamba run -n sas rsync -v -a --delete --delete-after --force --include='*.CCF' --exclude='*/' sasdev-xmm.esac.esa.int::XMM_VALID_CCF $SAS_CCFPATH;
 
-# Rather than the rsync method, we'll download all .CCF files from the HEASARC mirror
-#  of XMM calibration files using wget. This doesn't necessarily seem as safe
-#  as the rsync method, but will do for. This command is set up to recursively download level-1 (i.e. not going 
-#  down into sub-directories) files that have the .CCF extension. Sub-directories are not downloaded, and the files
-#  are put into the $SAS_CCFPATH path set at the top of this script.
-# wget -r -l1 -nd --accept .CCF -P $SAS_CCFPATH -e robots=off https://heasarc.gsfc.nasa.gov/FTP/caldb/data/xmm/ccf/
 ###########################################################
 
 
