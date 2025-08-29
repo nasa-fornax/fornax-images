@@ -43,6 +43,14 @@ def test_check_packages():
 def test_fversion():
     subprocess.check_call("fversion")
 
+
+def test_caldb():
+    assert 'CALDB' in os.environ
+    assert os.environ['CALDB'] != ''
+    assert 'CALDBCONFIG' in os.environ
+    assert 'CALDBALIAS' in os.environ
+
+
 # TODO: add a test for running test_fversion inside a notebook
 
 
