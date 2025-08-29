@@ -21,7 +21,7 @@ terminal.
 ---
 # Latest Changes
 
-## 25.0829 (dev)
+## 25.0829
 - Add 'Update Notebooks' to Fornax menu (fornax-labextension = 0.1.5).
 - Fix Firefly and dask installations.
 - Fix calibration database CALDB setup for the heasoft and ciao environments in the high energy image.
