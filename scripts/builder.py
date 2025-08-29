@@ -305,7 +305,7 @@ class Builder(TaskRunner):
             if source_tag == 'main' and 'stable' not in release_tags:
                 release_tags.append('stable')
 
-            if export_lock:
+            if export_lock and image in ['fornax-main', 'fornax-hea']:
                 self.export_lockfiles(image, source_tag)
 
             # loog through release tags
