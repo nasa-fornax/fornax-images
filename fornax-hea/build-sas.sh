@@ -132,14 +132,10 @@ export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$ENV_DIR/sas/lib"
 # Any attempted init of SAS will fail without this path being set
 export SAS_DIR=\$ENV_DIR/sas/${sas_install_dir}
 source \$SAS_DIR/setsas.sh
-EOF
-
-
-cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-ccf_activate.sh
-#!/usr/bin/bash
 
 # This sets the environment variable for the XMM Current Calibration Files (CCF)
-export SAS_CCFPATH=${SAS_CCFPATH}
+export SAS_CCFPATH=\$SUPPORT_DATA_DIR/xmm_ccf
+
 EOF
 
 ######
