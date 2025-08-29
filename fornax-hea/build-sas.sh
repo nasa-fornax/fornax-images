@@ -86,29 +86,12 @@ EOF
 
 # Use the yml to create the SAS env
 bash /usr/local/bin/conda-env-install.sh
-
-# Use the Python requirements file included in the SAS directory to install
-#  the module that it wants for some included Python bits (e.g. pySAS)
-# Other build scripts for Fornax images seem to use the uv package manager, so we 
-#  will as well - particularly the pip CLI version
-micromamba run -n sas pip install -r sas_python_packages.txt --no-cache-dir
-###########################################################
-
-
-############ Moving unpacked SAS and installing ###########
-# Moves all of the files unpacked from the SAS download into the conda environment directory
-#  for SAS - it is easier to install SAS in-situ, rather than installing it then moving it, as 
-#  some file paths get baked in during the installation process
-mv * $ENV_DIR/sas/
-# We must follow the unpacked files
-cd $ENV_DIR/sas/
-
-# Run the SAS install script, specifically in the environment we've just created
-micromamba run -n sas ./install.sh
 ###########################################################
 
 
 ################ Add conda (de)activation scripts ###############
+# We perform this step next, because when we install the requirements later we want activating the SAS
+#  conda environment to also initialize HEASoft - otherwise install pyds9 will fail
 # Ensure that the directories we need actually exist
 mkdir -p $ENV_DIR/sas/etc/conda/activate.d
 mkdir -p $ENV_DIR/sas/etc/conda/deactivate.d
@@ -127,7 +110,7 @@ export SAS_PERL=/usr/bin/perl
 export SAS_PYTHON=\$ENV_DIR/sas/bin/python
 
 # Adds the SAS conda environment library to the library path - without this
-#  we will get errors about not being able to find libsm.so.6 
+#  we will get errors about not being able to find libsm.so.6
 export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$ENV_DIR/sas/lib"
 
 # Any attempted init of SAS will fail without this path being set
@@ -141,7 +124,7 @@ EOF
 
 ######
 # This scripts unsets many of the environment variables set in the activation scripts
-# Honestly don't really know how much most of this matters, and am currently only getting the 
+# Honestly don't really know how much most of this matters, and am currently only getting the
 #  environment variables that I know have been set, not those that the setsas.sh script sets
 cat <<EOF > $ENV_DIR/sas/etc/conda/deactivate.d/sas-general_deactivate.sh
 #!/usr/bin/bash
@@ -155,6 +138,28 @@ unset LD_LIBRARY_PATH
 unset SAS_DIR
 unset SAS_CCFPATH
 EOF
+###########################################################
+
+
+############ Moving unpacked SAS and installing ###########
+# Moves all of the files unpacked from the SAS download into the conda environment directory
+#  for SAS - it is easier to install SAS in-situ, rather than installing it then moving it, as 
+#  some file paths get baked in during the installation process
+mv * $ENV_DIR/sas/
+# We must follow the unpacked files
+cd $ENV_DIR/sas/
+
+# Run the SAS install script, specifically in the environment we've just created
+micromamba run -n sas ./install.sh
+###########################################################
+
+
+############ Installing SAS Python requirements ###########
+# Use the Python requirements file included in the SAS directory to install
+#  the module that it wants for some included Python bits (e.g. pySAS)
+# Other build scripts for Fornax images seem to use the uv package manager, so we
+#  will as well - particularly the pip CLI version
+micromamba run -n sas pip install -r sas_python_packages.txt --no-cache-dir
 ###########################################################
 
 
