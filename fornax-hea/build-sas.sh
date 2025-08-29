@@ -79,7 +79,6 @@ channels:
   - conda-forge
 dependencies:
   - python=$py_version
-  - heasoft=6.35.*
   - pytest
 EOF
 
@@ -115,6 +114,10 @@ mkdir -p $ENV_DIR/sas/etc/conda/deactivate.d
 # These scripts set up SAS and handles additional environment variable setting
 cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-general_activate.sh
 #!/usr/bin/bash
+
+# Setting up HEASoft, otherwise SAS will fall over when you try to init it
+export HEADAS=\$ENV_DIR/heasoft/heasoft
+source $HEADAS/headas-init.sh
 
 # SAS can be very particular about Perl - this is the path we set when SAS was 'built'
 export SAS_PERL=/usr/bin/perl
