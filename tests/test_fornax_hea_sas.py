@@ -45,5 +45,5 @@ def test_ccf():
     output = output.stderr.decode('utf-8')
     # Check if the stderr has any entries in it - it shouldn't if all went well
     assert len(output) == 0
-    # If we're here we need to clean up the output file from the cifbuild call
+    # If we're here, we need to clean up the output file from the cifbuild call
     os.remove('ccf.cif')
