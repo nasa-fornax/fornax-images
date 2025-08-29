@@ -2,27 +2,31 @@
 <img src="https://nasa-fornax.github.io/fornax-demo-notebooks/_static/fornax_logo.png" alt="Fornax Science Console"
     style="float: right; width: 200px; margin: 10px;" />
 
-# Documentation
-The general documentation for using the Fornax Science Console are available in the 
-[documentation repository](fornax-documentation/README.md). These can also be browsed
-in the [documentation page on github](https://nasa-fornax.github.io/fornax-demo-notebooks/#user-documentation).
+# Documentation & Support
+The general documentation for using the Fornax Science Console are available in 
+the [documentation page](https://nasa-fornax.github.io/fornax-documentation/).
+Help and support is available in the [Fornax discource forum](https://discourse.fornax.sciencecloud.nasa.gov).
 
 # Notebooks
-The `notebooks` folder in the home directory contains notebooks that are actively being
+The `fornax-notebooks` folder in the home directory contains notebooks that are actively being
 developed. They currently include:
 - [fornax-demo-notebooks](fornax-demo-notebooks/README.md): These are the main notebooks developed
-  by the Fornax team. The rendered version is available on the
-  [documentation page](https://nasa-fornax.github.io/fornax-demo-notebooks).
-- [IVOA_2024_demo](IVOA_2024_demo/README.md): Notebooks developed in collaboration with the LINCC team,
-  demonstrating the use of Hispcat and LSDB for large catalog cross matching.
+  by the Fornax team.
 - Others will be added.
 
-The content of the `notebooks` folder in the home directory will be updated automatically
-at the start of every new session. To disable these updates, add an empty file called
-`.no-notebook-update.txt` in your home directory.
+The content of the `fornax-notebooks` folder in the home directory can be updated from Fornax menu
+at the top: Fornax -> Update Notebooks, or by running the `update-notebooks.sh` script from the
+terminal.
 
 ---
 # Latest Changes
+
+## 25.0829
+- Add 'Update Notebooks' to Fornax menu (fornax-labextension = 0.1.5).
+- Fix Firefly and dask installations.
+- Fix calibration database CALDB setup for the heasoft and ciao environments in the high energy image.
+- Update kernels for renamed notebook light_curve_generator -> light_curve_collector.
+- Build updates to allow for portable software environments (through AMI) and a slim final container image.
 
 ## 25.0821
 - Update fornax-labextension to get the updated links.

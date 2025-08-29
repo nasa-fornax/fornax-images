@@ -14,7 +14,8 @@ IMAGE_ORDER = (
     'jupyter-base',
     'fornax-base',
     'fornax-main',
-    'fornax-hea'
+    'fornax-hea',
+    'fornax-slim'
 )
 
 COMMON_FILES = [
@@ -139,7 +140,7 @@ class Builder(TaskRunner):
             raise ValueError(f'image {image} does not exists')
 
         # skip base images
-        if image in ['foranx-jupyter', 'fornax-base']:
+        if image in ['foranx-jupyter']:
             return
 
         for file in COMMON_FILES:
@@ -263,7 +264,9 @@ class Builder(TaskRunner):
         self.out(f"Pushing {full_tag} ...")
         self.run(push_command, timeout=1000)
 
-    def release(self, source_tag, release_tags, images=None, export_lock=False):
+    def release(
+        self, source_tag, release_tags, images=None, export_lock=False
+    ):
         """Make an image release by tagging the image with release_tags
 
         Parameters:
@@ -287,7 +290,7 @@ class Builder(TaskRunner):
         to_release = images if images is not None else list(IMAGE_ORDER)
         for image in to_release:
             if image not in IMAGE_ORDER:
-                raise ValueError(f'Unknow Requested image {image}.')
+                raise ValueError(f'Unknown Requested image {image}.')
 
         # Loop through the images
         for image in to_release:
@@ -297,11 +300,11 @@ class Builder(TaskRunner):
             command = f'docker pull {full_source_tag}'
             self.out(f"Pulling {full_source_tag} ...")
             self.run(command, timeout=1000)
-            
+
             # if we are releasing from main, add a stable tag
             if source_tag == 'main' and 'stable' not in release_tags:
                 release_tags.append('stable')
-            
+
             if export_lock:
                 self.export_lockfiles(image, source_tag)
 
@@ -353,8 +356,8 @@ class Builder(TaskRunner):
         images_to_process = images if images is not None else list(IMAGE_ORDER)
         for image in images_to_process:
             if image not in IMAGE_ORDER:
-                raise ValueError(f'Unknow Requested image {image}.')
-        
+                raise ValueError(f'Unknown Requested image {image}.')
+
         # if we are releasing from main, add a stable tag
         if source_tag == 'main' and 'stable' not in release_tags:
             release_tags.append('stable')
@@ -395,6 +398,27 @@ class Builder(TaskRunner):
                         else:
                             # raise for any other error
                             raise
+
+    def export_envs(self, images, tag):
+        """Export the /opt/envs directory to a tar file
+
+        Parameters
+        ----------
+        images: list of None
+            Images to extract the folder from.
+        tag: str
+            The image tag.
+        """
+        if (
+            images is None or len(images) == 0 or
+            (isinstance(images, list) and images[0] == '')
+        ):
+            images = ['fornax-main', 'fornax-hea']
+        for image in images:
+            full_tag = self.get_full_tag(image, tag)
+            cmd = (f'docker run --rm --entrypoint tar {full_tag} '
+                   f'-czf - /opt/envs > envs_{image}.tgz')
+            _ = self.run(cmd, timeout=10000)
 
     def remove_lockfiles(self, image):
         """Remove conda lock files from an image

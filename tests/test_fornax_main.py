@@ -6,7 +6,7 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
-from common import uv_root, jupyter_env, jupyter_root  # noqa E402
+from common import env_root, jupyter_env, jupyter_root  # noqa E402
 
 default_kernel = 'python3'
 
@@ -22,9 +22,9 @@ notebooks = {
         'file': 'fornax-demo-notebooks/light_curves/light_curve_classifier.md',
         'env': 'py-light_curve_classifier'
     },
-    'light_curve_generator': {
-        'file': 'fornax-demo-notebooks/light_curves/light_curve_generator.md',
-        'env': 'py-light_curve_generator'
+    'light_curve_collector': {
+        'file': 'fornax-demo-notebooks/light_curves/light_curve_collector.md',
+        'env': 'py-light_curve_collector'
     },
     'scale_up': {
         'file': 'fornax-demo-notebooks/light_curves/scale_up.md',
@@ -38,21 +38,21 @@ notebooks = {
 
 
 def test_python_path():
-    CommonTests._test_python_path(default_kernel, uv_root)
+    CommonTests._test_python_path(default_kernel, env_root)
 
 
 def test_which_python():
-    CommonTests._test_which_python(default_kernel, uv_root)
+    CommonTests._test_which_python(default_kernel, env_root)
 
 
 def test_env_file():
-    CommonTests._test_uv_env_file(default_kernel, uv_root)
+    CommonTests._test_uv_env_file(default_kernel, env_root)
 
 
 def test_env_vars():
     assert os.environ['DEFAULT_ENV'] == default_kernel
     assert os.environ['ENV_DIR'] == '/opt/envs'
-    assert os.environ['ENV_DIR'] == uv_root
+    assert os.environ['ENV_DIR'] == env_root
 
 
 def test_base_env():
@@ -61,13 +61,12 @@ def test_base_env():
 
 def test_notebooks_folder():
     assert os.path.exists(notebook_dir)
-    assert os.path.exists(f'{notebook_dir}/fornax-documentation')
     assert os.path.exists(f'{notebook_dir}/fornax-demo-notebooks')
 
 
 @pytest.mark.parametrize("notebook",  list(notebooks.keys()))
 def test_check_packages(notebook):
-    CommonTests._test_uv_env_file(notebooks[notebook]['env'], uv_root)
+    CommonTests._test_uv_env_file(notebooks[notebook]['env'], env_root)
 
 
 @pytest.mark.parametrize("notebook", list(notebooks.keys()))
@@ -102,5 +101,5 @@ def test_imports(notebook):
                 re.sub(r'\n|\\', '', line) for line in imports]))
 
         CommonTests.run_cmd(
-            f'{uv_root}/{env}/bin/python imports_{py_filename}'
+            f'{env_root}/{env}/bin/python imports_{py_filename}'
         )

@@ -44,6 +44,20 @@ ln -sf $SUPPORT_DATA_DIR/heasoft-${HEA_VERSION}/spectral/modelData $ENV_DIR/heas
 # link refdata, including heasoft, xstar etc.
 ln -sf $SUPPORT_DATA_DIR/heasoft-${HEA_VERSION}/refdata $ENV_DIR/heasoft/heasoft/refdata
 
+
+# Add CALDB; use remote caldb for now
+caldb_dir=$ENV_DIR/heasoft/caldb
+mkdir -p $caldb_dir
+cd $caldb_dir
+wget -qL https://heasarc.gsfc.nasa.gov/FTP/caldb/software/tools/caldb.config
+wget -qL https://heasarc.gsfc.nasa.gov/FTP/caldb/software/tools/alias_config.fits
+
+cat << EOF > $ENV_DIR/heasoft/etc/conda/activate.d/caldb_activate.sh
+export CALDBCONFIG=$caldb_dir/caldb.config
+export CALDBALIAS=$caldb_dir/alias_config.fits
+export CALDB=https://heasarc.gsfc.nasa.gov/FTP/caldb
+EOF
+
 # clean and reset
 cd $HOME
 rm -rf $WORKDIR

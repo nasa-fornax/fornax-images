@@ -52,11 +52,7 @@ jobs:
       - name: "Run tests inside the image: ${{ matrix.image }}"
         run: |
           image=${{ matrix.image }}
-          if [ $image == "jupyter-base" ]; then
-            testcmd="python "
-          else
-            testcmd="pytest -s -v "
-          fi
+          testcmd="pytest -s -v "
           docker run -i --rm -v .:/opt/workspace/repo-code \
             $image \
             bash -c "$testcmd /opt/workspace/repo-code/tests/test_${image//-/_}.py"

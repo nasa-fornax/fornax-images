@@ -4,7 +4,7 @@ import subprocess
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
-from common import uv_root, jupyter_env, jupyter_root  # noqa E402
+from common import env_root, jupyter_env, jupyter_root  # noqa E402
 
 default_kernel = 'ciao'
 
@@ -13,15 +13,15 @@ notebooks = {}
 
 
 def test_python_path():
-    CommonTests._test_python_path(default_kernel, uv_root)
+    CommonTests._test_python_path(default_kernel, env_root)
 
 
 def test_which_python():
-    CommonTests._test_which_python(default_kernel, uv_root)
+    CommonTests._test_which_python(default_kernel, env_root)
 
 
 def test_env_vars():
-    assert os.environ['ENV_DIR'] == uv_root
+    assert os.environ['ENV_DIR'] == env_root
 
 
 def test_base_env():
@@ -30,7 +30,7 @@ def test_base_env():
 
 def test_conda_env():
     CommonTests._test_conda_env_file(
-        'ciao', f'{uv_root}/ciao/ciao-lock.yml')
+        'ciao', f'{env_root}/ciao/ciao-lock.yml')
 
 
 def test_check_packages():
@@ -40,3 +40,9 @@ def test_check_packages():
 
 def test_version():
     subprocess.check_call(["ciaover"])
+
+def test_caldb():
+    assert 'CALDB' in os.environ
+    assert os.environ['CALDB'] != ''
+    assert 'CALDBCONFIG' in os.environ
+    assert 'CALDBALIAS' in os.environ
