@@ -93,9 +93,9 @@ bash /usr/local/bin/conda-env-install.sh
 # Use the Python requirements file included in the SAS directory to install
 #  the module that it wants for some included Python bits (e.g. pySAS)
 # The initialization of HEASoft here should allow for pyds9 to be installed properly
-export HEADAS=$ENV_DIR/heasoft/heasoft
-source $HEADAS/headas-init.sh
-micromamba run -n sas pip install -r sas_python_packages.txt --no-cache-dir
+#export HEADAS=$ENV_DIR/heasoft/heasoft
+#source $HEADAS/headas-init.sh
+#micromamba run -n sas pip install -r sas_python_packages.txt --no-cache-dir
 ###########################################################
 
 
@@ -121,10 +121,6 @@ mkdir -p $ENV_DIR/sas/etc/conda/deactivate.d
 cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-general_activate.sh
 #!/usr/bin/bash
 
-# Setting up HEASoft, otherwise SAS will fall over when you try to init it
-export HEADAS=\$ENV_DIR/heasoft/heasoft
-source \$HEADAS/headas-init.sh
-
 # SAS can be very particular about Perl - this is the path we set when SAS was 'built'
 export SAS_PERL=/usr/bin/perl
 # And this is the conda environment we set up for it
@@ -133,6 +129,10 @@ export SAS_PYTHON=\$ENV_DIR/sas/bin/python
 # Adds the SAS conda environment library to the library path - without this
 #  we will get errors about not being able to find libsm.so.6
 export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$ENV_DIR/sas/lib"
+
+# Setting up HEASoft, otherwise SAS will fall over when you try to init it
+export HEADAS=\$ENV_DIR/heasoft/heasoft
+source \$HEADAS/headas-init.sh
 
 # Any attempted init of SAS will fail without this path being set
 export SAS_DIR=\$ENV_DIR/sas/${sas_install_dir}
