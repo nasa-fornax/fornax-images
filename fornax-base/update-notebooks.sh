@@ -38,6 +38,12 @@ for i in ${!notebook_repos[@]}; do
     timeout $timeout $JUPYTER_DIR/bin/gitpuller $repo $branch $name
 done
 
+# TEMPORARY fix for kernel names; remove once fixed upstream
+if $JUPYTER_DIR/bin/jupyter kernelspec list  | grep multiband_photometry; then
+    cd $NOTEBOOK_DIR/fornax-demo-notebooks
+    jupytext --set-kernel py-ztf_ps1_crossmatch crossmatch/ztf_ps1_crossmatch.md
+fi
+
 # bring in the intro page
 if test -f $JUPYTER_DIR/introduction.html && ! test -L $NOTEBOOK_DIR/introduction.html; then
     cp $JUPYTER_DIR/introduction.html $NOTEBOOK_DIR
