@@ -39,7 +39,7 @@ for i in ${!notebook_repos[@]}; do
 done
 
 # TEMPORARY fix for kernel names; remove once fixed upstream
-if $JUPYTER_DIR/bin/jupyter kernelspec list  | grep multiband_photometry; then
+if $JUPYTER_DIR/bin/jupyter kernelspec list  | grep ztf_ps1_crossmatch; then
     cd $NOTEBOOK_DIR/fornax-demo-notebooks
     jupytext --set-kernel py-ztf_ps1_crossmatch crossmatch/ztf_ps1_crossmatch.md
 fi
