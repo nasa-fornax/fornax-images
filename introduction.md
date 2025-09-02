@@ -22,8 +22,8 @@ terminal.
 # Latest Changes
 
 ## 25.0903
-- Rebuild to pick the new deployed notebook kernels: ztf_ps1_crossmatch and spectra_collector.
-- Make the fornax-notebooks read-only. Modified notebooks needs to be saved elsewhere.
+- Rebuild to pick the new deployed notebook kernels: `ztf_ps1_crossmatch` and `spectra_collector`.
+- Make the fornax-notebooks read-only. Modified notebooks need to be saved elsewhere.
 - Bug fixes (issues #87, #86).
 
 ## 25.0829
