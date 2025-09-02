@@ -21,8 +21,9 @@ terminal.
 ---
 # Latest Changes
 
-## 25.0902 (dev)
-- Rebuild to pick the new deployed notebook kernels: ztf_ps1_crossmatch and spectra_collector
+## 25.0902
+- Rebuild to pick the new deployed notebook kernels: ztf_ps1_crossmatch and spectra_collector.
+- Bug fixes (issues #87, #86).
 
 ## 25.0829
 - Add 'Update Notebooks' to Fornax menu (fornax-labextension = 0.1.5).

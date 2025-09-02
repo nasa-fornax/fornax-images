@@ -24,6 +24,12 @@ mkdir -p $NOTEBOOK_DIR
 cd $NOTEBOOK_DIR
 # copy notebooks
 echo "Cloning the notebooks to $NOTEBOOK_DIR ..."
+
+if [ -d fornax-demo-notebooks ]; then
+    # non-linear git history so we start fresh
+    rm -rf fornax-demo-notebooks
+fi
+
 for i in ${!notebook_repos[@]}; do
     repo=${notebook_repos[i]}
     branch=${deployed_branches[i]}
@@ -31,12 +37,6 @@ for i in ${!notebook_repos[@]}; do
     # use nbgitpuller
     timeout $timeout $JUPYTER_DIR/bin/gitpuller $repo $branch $name
 done
-
-# TEMPORARY fix for kernel names; remove once fixed upstream
-if $JUPYTER_DIR/bin/jupyter kernelspec list  | grep multiband_photometry; then
-    cd $NOTEBOOK_DIR/fornax-demo-notebooks
-    jupytext --set-kernel py-light_curve_collector light_curves/light_curve_collector.md
-fi
 
 # bring in the intro page
 if test -f $JUPYTER_DIR/introduction.html && ! test -L $NOTEBOOK_DIR/introduction.html; then
