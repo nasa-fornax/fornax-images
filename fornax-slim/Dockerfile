@@ -81,7 +81,7 @@ ENV DEFAULT_ENV=python3 \
     # scripts that rely on support data should use SUPPORT_DATA_DIR
     SUPPORT_DATA_DIR=/opt/support-data \
     # path
-    PATH=$ENV_DIR/base/bin:$PATH:$ENV_DIR/other/code-server/bin \
+    PATH=$ENV_DIR/base/bin:$PATH \
     # For firefly
     FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
     # for dask
