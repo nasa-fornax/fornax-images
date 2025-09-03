@@ -75,7 +75,9 @@ jobs:
               --export-lock "${{ matrix.image }}"
             
             # pack lock files into a zip file
-            zip -r "${{ matrix.image }}-environment-locks.zip" "${{ matrix.image }}_locks"
+            if [ -d ${{ matrix.image }}_locks ]; then
+              zip -r "${{ matrix.image }}-environment-locks.zip" "${{ matrix.image }}_locks"
+            fi
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
