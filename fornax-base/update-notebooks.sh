@@ -24,18 +24,29 @@ mkdir -p $NOTEBOOK_DIR
 cd $NOTEBOOK_DIR
 # copy notebooks
 echo "Cloning the notebooks to $NOTEBOOK_DIR ..."
+
 for i in ${!notebook_repos[@]}; do
     repo=${notebook_repos[i]}
     branch=${deployed_branches[i]}
     name=`echo $repo | sed 's#.*/\([^/]*\)\.git#\1#'`
-    # use nbgitpuller
-    timeout $timeout $JUPYTER_DIR/bin/gitpuller $repo $branch $name
+    echo "++++ Updating $name from $repo ..."
+    if [ -d $name ]; then
+        # first ensure we can delete it
+        find $name -type d -exec chmod 755 {} +
+        find $name -type f -exec chmod 644 {} +
+        # now delete
+        rm -rf $name
+    fi
+    # get a fresh clone of the the repo
+    git clone --branch $branch --single-branch --depth 1 $repo
+    rm -rf $name/.git
+    echo "+++++ Done with $name!"
 done
 
 # TEMPORARY fix for kernel names; remove once fixed upstream
-if $JUPYTER_DIR/bin/jupyter kernelspec list  | grep multiband_photometry; then
+if $JUPYTER_DIR/bin/jupyter kernelspec list  | grep ztf_ps1_crossmatch; then
     cd $NOTEBOOK_DIR/fornax-demo-notebooks
-    jupytext --set-kernel py-light_curve_collector light_curves/light_curve_collector.md
+    jupytext --set-kernel py-ztf_ps1_crossmatch crossmatch/ztf_ps1_crossmatch.md
 fi
 
 # bring in the intro page
@@ -43,7 +54,16 @@ if test -f $JUPYTER_DIR/introduction.html && ! test -L $NOTEBOOK_DIR/introductio
     cp $JUPYTER_DIR/introduction.html $NOTEBOOK_DIR
 fi
 
+# Now make the notebooks folders read-only
+cd $NOTEBOOK_DIR
+for i in ${!notebook_repos[@]}; do
+    repo=${notebook_repos[i]}
+    branch=${deployed_branches[i]}
+    name=`echo $repo | sed 's#.*/\([^/]*\)\.git#\1#'`
 
+    find $name -type f -exec chmod 444 {} +
+    find $name -type d -exec chmod 555 {} +
+done
 
 # reset location
 cd $HOME

@@ -5,6 +5,5 @@ jupyterlab-git
 jupyterlab-myst
 jupyter-vscode-proxy
 jupyter_cpu_alive
-nbgitpuller
 dask-labextension
 jupyter-firefly-extensions

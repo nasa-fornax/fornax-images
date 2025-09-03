@@ -21,6 +21,11 @@ terminal.
 ---
 # Latest Changes
 
+## 25.0903
+- Rebuild to pick the new deployed notebook kernels: `ztf_ps1_crossmatch` and `spectra_collector`.
+- Make the fornax-notebooks read-only. Modified notebooks need to be saved elsewhere.
+- Bug fixes (issues #87, #86).
+
 ## 25.0829
 - Add 'Update Notebooks' to Fornax menu (fornax-labextension = 0.1.5).
 - Fix Firefly and dask installations.
