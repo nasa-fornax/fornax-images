@@ -40,38 +40,58 @@ export SAS_PERL=/usr/bin/perl
 export SAS_PYTHON=$ENV_DIR/sas/bin/python
 
 # This is where we will be putting the calibration files for XMM
-export SAS_CCFPATH=$SUPPORT_DATA_DIR/xmm_ccf/
+export SAS_CCF=$SUPPORT_DATA_DIR/xmm_sas/
+###########################################################
 
-##### DOWNLOADING SAS #####
+
+##################### DOWNLOADING SAS #####################
 # SAS will be downloaded from HEASARC - this is the base for the populated URL
 base_sas_link=https://heasarc.gsfc.nasa.gov/FTP/xmm/software/sas/${sas_version}/Linux/Ubuntu${ubuntu_version}/
 
-# This is the more general structure of the tar file name (see it in the HEASARC FTP for other versions
-#  of SAS), but unfortunately there isn't a file with this easy to populate name structure for
-#  the Ubuntu version (24.04) that I'm working with right now
-# sas_file=sas_${sas_version}-Ubuntu${ubuntu_version}.tgz
-
-# HARD CODED - this is the non-generalised file link to the tar of SAS I'm working with right now (22.1.0 for Ubuntu 24.04)
-sas_file=sas_${sas_version}-a8f2c2afa-20250304-ubuntu${ubuntu_version}-gcc13.3.0-x86_64.tgz
-# HARD CODED - This is the non-generalised name of the directory that XMM-SAS gets 'built' in
-sas_install_dir=xmmsas_22.1.0-a8f2c2afa-20250304
+# This is the structure of the software tar file name
+sas_file=sas_${sas_version}-Ubuntu${ubuntu_version}.tgz
 
 # Assembling the download link
 sas_link=$base_sas_link${sas_file}
-###########################
-
-
 ###########################################################
+
 
 ########### Download and unpack required files ############
 wget $sas_link \
 	&& tar xvf $sas_file \
-	&& rm -f $sas_file 
+	&& rm -f $sas_file
+###########################################################
+
+
+########## Determine name of install directory  ###########
+# Set the pattern to search for
+pattern="xmmsas_${sas_version}-*bin*"
+
+# Find all matching files and store them in an array
+matches=($pattern)
+
+# Get the number of matches
+num_matches=${#matches[@]}
+
+# Check the conditions
+# The first part checks if there are no matches, or if there is exactly one match
+# AND that match is the pattern itself (meaning no files were found).
+if [[ $num_matches -eq 0 ]] || [[ $num_matches -eq 1 && "${matches[0]}" == "$pattern" ]]; then
+  echo "Error: No matching files found for '$pattern'." >&2
+  exit 1
+elif [[ $num_matches -gt 1 ]]; then
+  echo "Error: Multiple matching files found for '$pattern'." >&2
+  exit 1
+else
+  # A single, real match was found, so we split the file name to retrieve the installation folder
+  sas_bin_file="${matches[0]}"
+  sas_install_dir="${sas_bin_file%%-bin*}"
+fi
 ###########################################################
 
 
 ############# Setup the SAS Conda environment #############
-# Creates a Conda definition file that can be used to setup the environment that SAS 
+# Creates a Conda definition file that can be used to setup the environment that SAS
 #  will be associated with
 # We use the Conda-hosted HEASoft to avoid downloading and building HEASoft manually
 cat <<EOF > conda-sas.yml
@@ -82,6 +102,9 @@ channels:
 dependencies:
   - python=$py_version
   - pytest
+  - xorg-libx11
+  - xorg-libxext
+  - xorg-libsm
 EOF
 
 # Use the yml to create the SAS env
@@ -92,16 +115,15 @@ bash /usr/local/bin/conda-env-install.sh
 ############ Installing SAS Python requirements ###########
 # Use the Python requirements file included in the SAS directory to install
 #  the module that it wants for some included Python bits (e.g. pySAS)
-# The initialization of HEASoft here should allow for pyds9 to be installed properly
-#export HEADAS=$ENV_DIR/heasoft/heasoft
-#source $HEADAS/headas-init.sh
-#micromamba run -n sas pip install -r sas_python_packages.txt --no-cache-dir
+# We remove the pyDS9 requirement - the package is archived, and making it on Fornax would be a waste of time
+sed -i '/pyds9/d' sas_python_packages.txt
+micromamba run -n sas pip install -r sas_python_packages.txt --no-cache-dir
 ###########################################################
 
 
 ############ Moving unpacked SAS and installing ###########
 # Moves all of the files unpacked from the SAS download into the conda environment directory
-#  for SAS - it is easier to install SAS in-situ, rather than installing it then moving it, as 
+#  for SAS - it is easier to install SAS in-situ, rather than installing it then moving it, as
 #  some file paths get baked in during the installation process
 mv * $ENV_DIR/sas/
 # We must follow the unpacked files
@@ -122,9 +144,9 @@ cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-general_activate.sh
 #!/usr/bin/bash
 
 # SAS can be very particular about Perl - this is the path we set when SAS was 'built'
-export SAS_PERL=/usr/bin/perl
+export SAS_PERL=$SAS_PERL
 # And this is the conda environment we set up for it
-export SAS_PYTHON=\$ENV_DIR/sas/bin/python
+export SAS_PYTHON=$SAS_PYTHON
 
 # Adds the SAS conda environment library to the library path - without this
 #  we will get errors about not being able to find libsm.so.6
