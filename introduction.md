@@ -21,6 +21,9 @@ terminal.
 ---
 # Latest Changes
 
+## 25.0904
+- Fix vscode extension
+
 ## 25.0903
 - Rebuild to pick the new deployed notebook kernels: `ztf_ps1_crossmatch` and `spectra_collector`.
 - Make the fornax-notebooks read-only. Modified notebooks need to be saved elsewhere.

@@ -69,6 +69,15 @@ def test_check_packages(notebook):
     CommonTests._test_uv_env_file(notebooks[notebook]['env'], env_root)
 
 
+def test_code_server():
+    CommonTests.run_cmd(f'which code-server')
+
+
+def test_conda_base_env():
+    CommonTests._test_conda_env_file(
+        'base', f'{env_root}/base/base-lock.yml')
+
+
 @pytest.mark.parametrize("notebook", list(notebooks.keys()))
 def test_imports(notebook):
     """Extract the imports from the notebook and make sure they run"""
