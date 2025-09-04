@@ -65,7 +65,7 @@ EOF
 
 ###### PFILES #######
 # HEASoft software (like the 'nh' tool) cannot find base parameter files to copy by looking in the CIAO
-#  'params' directory, causing errors when those tools are to be used. We add the HEASoft environment 
+#  'params' directory, causing errors when those tools are to be used. We add the HEASoft environment
 #  base-pfile-storage-directory to the PFILES environment variable path, which solves this issue
 cat << EOF > $ENV_DIR/ciao/etc/conda/activate.d/ciao-pfiles_activate.sh
 #!/bin/bash
