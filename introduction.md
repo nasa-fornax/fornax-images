@@ -21,6 +21,9 @@ terminal.
 ---
 # Latest Changes
 
+## dev
+- Install notebook-intelligence extension for AI code assistance.
+
 ## 25.0904
 - Fix vscode extension
 
