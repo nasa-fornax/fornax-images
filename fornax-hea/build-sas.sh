@@ -98,9 +98,7 @@ channels:
 dependencies:
   - python=$py_version
   - pytest
-  - xorg-libx11
-  - xorg-libxext
-  - xorg-libsm
+  - ghostscript
 EOF
 
 # Use the yml to create the SAS env
@@ -113,7 +111,14 @@ bash /usr/local/bin/conda-env-install.sh
 #  the module that it wants for some included Python bits (e.g. pySAS)
 # We remove the pyDS9 requirement - the package is archived, and making it on Fornax would be a waste of time
 sed -i '/pyds9/d' sas_python_packages.txt
+# And we require that aplpy + xmmpysas is installed as well
+sed -i '$ a\aplpy' sas_python_packages.txt
+sed -i '$ a\xmmpysas' sas_python_packages.txt
 micromamba run -n sas pip install -r sas_python_packages.txt --no-cache-dir
+
+# Updating the lock file and moving it to the lock file directory
+micromamba env -n sas export > $ENV_DIR/sas/sas-lock.yml
+cp $ENV_DIR/sas/sas-lock.yml $LOCK_DIR
 ###########################################################
 
 
