@@ -23,8 +23,6 @@ rm -rf * > /dev/null 2>&1
 
 
 ############# Definition of software versions #############
-# NOTE THAT YOU WILL HAVE TO CHANGE THE sas_file and sas_install_dir VARIABLES WHEN THE UBUNTU/SAS version
-#  CHANGES - the SAS file name is currently hard coded because it has GCC info in the name on the FTP server
 ubuntu_version=24.04
 sas_version=22.1.0
 py_version=$PYTHON_VERSION
@@ -39,8 +37,6 @@ export SAS_PERL=/usr/bin/perl
 #  set in this script, but we can trust that it will be
 export SAS_PYTHON=$ENV_DIR/sas/bin/python
 
-# This is where we will be putting the calibration files for XMM
-export SAS_CCF=$SUPPORT_DATA_DIR/xmm_sas/
 ###########################################################
 
 
