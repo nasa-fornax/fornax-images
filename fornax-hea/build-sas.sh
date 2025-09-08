@@ -175,8 +175,7 @@ cat <<EOF > $ENV_DIR/sas/etc/conda/deactivate.d/sas-general_deactivate.sh
 unset SAS_PERL
 unset SAS_PYTHON
 
-# I _think_ this should be fine
-unset LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$SAS_PREV_LD_LIBRARY_PATH
 
 unset SAS_DIR
 unset SAS_CCFPATH
