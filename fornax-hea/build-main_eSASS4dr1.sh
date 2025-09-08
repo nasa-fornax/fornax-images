@@ -78,7 +78,8 @@ bash /usr/local/bin/conda-env-install.sh
 #  heasoft environment, because it is easier to complete the build there then get the esassdr1 environment
 #  set up to do it
 # These dependencies are needed to build eSASS, and are temporarily installed in the HEASoft environment
-micromamba install -y gcc gfortran gxx binutils automake fftw libtool make libcurl
+export conda_extra="gcc gfortran gxx binutils automake fftw libtool make libcurl"
+micromamba install -y -n heasoft $conda_extra
 ###########################################################
 
 
@@ -109,10 +110,10 @@ make
 ################### Setup to build eSASS ##################
 cd $WORKDIR/$esass_dir_name/eSASS/autoconf
 
-export CC=/opt/envs/heasoft/bin/gcc
-export CXX=/opt/envs/heasoft/bin/g++
-export FC=/opt/envs/heasoft/bin/gfortran
-export F77=/opt/envs/heasoft/bin/gfortran
+export CC=$ENV_DIR/heasoft/bin/gcc
+export CXX=$ENV_DIR/heasoft/bin/g++
+export FC=$ENV_DIR/heasoft/bin/gfortran
+export F77=$ENV_DIR/heasoft/bin/gfortran
 ###########################################################
 
 
@@ -128,76 +129,71 @@ make clean
 ###########################################################
 
 
-############## Add conda (de)activation scripts ############
-## Ensure that the directories we need actually exist
-#mkdir -p $ENV_DIR/sas/etc/conda/activate.d
-#mkdir -p $ENV_DIR/sas/etc/conda/deactivate.d
-#
-## These scripts set up SAS and handles additional environment variable setting
-#cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-general_activate.sh
-##!/usr/bin/bash
-#
-## SAS can be very particular about Perl - this is the path we set when SAS was 'built'
-#export SAS_PERL=$SAS_PERL
-## And this is the conda environment we set up for it
-#export SAS_PYTHON=$SAS_PYTHON
-#
-## Adds the SAS conda environment library to the library path - without this
-##  we will get errors about not being able to find libsm.so.6
-#export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$ENV_DIR/sas/lib"
-#
-## Setting up HEASoft, otherwise SAS will fall over when you try to init it
-#export HEADAS=\$ENV_DIR/heasoft/heasoft
-#source \$HEADAS/headas-init.sh
-#
-## Any attempted init of SAS will fail without this path being set
-#export SAS_DIR=\$ENV_DIR/sas/${sas_install_dir}
-#source \$SAS_DIR/setsas.sh
-#
-## This sets the environment variable for the XMM Current Calibration Files (CCF)
-#export SAS_CCFPATH=\$SUPPORT_DATA_DIR/xmm_ccf
-#
-#EOF
-#
-#######
-## This scripts unsets many of the environment variables set in the activation scripts
-## Honestly don't really know how much most of this matters, and am currently only getting the
-##  environment variables that I know have been set, not those that the setsas.sh script sets
-#cat <<EOF > $ENV_DIR/sas/etc/conda/deactivate.d/sas-general_deactivate.sh
-##!/usr/bin/bash
-#
-#unset SAS_PERL
-#unset SAS_PYTHON
-#
-## I _think_ this should be fine
-#unset LD_LIBRARY_PATH
-#
-#unset SAS_DIR
-#unset SAS_CCFPATH
-#EOF
-############################################################
-############## Add conda (de)activation scripts ############
-#
-#
-#
-#
-############# Moving unpacked SAS and installing ###########
-## Moves all of the files unpacked from the SAS download into the conda environment directory
-##  for SAS - it is easier to install SAS in-situ, rather than installing it then moving it, as
-##  some file paths get baked in during the installation process
-#mv * $ENV_DIR/sas/
-## We must follow the unpacked files
-#cd $ENV_DIR/sas/
-#
-## Run the SAS install script, specifically in the environment we've just created
-#micromamba run -n sas ./install.sh
-############################################################
-#
+################ Move eSASS to environment ################
+cd $WORKDIR
+mv $esass_dir_name $ENV_DIR/esassdr1
+
+# Make a variable with the final installation path of eSASS
+export esass_final_path=$ENV_DIR/esassdr1/$esass_dir_name/eSASS
+###########################################################
+
+
+############# Add conda (de)activation scripts ############
+# Ensure that the directories we need actually exist
+mkdir -p $ENV_DIR/esassdr1/etc/conda/activate.d
+mkdir -p $ENV_DIR/esassdr1/etc/conda/deactivate.d
+
+# These scripts set up SAS and handles additional environment variable setting
+cat <<EOF > $ENV_DIR/esassdr1/etc/conda/activate.d/esassdr1-general_activate.sh
+#!/usr/bin/bash
+
+export ESASS_PREV_PATH=$PATH
+export ESASS_PREV_PFILES=$PFILES
+
+# Setting up HEASoft, some parts of eSASS require it
+export HEADAS=\$ENV_DIR/heasoft/heasoft
+source \$HEADAS/headas-init.sh
+
+# Call the setup script for eSASS
+source \$ENV_DIR/esassdr1/$esass_dir_name/eSASS/bin/esass-init.sh
+
+EOF
+
+######
+# This scripts unsets many of the environment variables set in the activation scripts
+cat <<EOF > $ENV_DIR/esassdr1/etc/conda/deactivate.d/esassdr1-general_deactivate.sh
+#!/usr/bin/bash
+
+unset SASS_BIN_ROOT
+unset SASS_SETUP
+unset SASS_ROOT
+unset E_ROOT
+unset CALDB
+unset CALDBCONFIG
+unset SASS_TEMPLATES
+unset E_MOD
+unset E_LIB
+unset SASS_CALVERS
+unset SASS_DIR
+
+export PFILES=$ESASS_PREV_PFILES
+unset $ESASS_PREV_PFILES
+export PATH=$ESASS_PREV_PATH
+unset ESASS_PREV_PATH
+
+EOF
+###########################################################
+
+
 ####################### Final clean up #####################
-## In the /opt/envs/sas directory, where we copied the unpacked contents of the SAS download
-##  and installed them - time to clean up the left over files
-#rm sas_python_packages.txt
-#
-#cd $HOME
-#rm -rf $WORKDIR
+cd $HOME
+rm -rf $WORKDIR
+
+# Remove the extra conda libraries we installed
+micromamba remove -y -n heasoft $conda_extra
+# Unset the environment variables used by the eSASS build
+unset CC
+unset CXX
+unset FC
+unset F77
 ############################################################
