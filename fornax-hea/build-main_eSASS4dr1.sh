@@ -70,10 +70,15 @@ channels:
 dependencies:
   - python=$py_version
   - pytest
+  - fftw
 EOF
 
 # Use the yml to create the eSASS env
 bash /usr/local/bin/conda-env-install.sh
+
+# Updating the lock file and moving it to the lock file directory
+micromamba env -n esassdr1 export > $ENV_DIR/esassdr1/esassdr1-lock.yml
+cp $ENV_DIR/esassdr1/esassdr1-lock.yml $LOCK_DIR
 
 # THOUGH WE'VE CREATED AN ENVIRONMENT FOR eSASS WE AREN'T GOING TO USE IT YET - instead we'll keep using the
 #  heasoft environment, because it is easier to complete the build there then get the esassdr1 environment
