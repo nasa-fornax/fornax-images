@@ -79,7 +79,7 @@ bash /usr/local/bin/conda-env-install.sh
 #  heasoft environment, because it is easier to complete the build there then get the esassdr1 environment
 #  set up to do it
 # These dependencies are needed to build eSASS, and are temporarily installed in the HEASoft environment
-export conda_extra="gcc gfortran gxx binutils automake fftw libtool make libcurl"
+export conda_extra="gcc gfortran gxx binutils automake fftw libtool make"
 micromamba install -y -n heasoft $conda_extra
 ###########################################################
 
@@ -147,8 +147,8 @@ mkdir -p $ENV_DIR/esassdr1/etc/conda/deactivate.d
 cat <<EOF > $ENV_DIR/esassdr1/etc/conda/activate.d/esassdr1-general_activate.sh
 #!/usr/bin/bash
 
-export ESASS_PREV_PATH=$PATH
-export ESASS_PREV_PFILES=$PFILES
+export ESASS_PREV_PATH=\$PATH
+export ESASS_PREV_PFILES=\$PFILES
 
 # Setting up HEASoft, some parts of eSASS require it
 export HEADAS=\$ENV_DIR/heasoft/heasoft
@@ -156,6 +156,10 @@ source \$HEADAS/headas-init.sh
 
 # Call the setup script for eSASS
 source \$ENV_DIR/esassdr1/$esass_dir_name/eSASS/bin/esass-init.sh
+
+# And we make sure the library path has every entry that it needs
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/envs/heasoft/heasoft/lib:/opt/envs/heasoft/lib:/opt/envs/esassdr1/lib:\
+                        /opt/envs/esassdr1/eSASS4DR1/external/Healpix_3.50/lib"
 
 EOF
 
@@ -176,9 +180,9 @@ unset E_LIB
 unset SASS_CALVERS
 unset SASS_DIR
 
-export PFILES=$ESASS_PREV_PFILES
-unset $ESASS_PREV_PFILES
-export PATH=$ESASS_PREV_PATH
+export PFILES=\$ESASS_PREV_PFILES
+unset ESASS_PREV_PFILES
+export PATH=\$ESASS_PREV_PATH
 unset ESASS_PREV_PATH
 
 EOF
