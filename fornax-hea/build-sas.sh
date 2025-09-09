@@ -149,9 +149,10 @@ export SAS_PERL=$SAS_PERL
 # And this is the conda environment we set up for it
 export SAS_PYTHON=$SAS_PYTHON
 
-# Adds the SAS conda environment library to the library path - without this
-#  we will get errors about not being able to find libsm.so.6
-export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$ENV_DIR/sas/lib"
+# Adds the SAS conda environment library to the library path, as well as the HEASoft conda
+#  environment library (this helps us to avoid replication of some basic libraries
+#  and saves space)
+export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$ENV_DIR/sas/lib:$ENV_DIR/heasoft/lib"
 
 # Setting up HEASoft, otherwise SAS will fall over when you try to init it
 export HEADAS=\$ENV_DIR/heasoft/heasoft
