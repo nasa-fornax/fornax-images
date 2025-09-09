@@ -164,7 +164,7 @@ source \$ENV_DIR/esassdr1/$esass_dir_name/eSASS/bin/esass-init.sh
 
 # And we make sure the library path has every entry that it needs
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/envs/heasoft/heasoft/lib:/opt/envs/heasoft/lib:/opt/envs/esassdr1/lib:\
-                        /opt/envs/esassdr1/eSASS4DR1/external/Healpix_3.50/lib"
+/opt/envs/esassdr1/eSASS4DR1/external/Healpix_3.50/lib"
 
 EOF
 
