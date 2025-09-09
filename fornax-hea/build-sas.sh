@@ -30,12 +30,15 @@ py_version=$PYTHON_VERSION
 
 
 ############### Setting up useful variables ###############
+# Define the name of the environment to be set up
+export ENV_NAME=sas
+
 # SAS gets upset if it can't find Perl - this will need to be included in an activate.d script
 #  as well, to make sure this path is set when the user loads the environment in
 export SAS_PERL=/usr/bin/perl
 # We set this to point at the conda environment we're just about to produce - ENV_DIR is not
 #  set in this script, but we can trust that it will be
-export SAS_PYTHON=$ENV_DIR/sas/bin/python
+export SAS_PYTHON=$ENV_DIR/$ENV_NAME/bin/python
 
 ###########################################################
 
@@ -90,8 +93,8 @@ fi
 # Creates a Conda definition file that can be used to setup the environment that SAS
 #  will be associated with
 # We use the Conda-hosted HEASoft to avoid downloading and building HEASoft manually
-cat <<EOF > conda-sas.yml
-name: sas
+cat <<EOF > conda-$ENV_NAME.yml
+name: $ENV_NAME
 channels:
   - https://heasarc.gsfc.nasa.gov/FTP/software/conda
   - conda-forge
@@ -114,11 +117,11 @@ sed -i '/pyds9/d' sas_python_packages.txt
 # And we require that aplpy + xmmpysas is installed as well
 sed -i '$ a\aplpy' sas_python_packages.txt
 sed -i '$ a\xmmpysas' sas_python_packages.txt
-micromamba run -n sas pip install -r sas_python_packages.txt --no-cache-dir
+micromamba run -n $ENV_NAME pip install -r sas_python_packages.txt --no-cache-dir
 
 # Updating the lock file and moving it to the lock file directory
-micromamba env -n sas export > $ENV_DIR/sas/sas-lock.yml
-cp $ENV_DIR/sas/sas-lock.yml $LOCK_DIR
+micromamba env -n $ENV_NAME export > $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
+cp $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml $LOCK_DIR
 ###########################################################
 
 
@@ -126,22 +129,22 @@ cp $ENV_DIR/sas/sas-lock.yml $LOCK_DIR
 # Moves all of the files unpacked from the SAS download into the conda environment directory
 #  for SAS - it is easier to install SAS in-situ, rather than installing it then moving it, as
 #  some file paths get baked in during the installation process
-mv * $ENV_DIR/sas/
+mv * $ENV_DIR/$ENV_NAME/
 # We must follow the unpacked files
-cd $ENV_DIR/sas/
+cd $ENV_DIR/$ENV_NAME/
 
 # Run the SAS install script, specifically in the environment we've just created
-micromamba run -n sas ./install.sh
+micromamba run -n $ENV_NAME ./install.sh
 ###########################################################
 
 
 ################ Add conda (de)activation scripts ###############
 # Ensure that the directories we need actually exist
-mkdir -p $ENV_DIR/sas/etc/conda/activate.d
-mkdir -p $ENV_DIR/sas/etc/conda/deactivate.d
+mkdir -p $ENV_DIR/$ENV_NAME/etc/conda/activate.d
+mkdir -p $ENV_DIR/$ENV_NAME/etc/conda/deactivate.d
 
 # These scripts set up SAS and handles additional environment variable setting
-cat <<EOF > $ENV_DIR/sas/etc/conda/activate.d/sas-general_activate.sh
+cat <<EOF > $ENV_DIR/$ENV_NAME/etc/conda/activate.d/sas-general_activate.sh
 #!/usr/bin/bash
 
 # SAS can be very particular about Perl - this is the path we set when SAS was 'built'
@@ -152,14 +155,14 @@ export SAS_PYTHON=$SAS_PYTHON
 # Adds the SAS conda environment library to the library path, as well as the HEASoft conda
 #  environment library (this helps us to avoid replication of some basic libraries
 #  and saves space)
-export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$ENV_DIR/sas/lib:$ENV_DIR/heasoft/lib"
+export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$ENV_DIR/$ENV_NAME/lib:$ENV_DIR/heasoft/lib"
 
 # Setting up HEASoft, otherwise SAS will fall over when you try to init it
 export HEADAS=\$ENV_DIR/heasoft/heasoft
 source \$HEADAS/headas-init.sh
 
 # Any attempted init of SAS will fail without this path being set
-export SAS_DIR=\$ENV_DIR/sas/${sas_install_dir}
+export SAS_DIR=\$ENV_DIR/$ENV_NAME/${sas_install_dir}
 source \$SAS_DIR/setsas.sh
 
 # This sets the environment variable for the XMM Current Calibration Files (CCF)
@@ -171,7 +174,7 @@ EOF
 # This scripts unsets many of the environment variables set in the activation scripts
 # Honestly don't really know how much most of this matters, and am currently only getting the
 #  environment variables that I know have been set, not those that the setsas.sh script sets
-cat <<EOF > $ENV_DIR/sas/etc/conda/deactivate.d/sas-general_deactivate.sh
+cat <<EOF > $ENV_DIR/$ENV_NAME/etc/conda/deactivate.d/sas-general_deactivate.sh
 #!/usr/bin/bash
 
 unset SAS_PERL
