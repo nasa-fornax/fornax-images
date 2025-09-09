@@ -150,7 +150,7 @@ cat <<EOF > $ENV_DIR/$ENV_NAME/etc/conda/activate.d/sas-general_activate.sh
 # SAS can be very particular about Perl - this is the path we set when SAS was 'built'
 export SAS_PERL=$SAS_PERL
 # And this is the conda environment we set up for it
-export SAS_PYTHON=$SAS_PYTHON
+export SAS_PYTHON=\$ENV_DIR/$ENV_NAME/bin/python
 
 # Adds the SAS conda environment library to the library path, as well as the HEASoft conda
 #  environment library (this helps us to avoid replication of some basic libraries
@@ -192,6 +192,10 @@ EOF
 # In the /opt/envs/sas directory, where we copied the unpacked contents of the SAS download
 #  and installed them - time to clean up the left over files
 rm sas_python_packages.txt
+
+# We remove the pySAS baked in to the current release of XMM-SAS - we have instead installed the
+#  xmmpysas package maintained by the NASA XMM GOF
+rm -rf $ENV_DIR/$ENV_NAME/$sas_install_dir/lib/python/pysas
 
 cd $HOME
 rm -rf $WORKDIR
