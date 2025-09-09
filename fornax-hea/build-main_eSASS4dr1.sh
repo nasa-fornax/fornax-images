@@ -13,7 +13,8 @@ fi
 WORKDIR=/tmp/esass
 mkdir -p $WORKDIR
 # Deletes any existing contents of the working directory
-rm -rf /tmp/esass/* > /dev/null 2>&1
+rm -rf $WORKDIR/*
+#> /dev/null 2>&1
 
 # Make sure to setup a support file directory for some makefiles we want to copy in
 mkdir -p $WORKDIR/support_files
@@ -91,7 +92,6 @@ fi
 
 # The HEALPix source (and eventual build) lives in this directory
 healpix_dir=$WORKDIR/$esass_dir_name/external/Healpix_3.50
-echo $healpix_dir
 cd $healpix_dir
 
 mv $WORKDIR/support_files/Makefile $healpix_dir/
@@ -103,7 +103,7 @@ mkdir -p build
 
 mv $WORKDIR/support_files/healpix.pc $healpix_dir/lib/
 
-make
+micromamba run -n heasoft make
 ###########################################################
 
 
@@ -118,14 +118,14 @@ export F77=$ENV_DIR/heasoft/bin/gfortran
 
 
 ################# Build eSASS from source #################
-aclocal
-autoreconf -fi -v
-./configure --with-caldb=$eSASS_CALDB --with-healpix=$healpix_dir \
-   --with-headas=$HEADAS --with-gsl=compile --with-lapack=system
+micromamba run -n heasoft aclocal
+micromamba run -n heasoft autoreconf -fi -v
+micromamba run -n heasoft ./configure --with-caldb=$eSASS_CALDB --with-healpix=$healpix_dir \
+                                      --with-headas=$HEADAS --with-gsl=compile --with-lapack=system
 
-make
-make install
-make clean
+micromamba run -n heasoft make
+micromamba run -n heasoft make install
+micromamba run -n heasoft make clean
 ###########################################################
 
 
