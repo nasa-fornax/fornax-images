@@ -30,7 +30,7 @@ def test_base_env():
 
 def test_conda_env():
     CommonTests._test_conda_env_file(
-        'sas', f'{env_root}/esassdr1/esassdr1-lock.yml')
+        'esassdr1', f'{env_root}/esassdr1/esassdr1-lock.yml')
 
 
 def test_srctool_version():
