@@ -35,6 +35,9 @@ py_version=$PYTHON_VERSION
 
 
 ############### Setting up useful variables ###############
+# Setting up the name of the environment
+export ENV_NAME=esassdr1
+
 # This is where we will be putting the eROSITA DR1 calibration files
 export eSASS_CALDB=$SUPPORT_DATA_DIR/erosita_caldb4DR1/
 ###########################################################
@@ -63,8 +66,8 @@ wget $esass_link \
 ############ Setup the eSASS Conda environment ############
 # Creates a Conda definition file that can be used to setup the environment that eSASS
 #  will be associated with
-cat <<EOF > conda-esassdr1.yml
-name: esassdr1
+cat <<EOF > conda-$ENV_NAME.yml
+name: $ENV_NAME
 channels:
   - conda-forge
 dependencies:
@@ -77,8 +80,8 @@ EOF
 bash /usr/local/bin/conda-env-install.sh
 
 # Updating the lock file and moving it to the lock file directory
-micromamba env -n esassdr1 export > $ENV_DIR/esassdr1/esassdr1-lock.yml
-cp $ENV_DIR/esassdr1/esassdr1-lock.yml $LOCK_DIR
+micromamba env -n $ENV_NAME export > $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
+cp $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml $LOCK_DIR
 
 # THOUGH WE'VE CREATED AN ENVIRONMENT FOR eSASS WE AREN'T GOING TO USE IT YET - instead we'll keep using the
 #  heasoft environment, because it is easier to complete the build there then get the esassdr1 environment
@@ -136,20 +139,20 @@ micromamba run -n heasoft make clean
 
 ################ Move eSASS to environment ################
 cd $WORKDIR
-mv $esass_dir_name $ENV_DIR/esassdr1
+mv $esass_dir_name $ENV_DIR/$ENV_NAME
 
 # Make a variable with the final installation path of eSASS
-export esass_final_path=$ENV_DIR/esassdr1/$esass_dir_name/eSASS
+export esass_final_path=$ENV_DIR/$ENV_NAME/$esass_dir_name/eSASS
 ###########################################################
 
 
 ############# Add conda (de)activation scripts ############
 # Ensure that the directories we need actually exist
-mkdir -p $ENV_DIR/esassdr1/etc/conda/activate.d
-mkdir -p $ENV_DIR/esassdr1/etc/conda/deactivate.d
+mkdir -p $ENV_DIR/$ENV_NAME/etc/conda/activate.d
+mkdir -p $ENV_DIR/$ENV_NAME/etc/conda/deactivate.d
 
 # These scripts set up SAS and handles additional environment variable setting
-cat <<EOF > $ENV_DIR/esassdr1/etc/conda/activate.d/esassdr1-general_activate.sh
+cat <<EOF > $ENV_DIR/$ENV_NAME/etc/conda/activate.d/esassdr1-general_activate.sh
 #!/usr/bin/bash
 
 export ESASS_PREV_PATH=\$PATH
@@ -160,17 +163,17 @@ export HEADAS=\$ENV_DIR/heasoft/heasoft
 source \$HEADAS/headas-init.sh
 
 # Call the setup script for eSASS
-source \$ENV_DIR/esassdr1/$esass_dir_name/eSASS/bin/esass-init.sh
+source \$ENV_DIR/$ENV_NAME/$esass_dir_name/eSASS/bin/esass-init.sh
 
 # And we make sure the library path has every entry that it needs
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/envs/heasoft/heasoft/lib:/opt/envs/heasoft/lib:/opt/envs/esassdr1/lib:\
-/opt/envs/esassdr1/eSASS4DR1/external/Healpix_3.50/lib"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/envs/heasoft/heasoft/lib:/opt/envs/heasoft/lib:/opt/envs/$ENV_NAME/lib:\
+/opt/envs/$ENV_NAME/eSASS4DR1/external/Healpix_3.50/lib"
 
 EOF
 
 ######
 # This scripts unsets many of the environment variables set in the activation scripts
-cat <<EOF > $ENV_DIR/esassdr1/etc/conda/deactivate.d/esassdr1-general_deactivate.sh
+cat <<EOF > $ENV_DIR/$ENV_NAME/etc/conda/deactivate.d/esassdr1-general_deactivate.sh
 #!/usr/bin/bash
 
 unset SASS_BIN_ROOT
