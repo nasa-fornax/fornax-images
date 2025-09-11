@@ -1,9 +1,6 @@
 #!/usr/bin/bash
 
-# Build script to setup a conda environment for XMM's SAS toolkit - based on the 
-#  build-ciao.sh script and the SciServer XMMSAS dockerfile 
-#  (https://github.com/sciserver/sciserver-compute-images/blob/master/heasarc/xmmsas/Dockerfile)
-
+# Build script to setup a conda environment for XMM's SAS toolkit
 
 ########### Validation and setup of directories ###########
 # Location of support data
@@ -96,7 +93,6 @@ fi
 cat <<EOF > conda-$ENV_NAME.yml
 name: $ENV_NAME
 channels:
-  - https://heasarc.gsfc.nasa.gov/FTP/software/conda
   - conda-forge
 dependencies:
   - python=$py_version
@@ -162,7 +158,7 @@ export SAS_PYTHON=\$ENV_DIR/$ENV_NAME/bin/python
 # Adds the SAS conda environment library to the library path, as well as the HEASoft conda
 #  environment library (this helps us to avoid replication of some basic libraries
 #  and saves space)
-export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$ENV_DIR/$ENV_NAME/lib:$ENV_DIR/heasoft/lib"
+export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:\$ENV_DIR/$ENV_NAME/lib:\$ENV_DIR/heasoft/lib"
 
 # Setting up HEASoft, otherwise SAS will fall over when you try to init it
 export HEADAS=\$ENV_DIR/heasoft/heasoft
@@ -187,7 +183,7 @@ cat <<EOF > $ENV_DIR/$ENV_NAME/etc/conda/deactivate.d/sas-general_deactivate.sh
 unset SAS_PERL
 unset SAS_PYTHON
 
-export LD_LIBRARY_PATH=$SAS_PREV_LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=\$SAS_PREV_LD_LIBRARY_PATH
 
 unset SAS_DIR
 unset SAS_CCFPATH
