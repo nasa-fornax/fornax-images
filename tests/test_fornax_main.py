@@ -33,6 +33,14 @@ notebooks = {
     'ml_agnzoo': {
         'file': 'fornax-demo-notebooks/light_curves/ML_AGNzoo.md',
         'env': 'py-ml_agnzoo'
+    },
+    'spectra_collector': {
+        'file': 'fornax-demo-notebooks/spectroscopy/spectra_collector.md',
+        'env': 'py-spectra_collector'
+    },
+    'ztf_ps1_crossmatch': {
+        'file': 'fornax-demo-notebooks/crossmatch/ztf_ps1_crossmatch.md',
+        'env': 'py-ztf_ps1_crossmatch'
     }
 }
 
