@@ -107,7 +107,7 @@ RUN cd /tmp/ \
  && mv bin/micromamba /usr/local/bin/ \
  # add alias for conda and mamba to point the user to micromamba
  && cd /usr/local/bin/\
- && echo "echo ** Please use micromamba instead of conda/mamba **" | tee conda mamba \
+ && echo -e '#!/usr/bin/bash\necho "** Please use micromamba instead of conda/mamba **"' | tee conda mamba \
  && chmod +x mamba conda \
  && rm -rf bin \
  && cd $HOME && rm -rf .* *
