@@ -44,7 +44,6 @@ ARG ENV_DIR=/opt/envs
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ENV JUPYTER_DIR=$JUPYTER_DIR \
-    MAMBA_ROOT_PREFIX=/opt/ \
     ENV_DIR=$ENV_DIR \
     SHELL=/bin/bash \
     NB_USER=${NB_USER} \
