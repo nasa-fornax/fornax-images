@@ -40,7 +40,6 @@ RUN apt-get update --yes && apt-get upgrade --yes \
 
 # Define environment variables
 ENV JUPYTER_DIR=$JUPYTER_DIR \
-    MAMBA_ROOT_PREFIX=/opt/ \
     ENV_DIR=$ENV_DIR \
     SHELL=/bin/bash \
     NB_USER=${NB_USER} \
