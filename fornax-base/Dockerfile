@@ -112,6 +112,15 @@ RUN cat /tmp/activate.sh >> /etc/bash.bashrc \
  && echo "bash /usr/local/bin/link-notebooks.sh" > /usr/local/bin/before-notebook.d/20link-notebooks.sh \
  && rm -r /tmp/* $HOME/.*
 
+# Add any system packages. We want them all to be here fornax-base
+# so they can be transfered to fornax-slim
+COPY apt.txt* /tmp/
+RUN cd /tmp/ && \
+    if test -f apt.txt; then \
+      xargs bash /usr/local/bin/apt-install.sh; \
+      rm apt.txt; \
+    fi
+
 # reset user and location
 WORKDIR ${HOME}
 USER $NB_USER
@@ -140,23 +149,10 @@ RUN ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
 # These commands run in images the inherit fornax-images
 # ================================ #
 
-# Install OS packages and then clean up
+# Install any uv/conda environments and call build-* scripts
 ONBUILD RUN mkdir -p $HOME/build
-ONBUILD COPY --chown=$NB_UID:$NB_GID apt* base* build-* requirements-* conda-* $HOME/build/
-ONBUILD USER root
-ONBUILD RUN cd build \
-         && if test -f apt.txt; then \
-            xargs bash /usr/local/bin/apt-install.sh; \
-            rm apt.txt; \
-         fi
+ONBUILD COPY --chown=$NB_UID:$NB_GID build-* requirements-* conda-* $HOME/build/
 ONBUILD USER $NB_USER
-ONBUILD RUN cd build \
-         && if test -f base.txt; then \
-            xargs -a base.txt micromamba install -y -p $ENV_DIR/base; \
-            micromamba clean -yaf ; rm base.txt; \
-         fi
-# ------------------------------------ #
-
 
 # # setup uv environments
 ONBUILD RUN cd build && bash /usr/local/bin/uv-env-install.sh \
