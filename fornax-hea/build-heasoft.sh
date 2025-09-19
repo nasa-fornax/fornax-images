@@ -23,7 +23,11 @@ channels:
 dependencies:
   - python=3.12
   - heasoft=6.35.*
-  - pytest
+  - pip
+  - pip:
+    - pytest
+    - astroquery
+    - astropy
 EOF
 
 # Use conda-heasoft.yml to create the heasoft env

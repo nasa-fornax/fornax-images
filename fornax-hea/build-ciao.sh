@@ -25,7 +25,11 @@ dependencies:
   - sherpa
   - ciao-contrib
   - marx
-  - pytest
+  - pip
+  - pip:
+    - pytest
+    - astroquery
+    - astropy
 EOF
 
 # Use the yml to create the ciao env
