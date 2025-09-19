@@ -105,6 +105,10 @@ RUN cd /tmp/ \
  # micromamba
  && curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
  && mv bin/micromamba /usr/local/bin/ \
+ # add alias for conda and mamba to point the user to micromamba
+ && cd /usr/local/bin/\
+ && echo "echo ** Please use micromamba instead of conda/mamba **" | tee conda mamba \
+ && chmod +x mamba conda \
  && rm -rf bin \
  && cd $HOME && rm -rf .* *
 
