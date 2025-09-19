@@ -114,3 +114,12 @@ def test_imports(notebook):
         CommonTests.run_cmd(
             f'{env_root}/{env}/bin/python imports_{py_filename}'
         )
+
+@pytest.mark.parametrize("notebook", list(notebooks.keys()))
+def test_notebook_permissions(notebook):
+    """Folders are writable; files are read-only"""
+    nb_file = notebooks[notebook]['file']
+    nb_path = os.path.dirname(nb_file)
+    
+    assert not os.access(f'{notebook_dir}/{nb_file}', os.W_OK)
+    assert os.access(f'{notebook_dir}/{nb_path}', os.W_OK)
