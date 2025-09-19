@@ -66,8 +66,12 @@ HEALTHCHECK --interval=3s --timeout=1s --start-period=3s --retries=3 \
 
 
 ## ---- from fornax-base ---- ##
+ARG SUPPORT_DATA_MOUNT=/shared-storage/support-data
+ARG MAMBA_ROOT_PREFIX=$ENV_DIR/base
+
 ENV CACHE_DIR=/tmp/cache
 ENV DEFAULT_ENV=python3 \
+    MAMBA_ROOT_PREFIX=$MAMBA_ROOT_PREFIX \
     LOCK_DIR=$ENV_DIR/lock \
     XDG_CACHE_HOME=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
@@ -81,7 +85,7 @@ ENV DEFAULT_ENV=python3 \
     # scripts that rely on support data should use SUPPORT_DATA_DIR
     SUPPORT_DATA_DIR=/opt/support-data \
     # path
-    PATH=$ENV_DIR/base/bin:$PATH \
+    PATH=$MAMBA_ROOT_PREFIX/bin:$PATH \
     # For firefly
     FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
     # for dask
