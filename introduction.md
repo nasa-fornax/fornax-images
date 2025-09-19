@@ -23,6 +23,9 @@ terminal.
 
 ## dev
 - Install notebook-intelligence extension for AI code assistance.
+- Add conda/mamba alias that point the user to micromamba (issue #101).
+- make folders in the notebooks folder writable; files are read-only. Fix #98
+- Move all apt installs to fornax-base to allow portability to fornax-slim #95
 
 ## 25.0904
 - Fix vscode extension
