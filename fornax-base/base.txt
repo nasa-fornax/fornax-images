@@ -5,4 +5,6 @@ less
 zip
 pandoc
 jq
+awscli
+htop
 code-server
