@@ -21,7 +21,7 @@ terminal.
 ---
 # Latest Changes
 
-## dev
+## 25.0922
 - Install notebook-intelligence extension for AI code assistance.
 - Add conda/mamba alias that point the user to micromamba (issue #101).
 - make folders in the notebooks folder writable; files are read-only. Fix #98
