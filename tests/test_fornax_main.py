@@ -97,7 +97,6 @@ def test_imports(notebook):
     # isolate the imports
     with change_dir(f'{notebook_dir}/{nb_path}'):
         # we need the folder to be writable
-        os.system('chmod -R 755 .')
         CommonTests.run_cmd(
             f'jupytext --to py {nb_filename}'
         )
