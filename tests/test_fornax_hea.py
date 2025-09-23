@@ -72,3 +72,13 @@ def test_fermi():
     print()
     print(result.stdout)
     print()
+
+
+def test_erosita_esass():
+    """Tests for eROSITA eSASS; call separately"""
+    script_dir = os.path.dirname(__file__)
+    result = CommonTests.run_cmd(('micromamba run -n esassdr1 pytest -v -s '
+                                  f'{script_dir}/test_fornax_hea_esassdr1.py'))
+    print()
+    print(result.stdout)
+    print()
