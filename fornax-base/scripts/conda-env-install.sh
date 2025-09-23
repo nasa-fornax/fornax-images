@@ -20,6 +20,9 @@ for envfile in `ls conda-*.yml`; do
 
     # add the environment as a jupyter kernel
     micromamba run -n $env python -m ipykernel install --name $env --prefix $JUPYTER_DIR
+
+    # clean any pip packages from the conda file
+    micromamba run -n $env pip cache purge
     
     # Run the kernel with 'conda run -n $env', so the etc/condat/activate.d scripts
     # are called correctly; this is needed when jupyterlab is running outside the kernel

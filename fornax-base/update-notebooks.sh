@@ -62,7 +62,6 @@ for i in ${!notebook_repos[@]}; do
     name=`echo $repo | sed 's#.*/\([^/]*\)\.git#\1#'`
 
     find $name -type f -exec chmod 444 {} +
-    find $name -type d -exec chmod 555 {} +
 done
 
 # reset location

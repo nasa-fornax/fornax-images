@@ -23,7 +23,11 @@ dependencies:
   - python=3.11
   - fermitools=2.4
   - fermipy
-  - pytest
+  - pip
+  - pip:
+    - pytest
+    - astroquery
+    - astropy
 EOF
 
 # Use the yml to create the ciao env

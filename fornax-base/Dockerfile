@@ -9,11 +9,13 @@ LABEL org.opencontainers.image.description="Fornax Base Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
 ARG SUPPORT_DATA_MOUNT=/shared-storage/support-data
+ARG MAMBA_ROOT_PREFIX=$ENV_DIR/base
 
 
 # Environment variables
 ENV CACHE_DIR=/tmp/cache
 ENV DEFAULT_ENV=python3 \
+    MAMBA_ROOT_PREFIX=$MAMBA_ROOT_PREFIX \
     LOCK_DIR=$ENV_DIR/lock \
     XDG_CACHE_HOME=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
@@ -22,12 +24,13 @@ ENV DEFAULT_ENV=python3 \
     UV_CACHE_DIR=$CACHE_DIR/uv \
     # for vscode
     CODE_EXECUTABLE=code-server \
+    CODE_EXTENSIONSDIR=$HOME/.local/share/code-server/extensions \
     NOTEBOOK_DIR=/opt/notebooks \
     # support data; JH can pass ARG SUPPORT_DATA_MOUNT; SUPPORT_DATA_DIR points to it
     # scripts that rely on support data should use SUPPORT_DATA_DIR
     SUPPORT_DATA_DIR=/opt/support-data \
     # path
-    PATH=$ENV_DIR/base/bin:$PATH \
+    PATH=$MAMBA_ROOT_PREFIX/bin:$PATH \
     # For firefly
     FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
     # for dask
@@ -67,11 +70,18 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
 # we use microconda instead of apt, so they are portable
 COPY --chown=$NB_UID:$NB_GID base.txt /tmp/
 RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
- && micromamba create -y -p $ENV_DIR/base python=$PY_EXACT_VERSION \
- && xargs -a /tmp/base.txt micromamba install -y -p $ENV_DIR/base \
+ && micromamba create -y -p $MAMBA_ROOT_PREFIX python=$PY_EXACT_VERSION \
+ && xargs -a /tmp/base.txt micromamba install -y -p $MAMBA_ROOT_PREFIX \
  && micromamba clean -yaf && rm /tmp/base.txt \
- && micromamba env export -p $ENV_DIR/base > $ENV_DIR/base/base-lock.yml \
- && cp $ENV_DIR/base/base-lock.yml $LOCK_DIR/
+ && micromamba env export -p $MAMBA_ROOT_PREFIX > $MAMBA_ROOT_PREFIX/base-lock.yml \
+ && cp $MAMBA_ROOT_PREFIX/base-lock.yml $LOCK_DIR/ \
+ # we want our micromamba envs 1) in $ENV_DIR so they are portable,
+ # but the same time 2) we want to be able to activate them with
+ # micromamba activate env_name.
+ # 1, requires them under $ENV_DIR
+ # 2, requires them under MAMBA_ROOT_PREFIX/envs
+ # the solution is make MAMBA_ROOT_PREFIX/envs a symlin to $ENV_DIR
+ && cd $MAMBA_ROOT_PREFIX && rm -rf envs && ln -s $ENV_DIR
 
 ## install DEFAULT_ENV ##
 COPY --chown=$NB_UID:$NB_GID requirements-$DEFAULT_ENV.txt /tmp/
@@ -86,20 +96,31 @@ RUN cd /tmp/ && bash /usr/local/bin/uv-env-install.sh \
 # because ~/.bashrc is not loaded when user space is mounted
 # Also, add it to before-notebook.d main script
 USER root
-RUN echo "if [ -f \$ENV_DIR/\$DEFAULT_ENV/bin/activate ]; then" > /tmp/activate.sh \
- && echo "  echo activating python in \$ENV_DIR/\$DEFAULT_ENV" >> /tmp/activate.sh \
- && echo "  source \$ENV_DIR/\$DEFAULT_ENV/bin/activate" >> /tmp/activate.sh \
- && echo "elif [ -d \$ENV_DIR/\$DEFAULT_ENV/conda-meta ]; then" >> /tmp/activate.sh \
- && echo "  echo activating python in \$ENV_DIR/\$DEFAULT_ENV" >> /tmp/activate.sh \
- && echo "  micromamba activate \$DEFAULT_ENV" >> /tmp/activate.sh \
- && echo "else" >> /tmp/activate.sh \
- && echo "  echo DEFAULT_ENV=\$DEFAULT_ENV not found" >> /tmp/activate.sh \
- && echo "fi" >> /tmp/activate.sh \
- && echo "" >> /tmp/activate.sh \
- && cat /tmp/activate.sh >> /etc/bash.bashrc \
+RUN cat <<ACTIVATE > /tmp/activate.sh
+#!/usr/bin/bash
+if [ -f \$ENV_DIR/\$DEFAULT_ENV/bin/activate ]; then
+  echo activating python in \$ENV_DIR/\$DEFAULT_ENV
+  source \$ENV_DIR/\$DEFAULT_ENV/bin/activate
+elif [ -d \$ENV_DIR/\$DEFAULT_ENV/conda-meta ]; then
+  echo activating python in \$ENV_DIR/\$DEFAULT_ENV
+  micromamba activate \$DEFAULT_ENV
+else
+  echo DEFAULT_ENV=\$DEFAULT_ENV not found
+fi
+ACTIVATE
+RUN cat /tmp/activate.sh >> /etc/bash.bashrc \
  && cat /tmp/activate.sh  >> /usr/local/bin/before-notebook.d/10activate-env.sh \
  && echo "bash /usr/local/bin/link-notebooks.sh" > /usr/local/bin/before-notebook.d/20link-notebooks.sh \
  && rm -r /tmp/* $HOME/.*
+
+# Add any system packages. We want them all to be here fornax-base
+# so they can be transfered to fornax-slim
+COPY apt.txt* /tmp/
+RUN cd /tmp/ && \
+    if test -f apt.txt; then \
+      xargs bash /usr/local/bin/apt-install.sh; \
+      rm apt.txt; \
+    fi
 
 # reset user and location
 WORKDIR ${HOME}
@@ -129,23 +150,10 @@ RUN ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
 # These commands run in images the inherit fornax-images
 # ================================ #
 
-# Install OS packages and then clean up
+# Install any uv/conda environments and call build-* scripts
 ONBUILD RUN mkdir -p $HOME/build
-ONBUILD COPY --chown=$NB_UID:$NB_GID apt* base* build-* requirements-* conda-* $HOME/build/
-ONBUILD USER root
-ONBUILD RUN cd build \
-         && if test -f apt.txt; then \
-            xargs bash /usr/local/bin/apt-install.sh; \
-            rm apt.txt; \
-         fi
+ONBUILD COPY --chown=$NB_UID:$NB_GID build-* requirements-* conda-* $HOME/build/
 ONBUILD USER $NB_USER
-ONBUILD RUN cd build \
-         && if test -f base.txt; then \
-            xargs -a base.txt micromamba install -y -p $ENV_DIR/base; \
-            micromamba clean -yaf ; rm base.txt; \
-         fi
-# ------------------------------------ #
-
 
 # # setup uv environments
 ONBUILD RUN cd build && bash /usr/local/bin/uv-env-install.sh \
