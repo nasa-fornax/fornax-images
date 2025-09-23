@@ -24,6 +24,7 @@ ENV DEFAULT_ENV=python3 \
     UV_CACHE_DIR=$CACHE_DIR/uv \
     # for vscode
     CODE_EXECUTABLE=code-server \
+    CODE_EXTENSIONSDIR=$HOME/.local/share/code-server/extensions \
     NOTEBOOK_DIR=/opt/notebooks \
     # support data; JH can pass ARG SUPPORT_DATA_MOUNT; SUPPORT_DATA_DIR points to it
     # scripts that rely on support data should use SUPPORT_DATA_DIR
