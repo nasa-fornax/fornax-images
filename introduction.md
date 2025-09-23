@@ -21,11 +21,12 @@ terminal.
 ---
 # Latest Changes
 
-## 25.0922
+## 25.0923
 - Install notebook-intelligence extension for AI code assistance.
 - Add conda/mamba alias that point the user to micromamba (issue #101).
 - make folders in the notebooks folder writable; files are read-only. Fix #98
 - Move all apt installs to fornax-base to allow portability to fornax-slim #95
+- Allow user-installed extensions in code-server to persist #102
 
 ## 25.0904
 - Fix vscode extension
