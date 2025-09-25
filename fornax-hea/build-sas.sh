@@ -203,6 +203,9 @@ EOF
 #  this approach as soon as possible
 rm -r $ENV_DIR/$ENV_NAME/${sas_install_dir}/lib/data
 ln -s $SUPPORT_DATA_DIR/xmmsas-${sas_version}/sas_data $ENV_DIR/$ENV_NAME/${sas_install_dir}/lib/data
+
+# We also remove the documentation source and build, once again to save space
+rm -r $ENV_DIR/$ENV_NAME/${sas_install_dir}/doc
 ###########################################################
 
 
