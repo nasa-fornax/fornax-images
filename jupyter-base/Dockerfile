@@ -40,7 +40,6 @@ RUN apt-get update --yes && apt-get upgrade --yes \
 
 # Define environment variables
 ENV JUPYTER_DIR=$JUPYTER_DIR \
-    MAMBA_ROOT_PREFIX=/opt/ \
     ENV_DIR=$ENV_DIR \
     SHELL=/bin/bash \
     NB_USER=${NB_USER} \
@@ -106,6 +105,10 @@ RUN cd /tmp/ \
  # micromamba
  && curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
  && mv bin/micromamba /usr/local/bin/ \
+ # add alias for conda and mamba to point the user to micromamba
+ && cd /usr/local/bin/\
+ && echo -e '#!/usr/bin/bash\necho "** Please use micromamba instead of conda/mamba **"' | tee conda mamba \
+ && chmod +x mamba conda \
  && rm -rf bin \
  && cd $HOME && rm -rf .* *
 

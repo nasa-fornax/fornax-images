@@ -31,8 +31,6 @@ The following is a general description of the images:
   individual notebooks (managed with `uv`).
   Notebook environment have names: `py-{notebook-name}`.
 
-- `pre-notebook.sh` is a script that runs before a jupyter server is started.
-
 - `overrides.json` contains any jupyter settings that need to be set by default.
   
 - The `scripts/build.py` script is used when building the images. The script has many options.
@@ -46,7 +44,6 @@ The following is a general description of the images:
 
 - Building an image that starts from`fornx-base` will trigger the `ONBUILD` sections
 defined in `fornax-base/Dockerfile`, which include:
-  - If `apt.txt` exits, it will be parsed for the list of the system software to be installed with `apt-get`.
   - If `build-*` files exist, the scripts are run during the build.
   - If `conda-{env}.yml` exists, it is used to create a conda environment called `{env}`.
   - If `requirements-{env}.txt` exists, it is used to create a virtual python
@@ -55,8 +52,6 @@ defined in `fornax-base/Dockerfile`, which include:
     the undesired situations (e.g. #20) where conda install a version of a package and pip install another one.
   - The `introduction.md` file is shared between the main fornax images. During the build, its copied
     to the image folder and converted to an html file (with `pandoc`) that is included in the image.
-    the `pre-notebook` script copies is from `$JUPYTER_DIR/introduction.html` to `$NOTEBOOK_DIR` when
-    the notebook server starts.
 
 # The images
 - `jupyter-base`: is a custom jupyterlab image that matches the 

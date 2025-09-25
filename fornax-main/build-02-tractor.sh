@@ -45,7 +45,10 @@ rm -rf /tmp/astrometry.net /tmp/tractor
 # clean up
 uv pip uninstall cython setuptools
 micromamba uninstall -y -p $ENV_DIR/base \
-   make gcc binutils pkg-config expat swig netpbm libpng zlib
+   make gcc binutils pkg-config expat swig netpbm libpng
+# since we updated the base micromamba env, we need a new lock file
+micromamba env export -p $ENV_DIR/base > $ENV_DIR/base/base-lock.yml
+cp $ENV_DIR/base/base-lock.yml $LOCK_DIR/
 
 # update the freeze file
 uv pip list --format=freeze > $VIRTUAL_ENV/requirements-py-multiband_photometry.txt

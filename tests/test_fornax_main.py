@@ -33,6 +33,14 @@ notebooks = {
     'ml_agnzoo': {
         'file': 'fornax-demo-notebooks/light_curves/ML_AGNzoo.md',
         'env': 'py-ml_agnzoo'
+    },
+    'spectra_collector': {
+        'file': 'fornax-demo-notebooks/spectroscopy/spectra_collector.md',
+        'env': 'py-spectra_collector'
+    },
+    'ztf_ps1_crossmatch': {
+        'file': 'fornax-demo-notebooks/crossmatch/ztf_ps1_crossmatch.md',
+        'env': 'py-ztf_ps1_crossmatch'
     }
 }
 
@@ -69,6 +77,15 @@ def test_check_packages(notebook):
     CommonTests._test_uv_env_file(notebooks[notebook]['env'], env_root)
 
 
+def test_code_server():
+    CommonTests.run_cmd(f'which code-server')
+
+
+def test_conda_base_env():
+    CommonTests._test_conda_env_file(
+        'base', f'{env_root}/base/base-lock.yml')
+
+
 @pytest.mark.parametrize("notebook", list(notebooks.keys()))
 def test_imports(notebook):
     """Extract the imports from the notebook and make sure they run"""
@@ -79,6 +96,7 @@ def test_imports(notebook):
     py_filename = nb_filename.replace('md', 'py')
     # isolate the imports
     with change_dir(f'{notebook_dir}/{nb_path}'):
+        # we need the folder to be writable
         CommonTests.run_cmd(
             f'jupytext --to py {nb_filename}'
         )
@@ -103,3 +121,12 @@ def test_imports(notebook):
         CommonTests.run_cmd(
             f'{env_root}/{env}/bin/python imports_{py_filename}'
         )
+
+@pytest.mark.parametrize("notebook", list(notebooks.keys()))
+def test_notebook_permissions(notebook):
+    """Folders are writable; files are read-only"""
+    nb_file = notebooks[notebook]['file']
+    nb_path = os.path.dirname(nb_file)
+    
+    assert not os.access(f'{notebook_dir}/{nb_file}', os.W_OK)
+    assert os.access(f'{notebook_dir}/{nb_path}', os.W_OK)

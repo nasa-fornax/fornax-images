@@ -21,8 +21,20 @@ terminal.
 ---
 # Latest Changes
 
-## 25.0902 (dev)
-- Rebuild to pick the new deployed notebook kernels: ztf_ps1_crossmatch and spectra_collector
+## 25.0923
+- Install notebook-intelligence extension for AI code assistance.
+- Add conda/mamba alias that point the user to micromamba (issue #101).
+- make folders in the notebooks folder writable; files are read-only. Fix #98
+- Move all apt installs to fornax-base to allow portability to fornax-slim #95
+- Allow user-installed extensions in code-server to persist #102
+
+## 25.0904
+- Fix vscode extension
+
+## 25.0903
+- Rebuild to pick the new deployed notebook kernels: `ztf_ps1_crossmatch` and `spectra_collector`.
+- Make the fornax-notebooks read-only. Modified notebooks need to be saved elsewhere.
+- Bug fixes (issues #87, #86).
 
 ## 25.0829
 - Add 'Update Notebooks' to Fornax menu (fornax-labextension = 0.1.5).

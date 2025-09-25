@@ -5,6 +5,8 @@ jupyterlab-git
 jupyterlab-myst
 jupyter-vscode-proxy
 jupyter_cpu_alive
-nbgitpuller
 dask-labextension
 jupyter-firefly-extensions
+# litellm is needed by notebook-intelligence; >1.77.1 fails in building madoka
+litellm==1.77.1
+notebook-intelligence
