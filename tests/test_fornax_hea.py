@@ -72,3 +72,13 @@ def test_fermi():
     print()
     print(result.stdout)
     print()
+
+
+def test_xmm_sas():
+    """Tests for XMM SAS; call separately"""
+    script_dir = os.path.dirname(__file__)
+    result = CommonTests.run_cmd(('micromamba run -n sas pytest -v -s '
+                                  f'{script_dir}/test_fornax_hea_sas.py'))
+    print()
+    print(result.stdout)
+    print()
