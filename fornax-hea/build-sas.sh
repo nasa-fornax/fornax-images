@@ -56,7 +56,7 @@ sas_link=$base_sas_link${sas_file}
 
 
 ########### Download and unpack required files ############
-wget $sas_link \
+wget -qL $sas_link \
 	&& tar xvf $sas_file \
 	&& rm -f $sas_file
 ###########################################################
