@@ -1,0 +1,41 @@
+name: AMI Build
+on:
+  workflow_dispatch:
+    inputs:
+      images:
+        description: 'Images of the form: image-1 image-2'
+        required: true
+        type: string
+      launch:
+        description: 'Launch?'
+        required: true
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  trigger-ami-build:
+    runs-on: ubuntu-latest
+    if: inputs.images != '[]'
+  
+    steps:
+  
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Trigger the builder
+        run: |
+          echo "images_to_build = ${{ inputs.images }}"
+          echo "launch? ${{ inputs.launch }}"
+          LAUNCH=${{ inputs.launch && '--launch' || '' }}
+          TAG="${{ github.head_ref || github.ref_name }}"
+          echo "LAUNCH: $LAUNCH"
+          echo "TAG: $TAG"
+          python scripts/ami-builder.py \
+            --eks 1.33 \
+            --tag $TAG \
+            --endpoint "${{ secrets.AMI_ENDPOINT }}" \
+            ${{ inputs.images }} $LAUNCH
+
