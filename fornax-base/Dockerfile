@@ -64,7 +64,9 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  # update lock file and make a copy in LOCK_DIR
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
  && mkdir -p $LOCK_DIR \
- && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt
+ && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
+ # run jupyterhub-singleuser once to cache the extension and speedup the start
+ && timeout 20s jupyterhub-singleuser || true
 
 # Install system packages with micromamba
 # we use microconda instead of apt, so they are portable
