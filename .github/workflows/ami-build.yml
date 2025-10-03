@@ -35,7 +35,7 @@ jobs:
           echo "TAG: $TAG"
           python scripts/ami-builder.py \
             --eks 1.33 \
-            --tag $TAG \
-            --endpoint "${{ secrets.AMI_ENDPOINT }}" \
+            --tag stable \
+            --endpoint "${{ secrets.AZ_AMI_ENDPOINT }}" \
             ${{ inputs.images }} $LAUNCH
 
