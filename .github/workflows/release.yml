@@ -67,17 +67,17 @@ jobs:
       - name: Tag main images with release tags
         id: push
         run: |
-          # Add if needed: '--trigger-ecr --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }} \'
           python scripts/build.py --debug --no-build \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.event.release.target_commitish }}" \
               --release "${{ github.event.release.tag_name }}" \
+              --trigger-ecr --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }} \
               --export-lock "${{ matrix.image }}"
             
-            # pack lock files into a zip file
-            if [ -d ${{ matrix.image }}_locks ]; then
-              zip -r "${{ matrix.image }}-environment-locks.zip" "${{ matrix.image }}_locks"
-            fi
+          # pack lock files into a zip file
+          if [ -d ${{ matrix.image }}_locks ]; then
+            zip -r "${{ matrix.image }}-environment-locks.zip" "${{ matrix.image }}_locks"
+          fi
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -89,3 +89,28 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ./${{ matrix.image }}-environment-locks.zip
+  
+  release-ami:
+    needs: prep-release
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Trigger ami release
+        run: |            
+          echo "++++ Creating the AMIs ++++"
+          IMAGES=${{ join(fromJson(needs.prep-release.outputs.images), ' ') }}
+          echo "The ami images: $IMAGES"
+          python scripts/ami-builder.py \
+              --tag stable \
+              --endpoint "${{ secrets.AMI_ENDPOINT }}" \
+              # --launch \
+              $IMAGES
