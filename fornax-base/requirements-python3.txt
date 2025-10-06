@@ -10,3 +10,4 @@ seaborn
 pytest
 dask[distributed]
 bokeh
+s3fs

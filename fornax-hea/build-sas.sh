@@ -100,8 +100,13 @@ channels:
   - conda-forge
 dependencies:
   - python=$py_version
-  - pytest
   - ghostscript
+  - pip
+  - pip:
+    - pytest
+    - astroquery
+    - astropy
+    - s3fs
 EOF
 
 # Use the yml to create the SAS env
