@@ -25,7 +25,6 @@ def main():
 
     ap.add_argument(
         '--eks',
-        required=True,
         help=("EKS version to use. e.g. 1.33")
     )
 
@@ -69,11 +68,12 @@ def main():
 
     # prepare parameters
     params = {
-        'version': eks_version,
         'images': images,
         'tag': tag,
         'launch': launch
     }
+    if eks_version is not None:
+        params['version'] = eks_version
     logger.info('Calling the builder ...')
     req = requests.post(ami_endpoint, json=params)
     
