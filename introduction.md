@@ -21,7 +21,7 @@ terminal.
 ---
 # Latest Changes
 
-## 25.1006 (dev)
+## 25.1006
 - Add XMM SAS software to the high energy image.
 - Add s3fs to python3 and the high energy environments.
 - Updates to support the software AMI.
