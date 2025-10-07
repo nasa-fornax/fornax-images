@@ -24,6 +24,7 @@ terminal.
 ## 25.1006
 - Add XMM SAS software to the high energy image.
 - Add s3fs to python3 and the high energy environments.
+- remove notebook-intelligence as it slows startup.
 - Updates to support the software AMI.
 
 ## 25.0923
