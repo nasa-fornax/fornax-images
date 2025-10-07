@@ -104,6 +104,11 @@ jobs:
         with:
           python-version: '3.12'
       
+      - name: python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+      
       - name: Trigger ami release
         run: |            
           echo "++++ Creating the AMIs ++++"
