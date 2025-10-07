@@ -41,7 +41,8 @@ ENV DEFAULT_ENV=python3 \
 USER root
 RUN mkdir -p $JUPYTER_DIR/share/jupyter/lab/settings/ \
  # Disable the announcement extension
- && jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
+ && jupyter labextension disable "@jupyterlab/apputils-extension:announcements" \
+ && fix-permissions $JUPYTER_DIR
 COPY --chown=$NB_UID:$NB_GID overrides.json $JUPYTER_DIR/share/jupyter/lab/settings/
 
 # Copy our scripts
@@ -64,7 +65,9 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  # update lock file and make a copy in LOCK_DIR
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
  && mkdir -p $LOCK_DIR \
- && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt
+ && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
+# run jupyterhub-singleuser once to cache the extension and speedup the start
+&& timeout 20s jupyterhub-singleuser || true
 
 # Install system packages with micromamba
 # we use microconda instead of apt, so they are portable

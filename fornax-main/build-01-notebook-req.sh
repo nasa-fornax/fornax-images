@@ -34,8 +34,10 @@ for req in `ls requirements_*`; do
 done
 
 rm requirements_*
-# pin numpy<2.3; issue: https://github.com/nasa-fornax/fornax-demo-notebooks/issues/431
-sed -i 's/numpy$/numpy<2.3/' requirements-py-ml_agnzoo.txt
+# temporary pin lsdb<0.6.6; issue: https://github.com/nasa-fornax/fornax-demo-notebooks/issues/523
+sed -i '/lsdb/c\lsdb<0.6.6' requirements-py-ztf_ps1_crossmatch.txt
+
+
 bash /usr/local/bin/uv-env-install.sh
 
 cd /tmp/

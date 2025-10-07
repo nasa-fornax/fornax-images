@@ -28,6 +28,7 @@ dependencies:
     - pytest
     - astroquery
     - astropy
+    - s3fs
 EOF
 
 # Use conda-heasoft.yml to create the heasoft env

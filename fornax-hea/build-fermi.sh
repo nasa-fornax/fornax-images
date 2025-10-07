@@ -28,6 +28,7 @@ dependencies:
     - pytest
     - astroquery
     - astropy
+    - s3fs
 EOF
 
 # Use the yml to create the ciao env
