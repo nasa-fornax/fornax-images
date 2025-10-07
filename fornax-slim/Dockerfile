@@ -99,8 +99,6 @@ VOLUME /opt/workspace
 # SUPPORT_DATA_MOUNT can be set by JH
 RUN ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
 
-# Update the notebooks
-RUN update-notebooks.sh
 
 ## ----- From other images ----- ##
 
