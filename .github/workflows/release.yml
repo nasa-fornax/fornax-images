@@ -111,6 +111,6 @@ jobs:
           echo "The ami images: $IMAGES"
           python scripts/ami-builder.py \
               --tag stable \
-              --endpoint "${{ secrets.AMI_ENDPOINT }}" \
-              # --launch \
+              --endpoint "${{ secrets.AZ_AMI_ENDPOINT }}" \
+              --launch \
               $IMAGES
