@@ -107,7 +107,7 @@ jobs:
       - name: Trigger ami release
         run: |            
           echo "++++ Creating the AMIs ++++"
-          IMAGES=${{ join(fromJson(needs.prep-release.outputs.images), ' ') }}
+          IMAGES="${{ join(fromJson(needs.prep-release.outputs.images), ' ') }}"
           echo "The ami images: $IMAGES"
           python scripts/ami-builder.py \
               --tag stable \
