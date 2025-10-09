@@ -39,13 +39,14 @@ FERMITOOLS_VERSION=$(micromamba list fermitools -p $ENV_DIR/fermi --json | jq -r
 
 # Delete reference data, and create symlinks below
 #rm -rf $ENV_DIR/fermi/share/fermitools/refdata
-# link data files
-#ln -sf $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}/refdata $ENV_DIR/fermi/share/fermitools/refdata
 
 # Move the reference data required by Fermitools to the support data directory - this is necessary so that the
 #  everything-included Fornax-Hea image setup matches that of deployed Fornax-AMI setup, which holds
 #  the reference data in an existing support data directory
-mv $ENV_DIR/fermi/share/fermitools/refdata $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}/refdata $ENV_DIR/fermi/share/fermitools/refdata
+mv $ENV_DIR/fermi/share/fermitools/refdata $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}/refdata
+
+# Link the refdata files back to the fermitools directory
+ln -sf $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}/refdata $ENV_DIR/fermi/share/fermitools/refdata
 
 # clean
 cd $HOME
