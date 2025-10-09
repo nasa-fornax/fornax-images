@@ -35,19 +35,18 @@ EOF
 # Use the yml to create the ciao env
 bash /usr/local/bin/conda-env-install.sh
 
-
-# delete data; create simlinks below
-rm -rf $ENV_DIR/fermi/share/fermitools/refdata
-
-# Remove these files
-# none
-
-
-# get fermitools version
+# Get fermitools version
 FERMITOOLS_VERSION=$(micromamba list fermitools -p $ENV_DIR/fermi --json | jq -r '.[0].version')
 
+# Delete reference data, and create symlinks below
+#rm -rf $ENV_DIR/fermi/share/fermitools/refdata
 # link data files
-ln -sf $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}/refdata $ENV_DIR/fermi/share/fermitools/refdata
+#ln -sf $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}/refdata $ENV_DIR/fermi/share/fermitools/refdata
+
+# Move the reference data required by Fermitools to the support data directory - this is necessary so that the
+#  everything-included Fornax-Hea image setup matches that of deployed Fornax-AMI setup, which holds
+#  the reference data in an existing support data directory
+mv $ENV_DIR/fermi/share/fermitools/refdata $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}/refdata $ENV_DIR/fermi/share/fermitools/refdata
 
 # clean
 cd $HOME
