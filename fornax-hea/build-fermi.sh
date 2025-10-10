@@ -6,9 +6,15 @@ if [ -z $SUPPORT_DATA_DIR ]; then
     exit 1
 fi
 
-# install ciao; do it in a script instead of yml file so
-# get more control over the spectral data files
-WORKDIR=/tmp/fermi
+# As the Fornax-Hea image that results from these installation scripts is no longer loaded directly into Fornax, and
+#  is instead split up so that the large software packages are served in Amazon Machine Images (AMI), we can
+#  must take some steps to ensure that this image is usable on platforms other than Fornax.
+# This includes making a real, root-level, shared-storage/support-data directory (which on Fornax proper is mounted
+#  from an AWS storage solution), so that the high-energy software installations can be shipped with the necessary
+#  support data in the same place it will be on Fornax itself
+mkdir -p /shared-storage/support-data
+
+# install Fermitools
 mkdir -p $WORKDIR
 cd $WORKDIR
 
