@@ -31,6 +31,7 @@ dependencies:
     - astroquery
     - astropy
     - s3fs
+    - boto3
 EOF
 
 # Use the yml to create the ciao env
