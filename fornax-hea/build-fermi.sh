@@ -43,9 +43,6 @@ bash /usr/local/bin/conda-env-install.sh
 # Get fermitools version
 FERMITOOLS_VERSION=$(micromamba list fermitools -p $ENV_DIR/fermi --json | jq -r '.[0].version')
 
-# Delete reference data, and create symlinks below
-#rm -rf $ENV_DIR/fermi/share/fermitools/refdata
-
 # Move the reference data required by Fermitools to the support data directory - this is necessary so that the
 #  everything-included Fornax-Hea image setup matches that of deployed Fornax-AMI setup, which holds
 #  the reference data in an existing support data directory
