@@ -49,6 +49,7 @@ printf "setplot splashpage off\ncpd /GIF\n" >> $ENV_DIR/heasoft/heasoft/spectral
 #  the reference data in an existing support data directory
 mv $ENV_DIR/heasoft/heasoft/refdata $SUPPORT_DATA_DIR/heasoft-${HEA_VERSION}/refdata
 # Link refdata, including heasoft, xstar etc.
+mkdir -p $SUPPORT_DATA_DIR/heasoft-${HEA_VERSION}
 ln -sf $SUPPORT_DATA_DIR/heasoft-${HEA_VERSION}/refdata $ENV_DIR/heasoft/heasoft/refdata
 
 # XSPEC modelData - THIS LINK WILL BE BROKEN IN THE IMAGE - but we will direct users to download and install
