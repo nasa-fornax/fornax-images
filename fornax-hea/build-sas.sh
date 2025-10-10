@@ -116,7 +116,7 @@ dependencies:
     - astroquery
     - astropy
     - s3fs
-	- boto3
+	  - boto3
 EOF
 
 # Use the yml to create the SAS env
