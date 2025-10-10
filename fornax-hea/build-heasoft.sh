@@ -29,6 +29,7 @@ dependencies:
     - astroquery
     - astropy
     - s3fs
+    - boto3
 EOF
 
 # Use conda-heasoft.yml to create the heasoft env
