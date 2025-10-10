@@ -215,7 +215,6 @@ EOF
 #  size of the AMI environment images (as they will just use the support-data directory that is already on
 #  Fornax), and make sure that the Fornax-Hea image will still have access to the support data when it runs on
 #  another platform.
-
 mkdir -p $SUPPORT_DATA_DIR/xmmsas-${sas_version}
 # This data directory IS necessary for SAS to work
 mv $ENV_DIR/$ENV_NAME/${sas_install_dir}/lib/data $SUPPORT_DATA_DIR/xmmsas-${sas_version}/sas_data
