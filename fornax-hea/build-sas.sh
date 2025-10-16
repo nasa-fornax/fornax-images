@@ -117,7 +117,7 @@ dependencies:
     - astropy
     - s3fs
     - boto3
-    - xmmpysas=2.1.0
+    - xmmpysas==2.1.0
 EOF
 
 # Use the yml to create the SAS env
