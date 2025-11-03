@@ -33,7 +33,10 @@ osa_ubuntu_version=20.04
 osa_version=11.2
 osa_cat_version=43
 
-py_version=$PYTHON_VERSION
+# TODO Due to the OPENSSL 1.1 dependency of the Ubuntu 20.04 OSA
+#  binary, we have to set a lower Python version than the current
+#  Fornax default. This might be a deal breaker in the end?
+py_version=3.11
 ###########################################################
 
 
@@ -57,7 +60,7 @@ osa_link=$osa_base_link$osa_file
 
 ########### Download and unpack required files ############
 wget -qL $osa_link \
-	&& tar xvf $osa_file \
+	&& tar xzf $osa_file \
 	&& rm -f $osa_file
 ############################################################
 
@@ -68,6 +71,8 @@ pattern="osa*"
 
 # Find all matching files and store them in an array
 matches=($pattern)
+
+echo $matches
 
 # Get the number of matches
 num_matches=${#matches[@]}
@@ -86,7 +91,7 @@ else
   osa_install_dir="${matches[0]}"
 fi
 
-puts $osa_install_dir
+echo $osa_install_dir
 ###########################################################
 
 
@@ -105,6 +110,7 @@ dependencies:
   - astroquery
   - astropy
   - s3fs
+  - openssl=1.1.1
   - pip
 EOF
 

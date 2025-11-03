@@ -51,13 +51,9 @@ HEA_VERSION=$(micromamba list heasoft -p $ENV_DIR/heasoft --json | jq -r '.[0].v
 # add xspec and xstar model data from the data location in $headata
 printf "setplot splashpage off\ncpd /GIF\n" >> $ENV_DIR/heasoft/heasoft/spectral/scripts/global_customize.tcl
 
-# remove refdata that comes in the package. We'll use the one in SUPPORT_DATA_DIR instead.
-#rm -rf $ENV_DIR/heasoft/heasoft/refdata
-
 # Move the reference data required by HEASoft to the support data directory - this is necessary so that the
 #  everything-included Fornax-Hea image setup matches that of deployed Fornax-AMI setup, which holds
 #  the reference data in an existing support data directory
-
 mkdir -p $SUPPORT_DATA_DIR/heasoft-${HEA_VERSION}
 mv $ENV_DIR/heasoft/heasoft/refdata $SUPPORT_DATA_DIR/heasoft-${HEA_VERSION}
 # Link refdata, including heasoft, xstar etc.
