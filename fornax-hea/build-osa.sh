@@ -55,13 +55,24 @@ osa_file=osa${osa_version}-Ubuntu_${osa_ubuntu_version}_x86_64.tar.gz
 
 # Put-together URL to download OSA
 osa_link=$osa_base_link$osa_file
+
+# Also define the HEASARC FTP URL to download the source catalogs
+#  that OSA uses during some of its analysis
+osa_cat_file=cat.tar.gz
+osa_cat_link=https://heasarc.gsfc.nasa.gov/FTP/integral/caldb/${osa_cat_file}
 ###########################################################
 
 
 ########### Download and unpack required files ############
+# Downloads and unpacks the actual OSA code
 wget -qL $osa_link \
 	&& tar xzf $osa_file \
 	&& rm -f $osa_file
+
+# Does the same but for supporting files - the OSA source catalogs
+wget -qL $osa_cat_link \
+	&& tar xzf $osa_cat_file \
+	&& rm -f $osa_cat_file
 ############################################################
 
 
@@ -71,8 +82,6 @@ pattern="osa*"
 
 # Find all matching files and store them in an array
 matches=($pattern)
-
-echo $matches
 
 # Get the number of matches
 num_matches=${#matches[@]}
@@ -91,7 +100,8 @@ else
   osa_install_dir="${matches[0]}"
 fi
 
-echo $osa_install_dir
+# We can just define the install directory for the supporting source catalogs
+osa_cat_install_dir=cat
 ###########################################################
 
 
@@ -123,6 +133,14 @@ bash /usr/local/bin/conda-env-install.sh
 # Updating the lock file and moving it to the lock file directory
 micromamba env -n $ENV_NAME export > $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
 cp $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml $LOCK_DIR
+###########################################################
+
+
+############## Moving unpacked support files  #############
+# The unpacked supporting source catalogs will be in a single directory
+#  which we will move to the support data directory
+mkdir -p $SUPPORT_DATA_DIR/integral-osa
+mv $osa_cat_install_dir $SUPPORT_DATA_DIR/integral-osa/reference-catalogs
 ###########################################################
 
 
@@ -159,7 +177,7 @@ export ISDC_ENV=$ENV_DIR/$ENV_NAME/${osa_install_dir}
 source \$ISDC_ENV/bin/isdc_init_env.sh
 
 # Setting the path to the INTEGRAL reference catalog
-#export ISDC_REF_CAT=
+export ISDC_REF_CAT=\$SUPPORT_DATA_DIR/integral-osa/reference-catalogs/hec/gnrl_refr_cat_00${osa_cat_version}.fits
 
 # Should stop the OSA GUI popping up
 export COMMONSCRIPT=1
@@ -183,7 +201,7 @@ cat <<EOF > $ENV_DIR/$ENV_NAME/etc/conda/deactivate.d/osa-general_deactivate.sh
 #!/usr/bin/bash
 
 unset ISDC_ENV
-#unset ISDC_REF_CAT
+unset ISDC_REF_CAT
 
 unset COMMONSCRIPT
 
