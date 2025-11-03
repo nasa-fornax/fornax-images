@@ -150,7 +150,7 @@ export ISDC_ENV=$ENV_DIR/$ENV_NAME/${osa_install_dir}
 #  This sets up a few environment variables, including adding to the PATH and
 #  LD_LIBRARY_PATH. There doesn't appear to be an uninit script, so we looked
 #  for the environment variables it sets and unset them in the deactivation script
-source $ISDC_ENV/bin/isdc_init_env.sh
+source \$ISDC_ENV/bin/isdc_init_env.sh
 
 # Setting the path to the INTEGRAL reference catalog
 #export ISDC_REF_CAT=
