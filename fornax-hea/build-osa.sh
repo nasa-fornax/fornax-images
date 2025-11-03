@@ -31,6 +31,8 @@ rm -rf * > /dev/null 2>&1
 ############# Definition of software versions #############
 osa_ubuntu_version=20.04
 osa_version=11.2
+osa_cat_version=43
+
 py_version=$PYTHON_VERSION
 ###########################################################
 
@@ -38,11 +40,10 @@ py_version=$PYTHON_VERSION
 ############### Setting up useful variables ###############
 # Define the name of the environment to be set up
 export ENV_NAME=osa
-
 ###########################################################
 
 
-##################### DOWNLOADING SAS #####################
+##################### DOWNLOADING OSA #####################
 # OSA will be downloaded from HEASARC - this is the base for the populated URL
 osa_base_link=https://heasarc.gsfc.nasa.gov/FTP/integral/software/
 
@@ -63,7 +64,7 @@ wget -qL $osa_link \
 
 ########## Determine name of install directory  ###########
 # Set the pattern to search for
-pattern="osa"
+pattern="osa*"
 
 # Find all matching files and store them in an array
 matches=($pattern)
@@ -84,6 +85,8 @@ else
   # A single, real match was found, and we have our directory name
   osa_install_dir="${matches[0]}"
 fi
+
+puts $osa_install_dir
 ###########################################################
 
 
@@ -135,16 +138,33 @@ mkdir -p $ENV_DIR/$ENV_NAME/etc/conda/deactivate.d
 cat <<EOF > $ENV_DIR/$ENV_NAME/etc/conda/activate.d/osa-general_activate.sh
 #!/usr/bin/bash
 
-export ISDC_ENV=$ENV_DIR/$ENV_NAME/${osa_install_dir}
-
 # Recording the pre-OSA environment LD_LIBRARY_PATH environment variable
 OSA_PREV_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+# Same for the binaries PATH
+OSA_PREV_PATH=$PATH
+
+# The absolute path to the OSA install directory
+export ISDC_ENV=$ENV_DIR/$ENV_NAME/${osa_install_dir}
+
+# Initialize OSA by calling an included bash script
+#  This sets up a few environment variables, including adding to the PATH and
+#  LD_LIBRARY_PATH. There doesn't appear to be an uninit script, so we looked
+#  for the environment variables it sets and unset them in the deactivation script
+source $ISDC_ENV/bin/isdc_init_env.sh
+
+# Setting the path to the INTEGRAL reference catalog
+#export ISDC_REF_CAT=
+
+# Should stop the OSA GUI popping up
+export COMMONSCRIPT=1
+
 
 # Adds the OSA conda environment library to the library path, as well as the HEASoft conda
-#  environment library (this helps us to avoid replication of some basic libraries
-#  and saves space)
+#  environment library
 export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$ENV_DIR/$ENV_NAME/lib:$ENV_DIR/heasoft/lib"
 
+
+# TODO NEED TO FIGURE OUT HOW TO UNINIT HEASOFT
 # Setting up HEASoft
 export HEADAS=\$ENV_DIR/heasoft/heasoft
 source \$HEADAS/headas-init.sh
@@ -157,10 +177,21 @@ cat <<EOF > $ENV_DIR/$ENV_NAME/etc/conda/deactivate.d/osa-general_deactivate.sh
 #!/usr/bin/bash
 
 unset ISDC_ENV
+#unset ISDC_REF_CAT
+
+unset COMMONSCRIPT
 
 export LD_LIBRARY_PATH=$OSA_PREV_LD_LIBRARY_PATH
 unset OSA_PREV_LD_LIBRARY_PATH
 
+export PATH=$OSA_PREV_PATH
+unset OSA_PREV_PATH
+
+# Some environment variables created by the OSA init script
+unset ISDC_SCRIPT_PATH
+unset CFITSIO_INCLUDE_FILES
+unset MANPATH
+unset ROOTSYS
 EOF
 ###########################################################
 
