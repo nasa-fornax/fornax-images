@@ -7,4 +7,5 @@ jupyter-vscode-proxy
 jupyter_cpu_alive
 dask-labextension
 jupyter-firefly-extensions
+pip
 # notebook-intelligence
