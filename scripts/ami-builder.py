@@ -19,19 +19,26 @@ def main():
 
     ap.add_argument(
         'images', nargs='*',
-        help=("Image names to use separated by spaces e.g. "
-              "'fornax-main fornax-hea'")
+        help=("Image names with tag to use separated by spaces e.g. "
+              "'fornax-main:develop fornax-hea:develop'")
     )
 
     ap.add_argument(
-        '--eks',
-        help=("EKS version to use. e.g. 1.33")
-    )
-
-    ap.add_argument(
-        '--tag',
+        '--ssm-path',
         required=True,
-        help='AMI tag to produce'
+        help='AMI tag to go in the SSM parameter (destination path)'
+    )
+
+    ap.add_argument(
+        '--src',
+        default=None,
+        help=("Source ssm tag when copying; the target is --dst if given else --ssm-path")
+    )
+
+    ap.add_argument(
+        '--dst',
+        default=None,
+        help=("Target ssm tag when copying; If not given use ssm-path")
     )
 
     ap.add_argument(
@@ -50,31 +57,37 @@ def main():
 
     # get parameters
     images = args.images
-    eks_version = args.eks
     launch = args.launch
-    tag = args.tag
+    ssm_path = args.ssm_path
+    src = args.src
+    dst = args.dst
     ami_endpoint = args.endpoint
 
     logger.info(f'images: {images}')
-    logger.info(f'eks_version: {eks_version}')
-    logger.info(f'tag: {tag}')
+    logger.info(f'passed ssm-path: {ssm_path}')
+    logger.info(f'passed src: {src}')
+    logger.info(f'passed dst: {dst}')
     logger.info(f'launch?: {launch}')
     logger.info(f'endpoint: ***')
 
-    # add the tag to the images
-    for im in range(len(images)):
-        if ':' not in images[im]:
-            images[im] = f'{images[im]}:{tag}'
+    # ensure images have tags
+    for image in images:
+        if ':' not in image:
+            raise ValueError(f'image {image} has not tag')
 
     # prepare parameters
     params = {
         'images': images,
-        'tag': tag,
+        'ssm_path': ssm_path,
         'launch': launch
     }
-    if eks_version is not None:
-        params['version'] = eks_version
-    logger.info('Calling the builder ...')
+    if src is not None:
+        params['dst'] = dst if dst is not None else ssm_path
+        params['src'] = src
+
+    # params['version'] = 1.33  # eks version
+
+    logger.info(f'Calling the builder with params ... {params}')
     req = requests.post(ami_endpoint, json=params)
     
     logger.info(f'status: {req.status_code}')
