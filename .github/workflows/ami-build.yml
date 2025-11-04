@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       images:
-        description: 'Images of the form: image-1 image-2'
+        description: 'Images of the form: image-1:tag image-2:tag'
         required: true
         type: string
       launch:
@@ -11,6 +11,9 @@ on:
         required: true
         type: boolean
         default: false
+      extra_args:
+        description: 'extra args for ami-builder.py (e.g. --src .. when copying)'
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -27,14 +30,14 @@ jobs:
       
       - name: Trigger the builder
         run: |
-          echo "images_to_build = ${{ inputs.images }}"
+          echo "IMAGES = ${{ inputs.images }}"
           echo "launch? ${{ inputs.launch }}"
+          echo "extra ${{ inputs.extra_args }}"
           LAUNCH=${{ inputs.launch && '--launch' || '' }}
-          TAG="${{ github.head_ref || github.ref_name }}"
-          echo "LAUNCH: $LAUNCH"
-          echo "TAG: $TAG"
+          EXTRA=${{ inputs.extra_args }}
+          SSM_PATH="${{ github.head_ref || github.ref_name }}"
           python scripts/ami-builder.py \
-            --tag $TAG \
-            --endpoint "${{ secrets.AZ_AMI_ENDPOINT }}" \
-            ${{ inputs.images }} $LAUNCH
+            --endpoint "${{ secrets.AMI_ENDPOINT }}" \
+            --ssm-path $SSM_PATH \
+            ${{ inputs.images }} $LAUNCH $EXTRA
 

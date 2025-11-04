@@ -22,6 +22,7 @@ ENV DEFAULT_ENV=python3 \
     XDG_CACHE_DIR=$CACHE_DIR \
     PIP_CACHE_DIR=$CACHE_DIR/pip \
     UV_CACHE_DIR=$CACHE_DIR/uv \
+    UV_LINK_MODE=copy \
     # for vscode
     CODE_EXECUTABLE=code-server \
     CODE_EXTENSIONSDIR=$HOME/.local/share/code-server/extensions \

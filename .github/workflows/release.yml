@@ -63,15 +63,12 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Tag main images with release tags
-        id: push
+      
+      - name: Export the locks
         run: |
           python scripts/build.py --debug --no-build \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.event.release.target_commitish }}" \
-              --release "${{ github.event.release.tag_name }}" \
-              --trigger-ecr --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }} \
               --export-lock "${{ matrix.image }}"
             
           # pack lock files into a zip file
@@ -89,6 +86,14 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ./${{ matrix.image }}-environment-locks.zip
+
+      - name: Tag main images with release tags
+        run: |
+          python scripts/build.py --debug --no-build \
+              --registry "$REGISTRY" --repository "${{ github.repository }}" \
+              --tag "${{ github.event.release.target_commitish }}" \
+              --release "${{ github.event.release.tag_name }}" \
+              --trigger-ecr --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }}
   
   release-ami:
     needs: prep-release
@@ -113,9 +118,12 @@ jobs:
         run: |            
           echo "++++ Creating the AMIs ++++"
           IMAGES="${{ join(fromJson(needs.prep-release.outputs.images), ' ') }}"
+          TAG="${{ github.event.release.target_commitish }}"
           echo "The ami images: $IMAGES"
-          python scripts/ami-builder.py \
-              --tag stable \
-              --endpoint "${{ secrets.AZ_AMI_ENDPOINT }}" \
-              --launch \
-              $IMAGES
+          echo "release tag: $TAG"
+          echo "Copy develop to stable"
+          python scripts/ami-builder.py --src develop --ssm-path stable \
+              --endpoint "${{ secrets.AMI_ENDPOINT }}"
+          echo "Copy develop to $TAG"
+          python scripts/ami-builder.py --src develop --ssm-path $TAG \
+              --endpoint "${{ secrets.AMI_ENDPOINT }}"
