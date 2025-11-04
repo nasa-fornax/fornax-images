@@ -7,8 +7,8 @@ set -o pipefail
 
 
 pythonenv=py-multiband_photometry
-astrometry_commit=1b7d716
-tractor_commit=8059ae0
+astrometry_version=0.97
+tractor_commit=8dc2bd8
 
 
 source $ENV_DIR/$pythonenv/bin/activate
@@ -23,10 +23,10 @@ export PKG_CONFIG_PATH=/opt/envs/base
 
 # Install astrometry.net and tractor
 cd /tmp
-git clone https://github.com/dstndstn/astrometry.net.git
-cd astrometry.net
-git config --global --add safe.directory $PWD
-git checkout $astrometry_commit
+folder=astrometry.net-$astrometry_version
+curl -SsLO https://github.com/dstndstn/astrometry.net/releases/download/0.97/$folder.tar.gz
+tar -zxvf $folder.tar.gz && rm $folder.tar.gz
+cd $folder
 make
 make py
 make extra
@@ -37,10 +37,20 @@ cd /tmp
 git clone https://github.com/dstndstn/tractor.git
 cd tractor
 git checkout $tractor_commit
+### -- patch import_array() -- ##
+find "tractor" -type f -name "*.i" | while read -r file; do
+    if grep -q 'import_array();' "$file"; then
+        echo "Patching: $file"
+        cp "$file" "$file.bak"
+        # Replace the line safely using sed
+        sed -i 's/import_array();/if (_import_array() < 0) return -1;/' "$file"
+    fi
+done
+### -------------------------- ##
 python setup.py build_ext --inplace --with-cython
 uv pip install --no-cache . --no-build-isolation  --target ${TARGET_DIR}
 cd $HOME
-rm -rf /tmp/astrometry.net /tmp/tractor
+rm -rf $folder /tmp/tractor
 
 # clean up
 uv pip uninstall cython setuptools
