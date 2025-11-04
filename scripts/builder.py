@@ -274,7 +274,8 @@ class Builder(TaskRunner):
         source_tag: str
             The tag name for the image (no repo name)
         release_tags: list
-            A list of target tag names for the release (no repo name)
+            A list of target tag names for the release (no repo name).
+            It can be None if we are doing export_lock only
         images: list or None
             The list of images to tag for release. By default, all images
         export_lock: bool
@@ -301,26 +302,29 @@ class Builder(TaskRunner):
             self.out(f"Pulling {full_source_tag} ...")
             self.run(command, timeout=1000)
 
-            # if we are releasing from main, add a stable tag
-            if source_tag == 'main' and 'stable' not in release_tags:
-                release_tags.append('stable')
-
+            # export locks if requested
             if export_lock and image in ['fornax-main', 'fornax-hea']:
                 self.export_lockfiles(image, source_tag)
 
-            # loog through release tags
-            for release_tag in release_tags:
-                full_release_tag = self.get_full_tag(image, release_tag)
+            # release_tags can be None if we are doing export lock only
+            if release_tags is not None:
+                # if we are releasing from main, add a stable tag
+                if source_tag == 'main' and 'stable' not in release_tags:
+                    release_tags.append('stable')
 
-                # tag
-                command = f'docker tag {full_source_tag} {full_release_tag}'
-                self.out(f"Tagging {full_source_tag} with {full_release_tag}")
-                self.run(command, timeout=1000)
+                # loog through release tags
+                for release_tag in release_tags:
+                    full_release_tag = self.get_full_tag(image, release_tag)
 
-                # push
-                command = f'docker push {full_release_tag}'
-                self.out(f"Pushing {full_release_tag} ...")
-                self.run(command, timeout=1000)
+                    # tag
+                    command = f'docker tag {full_source_tag} {full_release_tag}'
+                    self.out(f"Tagging {full_source_tag} with {full_release_tag}")
+                    self.run(command, timeout=1000)
+
+                    # push
+                    command = f'docker push {full_release_tag}'
+                    self.out(f"Pushing {full_release_tag} ...")
+                    self.run(command, timeout=1000)
 
     def push_to_ecr(
         self, endpoints, source_tag, release_tags=None, images=None

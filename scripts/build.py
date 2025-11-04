@@ -176,8 +176,9 @@ if __name__ == '__main__':
     builder.out('+++++++++++++', logging.DEBUG)
 
 
-    # we are either building or releasing
-    if release is not None:
+    # we are either building or releasing;
+    # Also, we use the release function when export_lock=True
+    if release is not None or export_lock:
         # if releasing, tag all images
         if images is None:
             images = [
@@ -191,7 +192,7 @@ if __name__ == '__main__':
             # but using the release function for re-tagging
             builder.release('develop', ['main'], images=None)
 
-        # do the release
+        # do the release; if release is None, we are exporting the locks
         builder.release(tag, release, images, export_lock)
 
         if trigger_ecr:
