@@ -169,6 +169,7 @@ if __name__ == '__main__':
     builder.out(f'release: {release}', logging.DEBUG)
     builder.out(f'update_lock: {update_lock}', logging.DEBUG)
     builder.out(f'export_lock: {export_lock}', logging.DEBUG)
+    builder.out(f'trigger_ecr: {trigger_ecr}', logging.DEBUG)
     builder.out(f'no_build: {no_build}', logging.DEBUG)
     builder.out(f'build_args: {build_args}', logging.DEBUG)
     builder.out(f'extra_pars: {extra_pars}', logging.DEBUG)
@@ -222,3 +223,6 @@ if __name__ == '__main__':
             if push:
                 builder.push(image, tag)
                 builder.push(image, time_tag)
+        
+        if trigger_ecr:
+            builder.push_to_ecr(ecr_endpoint, tag, release_tags=None, images=to_build)
