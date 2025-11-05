@@ -150,6 +150,17 @@ RUN update-notebooks.sh && link-notebooks.sh
 # SUPPORT_DATA_MOUNT can be set by JH
 RUN ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
 
+# Add ldap-related config #
+USER root
+RUN cat <<'EOF' > /etc/ldap.conf
+base dc=fornax,dc=core              
+uri ldap://glauth.fornax.core:30389 
+ldap_version 3                      
+binddn cn=svcacct,dc=fornax,dc=core 
+bindpw T3mp3rman3nt 
+EOF
+USER $NB_USER
+
 # ==== Start ONBUILD commands ==== #
 # These commands run in images the inherit fornax-images
 # ================================ #
