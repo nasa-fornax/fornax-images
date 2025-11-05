@@ -36,6 +36,7 @@ jobs:
           LAUNCH=${{ inputs.launch && '--launch' || '' }}
           EXTRA=${{ inputs.extra_args }}
           SSM_PATH="${{ github.head_ref || github.ref_name }}"
+          export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
           python scripts/ami-builder.py \
             --endpoint "${{ secrets.AMI_ENDPOINT }}" \
             --ssm-path $SSM_PATH \
