@@ -6,12 +6,6 @@ if [ -z $SUPPORT_DATA_DIR ]; then
     exit 1
 fi
 
-# First remove the existing, inevitably broken because it is pointing to a non-mounted Fornax resource, directory -
-#  there is some directory-checking logic here because another of the build scripts may have already done this
-[ -L $SUPPORT_DATA_DIR ] && ! [ -e $SUPPORT_DATA_DIR ] && rm $SUPPORT_DATA_DIR
-# Then make a new support data directory
-mkdir -p $SUPPORT_DATA_DIR
-
 # install ciao; do it in a script instead of yml file so
 # get more control over the spectral data files
 WORKDIR=/tmp/ciao
