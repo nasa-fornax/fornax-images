@@ -125,6 +125,17 @@ RUN cd /tmp/ && \
       xargs bash /usr/local/bin/apt-install.sh; \
       rm apt.txt; \
     fi
+# Add ldap-related config; related to libnss-ldap
+RUN sed -i 's/passwd:         files/passwd:         files ldap/g' /etc/nsswitch.conf \
+&& sed -i 's/group:          files/group:          files ldap/g' /etc/nsswitch.conf \
+&& cat <<'EOF' > /etc/ldap.conf
+base dc=fornax,dc=core              
+uri ldap://glauth.fornax.core:30389 
+ldap_version 3                      
+binddn cn=svcacct,dc=fornax,dc=core
+bindpw T3mp3rman3nt 
+pam_password clear
+EOF
 
 # reset user and location
 WORKDIR ${HOME}
@@ -150,16 +161,6 @@ RUN update-notebooks.sh && link-notebooks.sh
 # SUPPORT_DATA_MOUNT can be set by JH
 RUN ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
 
-# Add ldap-related config #
-USER root
-RUN cat <<'EOF' > /etc/ldap.conf
-base dc=fornax,dc=core              
-uri ldap://glauth.fornax.core:30389 
-ldap_version 3                      
-binddn cn=svcacct,dc=fornax,dc=core 
-bindpw T3mp3rman3nt 
-EOF
-USER $NB_USER
 
 # ==== Start ONBUILD commands ==== #
 # These commands run in images the inherit fornax-images
