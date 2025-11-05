@@ -2,6 +2,8 @@
 import requests
 import argparse
 import logging
+import os
+import re
 
 # logging
 logging.basicConfig(
@@ -11,6 +13,57 @@ logging.basicConfig(
 
 logger = logging.getLogger('::AMI-Builder::')
 logger.setLevel(level=logging.DEBUG)
+
+def get_image_date_tag(image):
+    """Use GH API to look up the data tag give a name tag
+    
+    Parameters:
+    ----------
+    image: str
+        image from fornax-images repo of the form: image:tag
+    
+    """
+    parts = image.split(':')
+    if len(parts) != 2:
+        raise ValueError(f'Expected image:tag, but got {image}')
+    image = parts[0]
+    input_tag = parts[1]
+
+    GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', None)
+    if GITHUB_TOKEN is None:
+        raise ValueError('GITHUB_TOKEN not defined')
+    headers = {
+        "Authorization": f"Bearer {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    session = requests.Session()
+
+    # get all tags
+    url = f'https://api.github.com/users/nasa-fornax/packages/container/fornax-images%2F{image}/versions'
+    matched_tags = []
+    while url and len(matched_tags) == 0:
+        resp = session.get(url, headers=headers)
+        resp.raise_for_status()
+        data = resp.json()
+        for version in data:
+            tags = version.get("metadata", {}).get("container", {}).get("tags", [])
+            name = version.get('name', None)
+            if input_tag in tags:
+                matched_tags = tags
+                break
+        # pagination
+        url = None
+        if "Link" in resp.headers:
+            links = resp.headers["Link"].split(",")
+            for link in links:
+                if 'rel="next"' in link:
+                    url = link.split(";")[0].strip()[1:-1]
+    
+    pattern = re.compile(r"\d{8}_\d{4}")
+    matches = [tag for tag in matched_tags if pattern.search(tag)]
+    date_tag = matches[0] if len(matches) == 1 else None
+    return date_tag
+
 
 
 def main():
@@ -63,7 +116,7 @@ def main():
     dst = args.dst
     ami_endpoint = args.endpoint
 
-    logger.info(f'images: {images}')
+    logger.info(f'passed images: {images}')
     logger.info(f'passed ssm-path: {ssm_path}')
     logger.info(f'passed src: {src}')
     logger.info(f'passed dst: {dst}')
@@ -74,10 +127,19 @@ def main():
     for image in images:
         if ':' not in image:
             raise ValueError(f'image {image} has not tag')
+    
+    # Find the date tag for the passed images
+    date_images = []
+    for image in images:
+        name, tag = image.split(':')
+        date_tag = get_image_date_tag(image)
+        if date_tag is None:
+            raise ValueError(f'Cannot find a date tag for {image}')
+        date_images.append(f'{name}:{date_tag}')
 
     # prepare parameters
     params = {
-        'images': images,
+        'images': date_images,
         'ssm_path': ssm_path,
         'launch': launch
     }
