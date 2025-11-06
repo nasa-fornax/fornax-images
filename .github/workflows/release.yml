@@ -96,9 +96,9 @@ jobs:
               --trigger-ecr --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }}
   
   release-ami:
-    needs: prep-release
+    needs: release-images
     runs-on: ubuntu-latest
-
+    if: github.event.release.target_commitish == 'main'
     steps:
 
       - name: Checkout repository
@@ -116,14 +116,6 @@ jobs:
       
       - name: Trigger ami release
         run: |            
-          echo "++++ Creating the AMIs ++++"
-          IMAGES="${{ join(fromJson(needs.prep-release.outputs.images), ' ') }}"
-          TAG="${{ github.event.release.target_commitish }}"
-          echo "The ami images: $IMAGES"
-          echo "release tag: $TAG"
-          echo "Copy develop to stable"
+          echo "++++ Copy develop AMI to stable ++++ "
           python scripts/ami-builder.py --src develop --ssm-path stable \
-              --endpoint "${{ secrets.AMI_ENDPOINT }}"
-          echo "Copy develop to $TAG"
-          python scripts/ami-builder.py --src develop --ssm-path $TAG \
               --endpoint "${{ secrets.AMI_ENDPOINT }}"
