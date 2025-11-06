@@ -119,3 +119,7 @@ jobs:
           echo "++++ Copy develop AMI to stable ++++ "
           python scripts/ami-builder.py --src develop --ssm-path stable \
               --endpoint "${{ secrets.AMI_ENDPOINT }}"
+          RELEASE="${{ github.event.release.tag_name }}"
+          echo "++++ Copy develop AMI to release: $RELEASE ++++ "
+          python scripts/ami-builder.py --src develop --ssm-path $RELEASE \
+              --endpoint "${{ secrets.AMI_ENDPOINT }}"
