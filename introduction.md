@@ -1,10 +1,10 @@
 
-<img src="https://nasa-fornax.github.io/fornax-demo-notebooks/_static/fornax_logo.png" alt="Fornax Science Console"
+<img src="https://raw.githubusercontent.com/nasa-fornax/fornax-documentation/refs/heads/main/_static/fornax_logo.png" alt="Fornax Science Console"
     style="float: right; width: 200px; margin: 10px;" />
 
 # Documentation & Support
 The general documentation for using the Fornax Science Console are available in 
-the [documentation page](https://nasa-fornax.github.io/fornax-documentation/).
+the [documentation page](https://docs.fornax.sciencecloud.nasa.gov/).
 Help and support is available in the [Fornax discource forum](https://discourse.fornax.sciencecloud.nasa.gov).
 
 # Notebooks
@@ -20,6 +20,10 @@ terminal.
 
 ---
 # Latest Changes
+
+## 25.1106
+- Minor fixes and updates (pip in the jupyter environment; tractor install, uv pip).
+- Updates to the deployment infrastructure.
 
 ## 25.1006
 - Add XMM SAS software to the high energy image.
