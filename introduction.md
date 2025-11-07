@@ -21,8 +21,8 @@ terminal.
 ---
 # Latest Changes
 
-## 25.1106
-- Minor fixes and updates (pip in the jupyter environment; tractor install, uv pip).
+## 25.1110
+- Minor fixes and updates (pip in the jupyter environment; tractor install, uv pip, lsdb in ztf environment).
 - Updates to the deployment infrastructure.
 
 ## 25.1006
