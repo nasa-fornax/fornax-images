@@ -129,7 +129,7 @@ RUN cd /tmp/ && \
 RUN \
 # && sed -i 's/passwd:         files/passwd:         files ldap/g' /etc/nsswitch.conf \
 # && sed -i 's/group:          files/group:          files ldap/g' /etc/nsswitch.conf \
-&& cat <<'EOF' > /etc/ldap.conf
+cat <<'EOF' > /etc/ldap.conf
 base dc=fornax,dc=core              
 uri ldap://glauth.fornax.core:30389 
 ldap_version 3                      
