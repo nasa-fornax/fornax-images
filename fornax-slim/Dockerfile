@@ -3,9 +3,9 @@ ARG BASE_TAG=latest
 ARG REPOSITORY=nasa-fornax/fornax-images
 ARG REGISTRY=ghcr.io
 
-FROM ${REGISTRY}/${REPOSITORY}/fornax-base:${BASE_TAG} as base
-FROM ${REGISTRY}/${REPOSITORY}/fornax-main:${BASE_TAG} as fornax_main
-FROM ${REGISTRY}/${REPOSITORY}/fornax-hea:${BASE_TAG} as fornax_hea
+FROM ${REGISTRY}/${REPOSITORY}/fornax-base:${BASE_TAG} AS base
+FROM ${REGISTRY}/${REPOSITORY}/fornax-main:${BASE_TAG} AS fornax_main
+FROM ${REGISTRY}/${REPOSITORY}/fornax-hea:${BASE_TAG} AS fornax_hea
 
 FROM scratch
 
