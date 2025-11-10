@@ -15,7 +15,8 @@ IMAGE_ORDER = (
     'fornax-base',
     'fornax-main',
     'fornax-hea',
-    'fornax-slim'
+    'fornax-slim',
+    'support-data'
 )
 
 COMMON_FILES = [
