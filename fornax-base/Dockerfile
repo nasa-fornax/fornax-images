@@ -112,6 +112,7 @@ else
   echo DEFAULT_ENV=\$DEFAULT_ENV not found
 fi
 ACTIVATE
+COPY add-dot-profile.sh /usr/local/bin/before-notebook.d/
 RUN cat /tmp/activate.sh >> /etc/bash.bashrc \
  && cat /tmp/activate.sh  >> /usr/local/bin/before-notebook.d/10activate-env.sh \
  && echo "bash /usr/local/bin/link-notebooks.sh" > /usr/local/bin/before-notebook.d/20link-notebooks.sh \
