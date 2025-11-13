@@ -23,6 +23,7 @@ terminal.
 
 ## 25.1110
 - Minor fixes and updates (pip in the jupyter environment; tractor install, uv pip, lsdb in ztf environment).
+- Update fornax-labextension to open hub links (hub control and logout) in the page (v0.1.8).
 - Updates to the deployment infrastructure.
 
 ## 25.1006
