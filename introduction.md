@@ -21,10 +21,16 @@ terminal.
 ---
 # Latest Changes
 
-## 25.1110
-- Minor fixes and updates (pip in the jupyter environment; tractor install, uv pip, lsdb in ztf environment).
+## 25.1119
 - Update fornax-labextension to open hub links (hub control and logout) in the page (v0.1.8).
-- Updates to the deployment infrastructure.
+- Updates to the deployment infrastructure (kernel files in the images).
+- Terminals now call ~/.bashrc (#125).
+- Several fixes and updates:
+  - Add pip to the jupyter environment for extension installs.
+  - Fix tractor install.
+  - Fix `%pip` in notebooks (#122).
+  - Update lsdb in the ztf environment.
+  - Add terminal culling.
 
 ## 25.1006
 - Add XMM SAS software to the high energy image.
