@@ -11,6 +11,11 @@ on:
         required: true
         type: boolean
         default: false
+      prod:
+        description: 'prod?'
+        required: true
+        type: boolean
+        default: false
       extra_args:
         description: 'extra args for ami-builder.py (e.g. --src .. when copying)'
         type: string
@@ -34,11 +39,12 @@ jobs:
           echo "launch? ${{ inputs.launch }}"
           echo "extra ${{ inputs.extra_args }}"
           LAUNCH=${{ inputs.launch && '--launch' || '' }}
+          ENDPOINT="${{ inputs.prod && secrets.AMI_ENDPOINT_PROD || secrets.AMI_ENDPOINT }}"
           EXTRA="${{ inputs.extra_args }}"
           SSM_PATH="${{ github.head_ref || github.ref_name }}"
           export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
           python scripts/ami-builder.py \
-            --endpoint "${{ secrets.AMI_ENDPOINT }}" \
+            --endpoint $ENDPOINT \
             --ssm-path $SSM_PATH \
             ${{ inputs.images }} $LAUNCH $EXTRA
 

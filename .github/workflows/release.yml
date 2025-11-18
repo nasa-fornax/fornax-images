@@ -89,11 +89,12 @@ jobs:
 
       - name: Tag main images with release tags
         run: |
+          ENDPOINT="${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }}"
           python scripts/build.py --debug --no-build \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.event.release.target_commitish }}" \
               --release "${{ github.event.release.tag_name }}" \
-              --trigger-ecr --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }}
+              --trigger-ecr --ecr-endpoint $ENDPOINT
   
   release-ami:
     needs: release-images
@@ -117,9 +118,10 @@ jobs:
       - name: Trigger ami release
         run: |            
           echo "++++ Copy develop AMI to stable ++++ "
+          ENDPOINT="${{ secrets.AMI_ENDPOINT }} ${{ secrets.AMI_ENDPOINT_PROD }}"
           python scripts/ami-builder.py --src develop --ssm-path stable \
-              --endpoint "${{ secrets.AMI_ENDPOINT }}"
+              --endpoint $ENDPOINT
           RELEASE="${{ github.event.release.tag_name }}"
           echo "++++ Copy develop AMI to release: $RELEASE ++++ "
           python scripts/ami-builder.py --src develop --ssm-path $RELEASE \
-              --endpoint "${{ secrets.AMI_ENDPOINT }}"
+              --endpoint $ENDPOINT
