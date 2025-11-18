@@ -45,6 +45,9 @@ RUN mkdir -p $JUPYTER_DIR/share/jupyter/lab/settings/ \
  && jupyter labextension disable "@jupyterlab/apputils-extension:announcements" \
  && fix-permissions $JUPYTER_DIR
 COPY --chown=$NB_UID:$NB_GID overrides.json $JUPYTER_DIR/share/jupyter/lab/settings/
+# Copy our jupyter server config file
+COPY jupyter_server_config.py /tmp/
+RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py
 
 # Copy our scripts
 COPY --chmod=0777 --chown=$NB_UID:$NB_GID scripts/*.sh update-notebooks.sh link-notebooks.sh /usr/local/bin/
