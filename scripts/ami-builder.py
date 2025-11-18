@@ -95,7 +95,7 @@ def main():
     )
 
     ap.add_argument(
-        '--endpoint',
+        '--endpoint', nargs='+',
         required=True,
         help='Trigger endpoint'
     )
@@ -114,14 +114,14 @@ def main():
     ssm_path = args.ssm_path
     src = args.src
     dst = args.dst
-    ami_endpoint = args.endpoint
+    ami_endpoints = args.endpoint
 
     logger.info(f'passed images: {images}')
     logger.info(f'passed ssm-path: {ssm_path}')
     logger.info(f'passed src: {src}')
     logger.info(f'passed dst: {dst}')
     logger.info(f'launch?: {launch}')
-    logger.info(f'endpoint: ***')
+    logger.info(f'endpoints: {len(ami_endpoints)}')
 
     # ensure images have tags
     for image in images:
@@ -150,7 +150,9 @@ def main():
     # params['version'] = 1.33  # eks version
 
     logger.info(f'Calling the builder with params ... {params}')
-    req = requests.post(ami_endpoint, json=params)
+    for ie, ami_endpoint in enumerate(ami_endpoints):
+        logger.info(f'Calling endpoint {ie+1}')
+        req = requests.post(ami_endpoint, json=params)
     
     logger.info(f'status: {req.status_code}')
     logger.info(f'text: {req.text}')
