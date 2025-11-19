@@ -50,7 +50,7 @@ COPY jupyter_server_config.py /tmp/
 RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py
 
 # Copy our scripts
-COPY --chmod=0777 --chown=$NB_UID:$NB_GID scripts/*.sh update-notebooks.sh link-notebooks.sh /usr/local/bin/
+COPY --chmod=0777 --chown=$NB_UID:$NB_GID scripts/* update-notebooks.sh link-notebooks.sh /usr/local/bin/
 USER $NB_USER
 
 
@@ -92,7 +92,7 @@ RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
 
 ## install DEFAULT_ENV ##
 COPY --chown=$NB_UID:$NB_GID requirements-$DEFAULT_ENV.txt /tmp/
-RUN cd /tmp/ && bash /usr/local/bin/uv-env-install.sh \
+RUN cd /tmp/ && bash /usr/local/bin/setup-pip-env \
  # fix the display name of DEFAULT_ENV
  && $ENV_DIR/$DEFAULT_ENV/bin/python -m ipykernel install --name $DEFAULT_ENV \
     --prefix $JUPYTER_DIR --display-name "$DEFAULT_ENV"
@@ -187,8 +187,8 @@ ONBUILD COPY --chown=$NB_UID:$NB_GID build-* requirements-* conda-* $HOME/build/
 ONBUILD USER $NB_USER
 
 # # setup uv environments
-ONBUILD RUN cd build && bash /usr/local/bin/uv-env-install.sh \
- && bash /usr/local/bin/conda-env-install.sh
+ONBUILD RUN cd build && bash /usr/local/bin/setup-pip-env \
+ && bash /usr/local/bin/setup-conda-env
 # # ----------------------- #
 
 # Any other build-* scripts; e.g. build tractor, heasoft etc #

@@ -36,7 +36,7 @@ done
 rm requirements_*
 
 
-bash /usr/local/bin/uv-env-install.sh
+bash /usr/local/bin/setup-pip-env
 
 cd /tmp/
 rm -rf fornax-demo-notebooks build

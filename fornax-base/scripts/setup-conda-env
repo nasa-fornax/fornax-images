@@ -12,20 +12,19 @@ fi
 
 if [[ "$envdir" == "-h" || "$envdir" == "--help" ]]; then
     echo "
-    Setup conda-based python environment using micromamba.
-    Also setup the corresponding notebook kernel.
+    Setup conda-based python environment using micromamba, along with the notebook kernel.
 
-    USAGE: $0 environment_dir
+    USAGE:
     -----
 
       1. Create a standard conda yaml file named: conda-{env_name}.yml.
     Where {env_name} is the name of your environment.
     
-      2. environment_dir is the directory where you want the environment to be installed.
+      2. Call 'setup-conda-env {env_dir}' where env_dir is the directory where you want the environment to be installed.
     Use: ~/user-envs/ if you want them to persist.
-    If not given, install in \$ENV_DIR, which is reset with a new session.
+    If not given, the environment is installed in \$ENV_DIR, which is reset with a new session.
     
-    Activate with: micromamba activate environment_dir/env_name
+    Activate with: micromamba activate {env_dir}/{env_name}
     "
     exit 0
 fi

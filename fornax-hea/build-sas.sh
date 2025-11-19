@@ -112,7 +112,7 @@ dependencies:
 EOF
 
 # Use the yml to create the SAS env
-bash /usr/local/bin/conda-env-install.sh
+bash /usr/local/bin/setup-conda-env
 ###########################################################
 
 

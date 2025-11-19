@@ -11,20 +11,19 @@ fi
 
 if [[ "$envdir" == "-h" || "$envdir" == "--help" ]]; then
     echo "
-    Setup pip-based python environment using uv.
-    Also setup the corresponding notebook kernel.
+    Setup pip-based python environment using uv, along with the notebook kernel.
 
-    USAGE: $0 environment_dir
+    USAGE: setup-pip-env environment_dir
     -----
 
       1. Create a standard requirements text file named: requirements-{env_name}.txt.
     Where {env_name} is the name of your environment.
     
-      2. environment_dir is the directory where you want the environment to be installed.
+      2. Call 'setup-pip-env {env_dir}' where {env_dir} is the directory where you want the environment to be installed.
     Use: ~/user-envs/ if you want them to persist.
-    If not given, install in \$ENV_DIR, which is reset with a new session.
+    If not given, the environment is installed in \$ENV_DIR, which is reset with a new session.
     
-    Activate with: source environment_dir/env_name/bin/activate
+    Activate with: source {env_dir}/{env_name}/bin/activate
 "
     exit 0
 fi

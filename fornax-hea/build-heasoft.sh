@@ -33,7 +33,7 @@ dependencies:
 EOF
 
 # Use conda-heasoft.yml to create the heasoft env
-bash /usr/local/bin/conda-env-install.sh
+bash /usr/local/bin/setup-conda-env
 
 # remove refdata that comes in the package. We'll use a the one in SUPPORT_DATA_DIR instead.
 rm -rf $ENV_DIR/heasoft/heasoft/refdata
