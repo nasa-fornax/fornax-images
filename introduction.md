@@ -21,8 +21,9 @@ terminal.
 ---
 # Latest Changes
 
-## 25.1119
+## 25.1120
 - Update fornax-labextension to open hub links (hub control and logout) in the page (v0.1.8).
+- Make conda-env-install and uv-env-install generic.
 - Updates to the deployment infrastructure (kernel files in the images).
 - Terminals now call ~/.bashrc (#125).
 - Several fixes and updates:
