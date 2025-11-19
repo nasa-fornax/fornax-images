@@ -61,7 +61,11 @@ for envfile in `ls conda-*.yml`; do
     
     # Run the kernel with 'conda run -n $env', so the etc/condat/activate.d scripts
     # are called correctly; this is needed when jupyterlab is running outside the kernel
-    jq ".argv = [\"/usr/local/bin/micromamba\", \"run\", \"-p\", \"$envdir/$env\", \"-r\", \"$envdir/..\", \"python\"] + .argv[1:]" $KERNEL_JSON > /tmp/tmp.$$.json
+    # we also ensure PATH and VIRTUAL_ENV are set; the latter for uv to work
+    jq ".argv = [\"/usr/local/bin/micromamba\", \"run\", \"-p\", \"$envdir/$env\", \"-r\", \"$envdir/..\", \"python\"] + .argv[1:]
+        | .env = (.env // {}) 
+        | .env.PATH = \"$envdir/$env/bin:$PATH\" 
+        | .env.VIRTUAL_ENV = \"$envdir/$env\"" $KERNEL_JSON > /tmp/tmp.$$.json
     mv /tmp/tmp.$$.json $KERNEL_JSON
     if [ "$envdir" == "$ENV_DIR" ]; then
         # save lock file
