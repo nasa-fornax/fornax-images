@@ -207,6 +207,8 @@ if __name__ == '__main__':
 
         builder.out(f'Images to build: {to_build}', logging.DEBUG)
         time_tag = datetime.now().strftime('%Y%m%d_%H%M')
+        if build_args is None:
+            build_args = []
         for image in to_build:
             builder.out(f'Working on: {image}', logging.DEBUG)
 
@@ -215,7 +217,8 @@ if __name__ == '__main__':
 
             if not no_build:
                 builder.build(
-                    image, tag, build_args, extra_pars, extra_tags=[time_tag]
+                    image, tag, build_args + [f'BUILD_VERSION={image}:{time_tag}'],
+                    extra_pars, extra_tags=[time_tag]
                 )
 
             if update_lock:
