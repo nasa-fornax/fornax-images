@@ -11,6 +11,7 @@ default_kernel = 'heasoft'
 notebook_dir = os.environ.get('NOTEBOOK_DIR', '/home/jovyan/fornax-notebooks')
 notebooks = {}
 
+KERNELS = ['python3', 'heasoft', 'sas', 'ciao', 'fermi']
 
 def test_python_path():
     CommonTests._test_python_path(default_kernel, env_root)
@@ -82,3 +83,7 @@ def test_xmm_sas():
     print()
     print(result.stdout)
     print()
+
+def test_notebook_kernels():
+    """Kernel defnitions should exist"""
+    CommonTests.test_kernels_exist(KERNELS)

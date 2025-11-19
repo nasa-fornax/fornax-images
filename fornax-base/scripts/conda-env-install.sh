@@ -43,7 +43,7 @@ for envfile in `ls conda-*.yml`; do
     fi
     echo "Creating $env ..."
     if [ "$envdir" == "$ENV_DIR" ]; then
-        jupyter_spec="--prefix $JUPYTER"
+        jupyter_spec="--prefix $JUPYTER_DIR"
         KERNEL_JSON="$JUPYTER_DIR/share/jupyter/kernels/$env/kernel.json"
     else
         jupyter_spec="--user"

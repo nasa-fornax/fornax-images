@@ -1,6 +1,7 @@
 import sys
 import subprocess
 import os
+import glob
 from pathlib import Path
 import contextlib
 
@@ -72,6 +73,18 @@ class CommonTests:
         result = CommonTests.run_cmd(diff_cmd)
         assert result.stdout == ''
         assert result.stderr == ''
+    
+    @staticmethod
+    def test_kernels_exist(kernels):
+        """Kernel defnitions should exist"""
+        expected = kernels[:]
+        expected.sort()
+
+        kernels_path = f"{jupyter_root}/{jupyter_env}/share/jupyter/kernels"
+        found = [os.path.basename(ker) for ker in glob.glob(f'{kernels_path}/*')]
+        found.sort()
+
+        assert found == expected
 
 
 @contextlib.contextmanager
