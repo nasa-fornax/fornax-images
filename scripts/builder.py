@@ -196,7 +196,7 @@ class Builder(TaskRunner):
             self.run(cmd, 10000)
 
             # ls kernel folder
-            self.run(f'ls {kernels_dir}/*', 100)
+            self.run(f'ls -d {kernels_dir}/*', 100)
 
             # if we are in github actions, always clean the images
             if os.getenv("GITHUB_ACTIONS", "").lower() == "true":
