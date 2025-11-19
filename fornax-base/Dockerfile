@@ -17,6 +17,7 @@ ENV CACHE_DIR=/tmp/cache
 ENV DEFAULT_ENV=python3 \
     MAMBA_ROOT_PREFIX=$MAMBA_ROOT_PREFIX \
     LOCK_DIR=$ENV_DIR/lock \
+    USER_ENV_DIR=$HOME/user-envs \
     XDG_CACHE_HOME=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
@@ -92,7 +93,7 @@ RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
 
 ## install DEFAULT_ENV ##
 COPY --chown=$NB_UID:$NB_GID requirements-$DEFAULT_ENV.txt /tmp/
-RUN cd /tmp/ && bash /usr/local/bin/setup-pip-env \
+RUN cd /tmp/ && bash /usr/local/bin/setup-pip-env <<< yes \
  # fix the display name of DEFAULT_ENV
  && $ENV_DIR/$DEFAULT_ENV/bin/python -m ipykernel install --name $DEFAULT_ENV \
     --prefix $JUPYTER_DIR --display-name "$DEFAULT_ENV"
@@ -187,8 +188,8 @@ ONBUILD COPY --chown=$NB_UID:$NB_GID build-* requirements-* conda-* $HOME/build/
 ONBUILD USER $NB_USER
 
 # # setup uv environments
-ONBUILD RUN cd build && bash /usr/local/bin/setup-pip-env \
- && bash /usr/local/bin/setup-conda-env
+ONBUILD RUN cd build && bash /usr/local/bin/setup-pip-env <<< yes \
+ && bash /usr/local/bin/setup-conda-env <<< yes
 # # ----------------------- #
 
 # Any other build-* scripts; e.g. build tractor, heasoft etc #

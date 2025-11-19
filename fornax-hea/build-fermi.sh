@@ -32,7 +32,7 @@ dependencies:
 EOF
 
 # Use the yml to create the ciao env
-bash /usr/local/bin/setup-conda-env
+bash /usr/local/bin/setup-conda-env  <<< yes
 
 # delete data; create simlinks below
 rm -rf $ENV_DIR/fermi/share/fermitools/refdata

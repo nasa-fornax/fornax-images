@@ -36,7 +36,7 @@ done
 rm requirements_*
 
 
-bash /usr/local/bin/setup-pip-env
+bash /usr/local/bin/setup-pip-env <<< yes
 
 cd /tmp/
 rm -rf fornax-demo-notebooks build

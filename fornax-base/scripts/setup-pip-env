@@ -4,34 +4,54 @@
 
 # emvdir: where to install the new environment
 # if not given, default to ENV_DIR
-envdir=$1
-if [ -z $envdir ]; then
+arg=$1
+if [ -z $arg ]; then
     envdir=$ENV_DIR
-fi
 
-if [[ "$envdir" == "-h" || "$envdir" == "--help" ]]; then
+elif [[ "$arg" == "--user" ]]; then
+    envdir=$USER_ENV_DIR
+
+elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
     echo "
     Setup pip-based python environment using uv, along with the notebook kernel.
 
-    USAGE: setup-pip-env environment_dir
+    USAGE:
     -----
 
       1. Create a standard requirements text file named: requirements-{env_name}.txt.
     Where {env_name} is the name of your environment.
     
-      2. Call 'setup-pip-env {env_dir}' where {env_dir} is the directory where you want the environment to be installed.
-    Use: ~/user-envs/ if you want them to persist.
-    If not given, the environment is installed in \$ENV_DIR, which is reset with a new session.
+      2. Call 'setup-pip-env [--user]' to create the environment and setup the kernel.
+    By default, the new environment will be created in \$ENV_DIR, which is reset with a new session.
+    Pass --user to install in \$USER_ENV_DIR (default to ~/user-envs) that persists between sessions.
     
-    Activate with: source {env_dir}/{env_name}/bin/activate
+    Activate with: source \$ENV_DIR/{env_name}/bin/activate 
+        (or source \$USER_ENV_DIR/{env_name}/bin/activate if you passed --user)
 "
+    exit 0
+else
+    echo "Unknown argument $1"
+    exit 1
+fi
+
+# check if we have files
+shopt -s nullglob
+files=( requirements-*.txt )
+if (( ${#files[@]} > 0 )); then
+    echo "Found ${#files[@]} files:"
+    echo "  $files"
+    read -r -p "Continue? [y/N] " ans
+    case "$ans" in
+        [Yy]*) echo "Installing environment in: $envdir";;
+        *)     exit 0;;
+    esac 
+else
+    echo "No requirements-*.txt files found; see setup-pip-env -h"
     exit 0
 fi
 
-echo "Installing environment in: $envdir"
 
-
-for envfile in `ls requirements-*.txt`; do
+for envfile in ${files[@]}; do
     env=`echo $envfile | sed -n 's/requirements-\(.*\)\.txt/\1/p'`
     if test -f requirements-${env}-lock.txt; then
         ENVFILE=requirements-${env}-lock.txt

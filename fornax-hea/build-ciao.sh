@@ -35,7 +35,7 @@ dependencies:
 EOF
 
 # Use the yml to create the ciao env
-bash /usr/local/bin/setup-conda-env
+bash /usr/local/bin/setup-conda-env <<< yes
 
 
 # delete the model data and caldb; create simlinks below

@@ -5,33 +5,54 @@
 
 # emvdir: where to install the new environment
 # if not given, default to ENV_DIR
-envdir=$1
-if [ -z $envdir ]; then
+arg=$1
+if [ -z $arg ]; then
     envdir=$ENV_DIR
-fi
 
-if [[ "$envdir" == "-h" || "$envdir" == "--help" ]]; then
+elif [[ "$arg" == "--user" ]]; then
+    envdir=$USER_ENV_DIR
+
+elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
     echo "
     Setup conda-based python environment using micromamba, along with the notebook kernel.
 
     USAGE:
     -----
 
-      1. Create a standard conda yaml file named: conda-{env_name}.yml.
+      1. Create a standard conda yaml environment file named: conda-{env_name}.yml.
     Where {env_name} is the name of your environment.
     
-      2. Call 'setup-conda-env {env_dir}' where env_dir is the directory where you want the environment to be installed.
-    Use: ~/user-envs/ if you want them to persist.
-    If not given, the environment is installed in \$ENV_DIR, which is reset with a new session.
+      2. Call 'setup-conda-env [--user]' to create the environment and setup the kernel.
+    By default, the new environment will be created in \$ENV_DIR, which is reset with a new session.
+    Pass --user to install in \$USER_ENV_DIR (default to ~/user-envs) that persists between sessions.
     
-    Activate with: micromamba activate {env_dir}/{env_name}
+    Activate with: micromamba activate \$ENV_DIR/{env_name}
+        (or micromamba activate \$USER_ENV_DIR/{env_name} if you passed --user)
     "
+    exit 0
+else
+    echo "Unknown argument $1"
+    exit 1
+fi
+
+# check if we have files
+shopt -s nullglob
+files=( conda-*.yml conda-*.yaml )
+if (( ${#files[@]} > 0 )); then
+    echo "Found ${#files[@]} files:"
+    echo "  $files"
+    read -r -p "Continue? [y/N] " ans
+    case "$ans" in
+        [Yy]*) echo "Installing environment in: $envdir";;
+        *)     exit 0;;
+    esac 
+else
+    echo "No conda-*.yml files found; ; see setup-conda-env -h"
     exit 0
 fi
 
-echo "Installing environment in: $envdir"
 
-for envfile in `ls conda-*.yml`; do
+for envfile in ${files[@]}; do
     env=`echo $envfile | sed -n 's/conda-\(.*\)\.yml/\1/p'`
     ENVFILE=conda-${env}.yml
     echo "Found $ENVFILE, using it ..."
