@@ -359,9 +359,6 @@ class Builder(TaskRunner):
 
             # release_tags can be None if we are doing export lock only
             if release_tags is not None:
-                # if we are releasing from main, add a stable tag
-                if source_tag == 'main' and 'stable' not in release_tags:
-                    release_tags.append('stable')
 
                 # loog through release tags
                 for release_tag in release_tags:
@@ -412,10 +409,6 @@ class Builder(TaskRunner):
         for image in images_to_process:
             if image not in IMAGE_ORDER:
                 raise ValueError(f'Unknown Requested image {image}.')
-
-        # if we are releasing from main, add a stable tag
-        if source_tag == 'main' and 'stable' not in release_tags:
-            release_tags.append('stable')
 
         # Loop through the images and collect parameters to params
         params = []

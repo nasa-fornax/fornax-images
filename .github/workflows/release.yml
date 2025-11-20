@@ -116,7 +116,7 @@ jobs:
           python scripts/build.py --debug --no-build \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.event.release.target_commitish }}" \
-              --release "${{ github.event.release.tag_name }}" \
+              --release main stable "${{ github.event.release.tag_name }}" \
               --trigger-ecr --ecr-endpoint $ENDPOINT
 
   release-ami:

@@ -196,11 +196,11 @@ if __name__ == '__main__':
         if tag == 'main':
             # this is strictly not a release,
             # but using the release function for re-tagging
-            builder.release('develop', ['main'], images)
+            builder.release('develop', release, images)
 
 
-        if trigger_ecr:
-            builder.push_to_ecr(ecr_endpoint, tag, release, images)
+            if trigger_ecr:
+                builder.push_to_ecr(ecr_endpoint, tag, release, images)
 
     else:
         # get a sorted list of images to build
