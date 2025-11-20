@@ -102,6 +102,13 @@ jobs:
         with:
           python-version: '3.12'
       
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Tag main images with release tags
         run: |
           ENDPOINT="${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }}"
