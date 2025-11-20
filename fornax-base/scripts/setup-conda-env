@@ -40,7 +40,7 @@ shopt -s nullglob
 files=( conda-*.yml conda-*.yaml )
 if (( ${#files[@]} > 0 )); then
     echo "Found ${#files[@]} files:"
-    echo "  $files"
+    printf "  %s\n" "${files[@]}"
     read -r -p "Continue? [y/N] " ans
     case "$ans" in
         [Yy]*) echo "Installing environment in: $envdir";;
