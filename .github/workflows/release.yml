@@ -39,7 +39,7 @@ jobs:
           echo "IMAGE_LIST=${images}" >> $GITHUB_OUTPUT
 
         
-  release-images:
+  upload-locks:
     needs: prep-release
     runs-on: ubuntu-latest
     strategy:
@@ -68,7 +68,7 @@ jobs:
         run: |
           python scripts/build.py --debug --no-build \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
-              --tag "${{ github.event.release.target_commitish }}" \
+              --tag develop \
               --export-lock "${{ matrix.image }}"
             
           # pack lock files into a zip file
@@ -87,15 +87,31 @@ jobs:
         with:
           files: ./${{ matrix.image }}-environment-locks.zip
 
+  
+  release-images:
+    needs: upload-locks
+    runs-on: ubuntu-latest
+    if: github.event.release.target_commitish == 'main'
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
       - name: Tag main images with release tags
         run: |
           ENDPOINT="${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }}"
+          # Note that all images are tagged for release
           python scripts/build.py --debug --no-build \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.event.release.target_commitish }}" \
               --release "${{ github.event.release.tag_name }}" \
               --trigger-ecr --ecr-endpoint $ENDPOINT
-  
+
   release-ami:
     needs: release-images
     runs-on: ubuntu-latest

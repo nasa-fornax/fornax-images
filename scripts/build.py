@@ -176,24 +176,28 @@ if __name__ == '__main__':
     builder.out('+++++++++++++', logging.DEBUG)
 
 
+    # Handle the export_lock first.
+    if export_lock:
+        # Use the release function to do the export lock because they 
+        # share most of the code
+        release = None
+        builder.release(tag, release, images, export_lock)
+        sys.exit(0)
+
     # we are either building or releasing;
-    # Also, we use the release function when export_lock=True
-    if release is not None or export_lock:
-        # if releasing, tag all images
-        if images is None:
-            images = [
-                im for im in IMAGE_ORDER
-                if im.startswith('fornax')
-            ]
+    if release is not None:
+        # we release all images
+        images = [
+            im for im in IMAGE_ORDER
+            if im.startswith('fornax')
+        ]
 
         # if in main, just re-tag from develop
         if tag == 'main':
             # this is strictly not a release,
             # but using the release function for re-tagging
-            builder.release('develop', ['main'], images=None)
+            builder.release('develop', ['main'], images)
 
-        # do the release; if release is None, we are exporting the locks
-        builder.release(tag, release, images, export_lock)
 
         if trigger_ecr:
             builder.push_to_ecr(ecr_endpoint, tag, release, images)
