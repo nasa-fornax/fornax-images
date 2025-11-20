@@ -6,8 +6,7 @@ if [ -z $SUPPORT_DATA_DIR ]; then
     exit 1
 fi
 
-# install ciao; do it in a script instead of yml file so
-# get more control over the spectral data files
+# install Fermitools
 WORKDIR=/tmp/fermi
 mkdir -p $WORKDIR
 cd $WORKDIR
@@ -29,20 +28,16 @@ dependencies:
     - astroquery
     - astropy
     - s3fs
+    - boto3
 EOF
 
 # Use the yml to create the ciao env
-bash /usr/local/bin/conda-env-install.sh
-
+bash /usr/local/bin/setup-conda-env  <<< yes
 
 # delete data; create simlinks below
 rm -rf $ENV_DIR/fermi/share/fermitools/refdata
 
-# Remove these files
-# none
-
-
-# get fermitools version
+# Get fermitools version
 FERMITOOLS_VERSION=$(micromamba list fermitools -p $ENV_DIR/fermi --json | jq -r '.[0].version')
 
 # link data files

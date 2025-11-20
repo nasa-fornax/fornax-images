@@ -7,7 +7,7 @@ if [ -z $SUPPORT_DATA_DIR ]; then
 fi
 
 # install heasoft; do it in a script instead of yml file so
-# get more control over the spectral data files
+# we get more control over the spectral data files
 WORKDIR=/tmp/heasoft
 mkdir -p $WORKDIR
 cd $WORKDIR
@@ -29,20 +29,20 @@ dependencies:
     - astroquery
     - astropy
     - s3fs
+    - boto3
 EOF
 
 # Use conda-heasoft.yml to create the heasoft env
-bash /usr/local/bin/conda-env-install.sh
+bash /usr/local/bin/setup-conda-env <<< yes
 
 # remove refdata that comes in the package. We'll use a the one in SUPPORT_DATA_DIR instead.
 rm -rf $ENV_DIR/heasoft/heasoft/refdata
 
-
-# get heasoft version
+# Extract the heasoft version
 HEA_VERSION=$(micromamba list heasoft -p $ENV_DIR/heasoft --json | jq -r '.[0].version')
 
 # Tweak Xspec settings for a no-X11 environment
-# add xspec and xstar model data from the data location in $headata
+# add xspec model data from the data location
 printf "setplot splashpage off\ncpd /GIF\n" >> $ENV_DIR/heasoft/heasoft/spectral/scripts/global_customize.tcl
 # xspec modelData
 ln -sf $SUPPORT_DATA_DIR/heasoft-${HEA_VERSION}/spectral/modelData $ENV_DIR/heasoft/heasoft/spectral/modelData

@@ -63,15 +63,12 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Tag main images with release tags
-        id: push
+      
+      - name: Export the locks
         run: |
           python scripts/build.py --debug --no-build \
               --registry "$REGISTRY" --repository "${{ github.repository }}" \
               --tag "${{ github.event.release.target_commitish }}" \
-              --release "${{ github.event.release.tag_name }}" \
-              --trigger-ecr --ecr-endpoint ${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }} \
               --export-lock "${{ matrix.image }}"
             
           # pack lock files into a zip file
@@ -89,11 +86,20 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ./${{ matrix.image }}-environment-locks.zip
+
+      - name: Tag main images with release tags
+        run: |
+          ENDPOINT="${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }}"
+          python scripts/build.py --debug --no-build \
+              --registry "$REGISTRY" --repository "${{ github.repository }}" \
+              --tag "${{ github.event.release.target_commitish }}" \
+              --release "${{ github.event.release.tag_name }}" \
+              --trigger-ecr --ecr-endpoint $ENDPOINT
   
   release-ami:
-    needs: prep-release
+    needs: release-images
     runs-on: ubuntu-latest
-
+    if: github.event.release.target_commitish == 'main'
     steps:
 
       - name: Checkout repository
@@ -111,11 +117,11 @@ jobs:
       
       - name: Trigger ami release
         run: |            
-          echo "++++ Creating the AMIs ++++"
-          IMAGES="${{ join(fromJson(needs.prep-release.outputs.images), ' ') }}"
-          echo "The ami images: $IMAGES"
-          python scripts/ami-builder.py \
-              --tag stable \
-              --endpoint "${{ secrets.AZ_AMI_ENDPOINT }}" \
-              --launch \
-              $IMAGES
+          echo "++++ Copy develop AMI to stable ++++ "
+          ENDPOINT="${{ secrets.AMI_ENDPOINT }} ${{ secrets.AMI_ENDPOINT_PROD }}"
+          python scripts/ami-builder.py --src develop --ssm-path stable \
+              --endpoint $ENDPOINT
+          RELEASE="${{ github.event.release.tag_name }}"
+          echo "++++ Copy develop AMI to release: $RELEASE ++++ "
+          python scripts/ami-builder.py --src develop --ssm-path $RELEASE \
+              --endpoint $ENDPOINT

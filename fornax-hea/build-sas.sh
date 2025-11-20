@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
-# Build script to setup a conda environment for XMM's SAS toolkit - based on the 
-#  build-ciao.sh script and the SciServer XMMSAS dockerfile 
+# Build script to setup a conda environment for XMM's SAS toolkit - based on the
+#  build-ciao.sh script and the SciServer XMMSAS dockerfile
 #  (https://github.com/sciserver/sciserver-compute-images/blob/master/heasarc/xmmsas/Dockerfile)
 
 
@@ -107,30 +107,16 @@ dependencies:
     - astroquery
     - astropy
     - s3fs
+    - boto3
+    - xmmpysas
 EOF
 
 # Use the yml to create the SAS env
-bash /usr/local/bin/conda-env-install.sh
+bash /usr/local/bin/setup-conda-env <<< yes
 ###########################################################
 
 
-############ Installing SAS Python requirements ###########
-# REMOVING REQUIREMENTS
-# Use the Python requirements file included in the SAS directory to install
-#  the module that it wants for some included Python bits (e.g. pySAS)
-# We remove the pyDS9 requirement - the package is archived, and making it on Fornax would be a waste of time
-sed -i '/pyds9/d' sas_python_packages.txt
-# We're already inside a JupyterLab environment in Fornax images, so we certainly don't need to install notebook
-sed -i '/notebook/d' sas_python_packages.txt
-# And we've already installed pytest through conda, so we don't need to do it again
-sed -i '/pytest/d' sas_python_packages.txt
-
-# ADDING REQUIREMENTS
-# We do require that aplpy + xmmpysas is installed as well
-sed -i '$ a\aplpy' sas_python_packages.txt
-sed -i '$ a\xmmpysas' sas_python_packages.txt
-micromamba run -n $ENV_NAME pip install -r sas_python_packages.txt --no-cache-dir
-
+############ Updating the environment lock file ###########
 # Updating the lock file and moving it to the lock file directory
 micromamba env -n $ENV_NAME export > $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
 cp $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml $LOCK_DIR
@@ -209,7 +195,8 @@ EOF
 rm -r $ENV_DIR/$ENV_NAME/${sas_install_dir}/lib/data
 ln -s $SUPPORT_DATA_DIR/xmmsas-${sas_version}/sas_data $ENV_DIR/$ENV_NAME/${sas_install_dir}/lib/data
 
-# We also remove the documentation source and build, once again to save space
+# We also remove the documentation source and build, once again to save space (don't bother symlinking this one,
+#  the documentation are very easily found online).
 rm -r $ENV_DIR/$ENV_NAME/${sas_install_dir}/doc
 ######################################################
 

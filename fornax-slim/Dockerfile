@@ -3,10 +3,7 @@ ARG BASE_TAG=latest
 ARG REPOSITORY=nasa-fornax/fornax-images
 ARG REGISTRY=ghcr.io
 
-FROM ${REGISTRY}/${REPOSITORY}/fornax-base:${BASE_TAG} as base
-FROM ${REGISTRY}/${REPOSITORY}/fornax-main:${BASE_TAG} as fornax_main
-FROM ${REGISTRY}/${REPOSITORY}/fornax-hea:${BASE_TAG} as fornax_hea
-
+FROM ${REGISTRY}/${REPOSITORY}/fornax-base:${BASE_TAG} AS base
 FROM scratch
 
 
@@ -24,10 +21,6 @@ COPY --from=base /run /run
 COPY --from=base /sbin /sbin
 COPY --from=base /var /var
 RUN mkdir -p /tmp/ && chmod 777 /tmp/
-
-# copy kernel files
-COPY --from=fornax_main /opt/jupyter/share/jupyter/kernels/ /opt/jupyter/share/jupyter/kernels
-COPY --from=fornax_hea /opt/jupyter/share/jupyter/kernels/ /opt/jupyter/share/jupyter/kernels
 
 ## ---- from jupyter-base ---- ##
 
@@ -72,11 +65,13 @@ ENV CACHE_DIR=/tmp/cache
 ENV DEFAULT_ENV=python3 \
     MAMBA_ROOT_PREFIX=$MAMBA_ROOT_PREFIX \
     LOCK_DIR=$ENV_DIR/lock \
+    USER_ENV_DIR=$HOME/user-envs \
     XDG_CACHE_HOME=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     PIP_CACHE_DIR=$CACHE_DIR/pip \
     UV_CACHE_DIR=$CACHE_DIR/uv \
+    UV_LINK_MODE=copy \
     # for vscode
     CODE_EXECUTABLE=code-server \
     CODE_EXTENSIONSDIR=$HOME/.local/share/code-server/extensions \
@@ -98,6 +93,10 @@ VOLUME /opt/workspace
 # Support data location; SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
 # SUPPORT_DATA_MOUNT can be set by JH
 RUN ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
+
+# copy kernel files from other images.
+# ./kernels is created by the the build script
+COPY --chown=$NB_UID:$NB_GID kernels /opt/jupyter/share/jupyter/kernels
 
 
 ## ----- From other images ----- ##

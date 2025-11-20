@@ -162,6 +162,47 @@ class Builder(TaskRunner):
         self._check_tags(tag)
         full_tag = f'{self.registry}/{self.repository}/{image}:{tag}'
         return full_tag
+    
+    def extract_kernel_files(self, tag, extra_args):
+        """Extract kernel files from the images to be used in fornax-slim
+        
+        Parameters
+        ----------
+        tag: str
+            Image tag to use. e.g. develop
+        extra_args: str
+            Extra command line arguments to be passed to 'docker build'
+            e.g. '--no-cache --network=host'
+        
+        """
+        images = ['fornax-main', 'fornax-hea']
+        extra_args = extra_args or ''
+        if not isinstance(extra_args, str):
+            raise ValueError(f'Expected str for extra_args; got: {extra_args}')
+
+        kernels_dir = 'fornax-slim/kernels'
+        if os.path.exists(kernels_dir):
+            shutil.rmtree(kernels_dir)
+        self.run(f'mkdir -p {kernels_dir}', 100)
+
+        for image in images:
+
+            full_tag = self.get_full_tag(image, tag)
+
+            self.out(f'exporting the kernel files for {image}')
+            cmd = (f'docker run --entrypoint="" --rm -v $PWD/{kernels_dir}:/host '
+                f'--user `id -u` {extra_args} '
+                f"{full_tag} bash -c 'cp -r /opt/jupyter/share/jupyter/kernels/* /host/'")
+            self.run(cmd, 10000)
+
+            # ls kernel folder
+            self.run(f'ls -d {kernels_dir}/*', 100)
+
+            # if we are in github actions, always clean the images
+            if os.getenv("GITHUB_ACTIONS", "").lower() == "true":
+                self.out(f'Cleaning docker image: {image}')
+                cmd = f'docker rmi -f {full_tag}'
+                self.run(cmd, 1000)
 
     def build(self, image, tag, build_args=None,
               extra_args=None, extra_tags=None):
@@ -241,12 +282,22 @@ class Builder(TaskRunner):
         # before calling 'docker build', de-reference any symlinks
         self._copy_common_files(image)
 
+        # For fornax-slim, extract the kernel files from other images first.
+        # This will create kernels/
+        if image == 'fornax-slim':
+            self.extract_kernel_files(tag, extra_args)
+
         cmd_args = " ".join(cmd_args)
         full_tag = self.get_full_tag(image, tag)
         build_cmd = (f"docker build --platform=linux/amd64 {cmd_args} "
                      f"--tag {full_tag} {extra_tags_str}{image}")
         self.out(f"Building {image} ...")
         self.run(build_cmd, timeout=10000)
+
+        # clean up kernels folder
+        if image == 'fornax-slim':
+            self.out("Cleaning kernels folder")
+            self.run('rm -rf fornax-slim/kernels', 1000)
 
     def push(self, image, tag):
         """Push the image with 'docker push'
@@ -274,7 +325,8 @@ class Builder(TaskRunner):
         source_tag: str
             The tag name for the image (no repo name)
         release_tags: list
-            A list of target tag names for the release (no repo name)
+            A list of target tag names for the release (no repo name).
+            It can be None if we are doing export_lock only
         images: list or None
             The list of images to tag for release. By default, all images
         export_lock: bool
@@ -301,26 +353,29 @@ class Builder(TaskRunner):
             self.out(f"Pulling {full_source_tag} ...")
             self.run(command, timeout=1000)
 
-            # if we are releasing from main, add a stable tag
-            if source_tag == 'main' and 'stable' not in release_tags:
-                release_tags.append('stable')
-
+            # export locks if requested
             if export_lock and image in ['fornax-main', 'fornax-hea']:
                 self.export_lockfiles(image, source_tag)
 
-            # loog through release tags
-            for release_tag in release_tags:
-                full_release_tag = self.get_full_tag(image, release_tag)
+            # release_tags can be None if we are doing export lock only
+            if release_tags is not None:
+                # if we are releasing from main, add a stable tag
+                if source_tag == 'main' and 'stable' not in release_tags:
+                    release_tags.append('stable')
 
-                # tag
-                command = f'docker tag {full_source_tag} {full_release_tag}'
-                self.out(f"Tagging {full_source_tag} with {full_release_tag}")
-                self.run(command, timeout=1000)
+                # loog through release tags
+                for release_tag in release_tags:
+                    full_release_tag = self.get_full_tag(image, release_tag)
 
-                # push
-                command = f'docker push {full_release_tag}'
-                self.out(f"Pushing {full_release_tag} ...")
-                self.run(command, timeout=1000)
+                    # tag
+                    command = f'docker tag {full_source_tag} {full_release_tag}'
+                    self.out(f"Tagging {full_source_tag} with {full_release_tag}")
+                    self.run(command, timeout=1000)
+
+                    # push
+                    command = f'docker push {full_release_tag}'
+                    self.out(f"Pushing {full_release_tag} ...")
+                    self.run(command, timeout=1000)
 
     def push_to_ecr(
         self, endpoints, source_tag, release_tags=None, images=None
@@ -399,26 +454,6 @@ class Builder(TaskRunner):
                             # raise for any other error
                             raise
 
-    def export_envs(self, images, tag):
-        """Export the /opt/envs directory to a tar file
-
-        Parameters
-        ----------
-        images: list of None
-            Images to extract the folder from.
-        tag: str
-            The image tag.
-        """
-        if (
-            images is None or len(images) == 0 or
-            (isinstance(images, list) and images[0] == '')
-        ):
-            images = ['fornax-main', 'fornax-hea']
-        for image in images:
-            full_tag = self.get_full_tag(image, tag)
-            cmd = (f'docker run --rm --entrypoint tar {full_tag} '
-                   f'-czf - /opt/envs > envs_{image}.tgz')
-            _ = self.run(cmd, timeout=10000)
 
     def remove_lockfiles(self, image):
         """Remove conda lock files from an image

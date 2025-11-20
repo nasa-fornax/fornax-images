@@ -1,0 +1,104 @@
+#!/bin/bash
+
+# handle conda environment and lock files
+# look for conda-{env}-lock.yml and conda-{env}.yml files
+
+# emvdir: where to install the new environment
+# if not given, default to ENV_DIR
+arg=$1
+if [ -z $arg ]; then
+    envdir=$ENV_DIR
+
+elif [[ "$arg" == "--user" ]]; then
+    envdir=$USER_ENV_DIR
+
+elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
+    echo "
+    Setup conda-based python environment using micromamba, along with the notebook kernel.
+
+    USAGE:
+    -----
+
+      1. Create a standard conda yaml environment file named: conda-{env_name}.yml.
+    Where {env_name} is the name of your environment.
+    
+      2. Call 'setup-conda-env [--user]' to create the environment and setup the kernel.
+    By default, the new environment will be created in \$ENV_DIR, which is reset with a new session.
+    Pass --user to install in \$USER_ENV_DIR (default to ~/user-envs) that persists between sessions.
+    
+    Activate with: micromamba activate \$ENV_DIR/{env_name}
+        (or micromamba activate \$USER_ENV_DIR/{env_name} if you passed --user)
+    "
+    exit 0
+else
+    echo "Unknown argument $1"
+    exit 1
+fi
+
+# check if we have files
+shopt -s nullglob
+files=( conda-*.yml conda-*.yaml )
+if (( ${#files[@]} > 0 )); then
+    echo "Found ${#files[@]} files:"
+    printf "  %s\n" "${files[@]}"
+    read -r -p "Continue? [y/N] " ans
+    case "$ans" in
+        [Yy]*) echo "Installing environment in: $envdir";;
+        *)     exit 0;;
+    esac 
+else
+    echo "No conda-*.yml files found; ; see setup-conda-env -h"
+    exit 0
+fi
+
+
+for envfile in ${files[@]}; do
+    env=`echo $envfile | sed -n 's/conda-\(.*\)\.yml/\1/p'`
+    ENVFILE=conda-${env}.yml
+    echo "Found $ENVFILE, using it ..."
+    # if environment exists, error
+    if [ -d $envdir/$env ]; then
+        echo "*ERROR*: $envdir/$env exists! Cannot install $env from $ENVFILE"
+        exit 1
+    fi
+    echo "Creating $env ..."
+    if [ "$envdir" == "$ENV_DIR" ]; then
+        jupyter_spec="--prefix $JUPYTER_DIR"
+        KERNEL_JSON="$JUPYTER_DIR/share/jupyter/kernels/$env/kernel.json"
+    else
+        jupyter_spec="--user"
+        KERNEL_JSON="$HOME/.local/share/jupyter/kernels/$env/kernel.json"
+    fi
+    micromamba create -y -p $envdir/$env -f $ENVFILE --use-uv
+
+    # add our useful packages
+    micromamba install -p $envdir/$env -y ipykernel pip
+
+    # add the environment as a jupyter kernel
+    micromamba run -p $envdir/$env python -m ipykernel install --name $env $jupyter_spec
+
+    # clean any pip packages from the conda file
+    micromamba run -p $envdir/$env pip cache purge
+    
+    # Run the kernel with 'conda run -n $env', so the etc/condat/activate.d scripts
+    # are called correctly; this is needed when jupyterlab is running outside the kernel
+    # we also ensure PATH and VIRTUAL_ENV are set; the latter for uv to work
+    jq ".argv = [\"/usr/local/bin/micromamba\", \"run\", \"-p\", \"$envdir/$env\", \"-r\", \"$envdir/..\", \"python\"] + .argv[1:]
+        | .env = (.env // {}) 
+        | .env.PATH = \"$envdir/$env/bin:$PATH\" 
+        | .env.VIRTUAL_ENV = \"$envdir/$env\"" $KERNEL_JSON > /tmp/tmp.$$.json
+    mv /tmp/tmp.$$.json $KERNEL_JSON
+    if [ "$envdir" == "$ENV_DIR" ]; then
+        # save lock file
+        micromamba env -p $envdir/$env export > $envdir/$env/${env}-lock.yml
+        # also save it in one location
+        mkdir -p $LOCK_DIR
+        cp $envdir/$env/${env}-lock.yml $LOCK_DIR
+    fi
+    # clean up
+    find $envdir/$env -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete
+done
+
+# clean
+micromamba clean -yaf
+uv cache clean

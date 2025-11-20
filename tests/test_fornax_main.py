@@ -44,6 +44,7 @@ notebooks = {
     }
 }
 
+KERNELS = ['python3'] + [val['env'] for val in notebooks.values()]
 
 def test_python_path():
     CommonTests._test_python_path(default_kernel, env_root)
@@ -130,3 +131,7 @@ def test_notebook_permissions(notebook):
     
     assert not os.access(f'{notebook_dir}/{nb_file}', os.W_OK)
     assert os.access(f'{notebook_dir}/{nb_path}', os.W_OK)
+
+def test_notebook_kernels():
+    """Kernel defnitions should exist"""
+    CommonTests.test_kernels_exist(KERNELS)

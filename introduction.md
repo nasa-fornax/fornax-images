@@ -1,10 +1,10 @@
 
-<img src="https://nasa-fornax.github.io/fornax-demo-notebooks/_static/fornax_logo.png" alt="Fornax Science Console"
+<img src="https://raw.githubusercontent.com/nasa-fornax/fornax-documentation/refs/heads/main/_static/fornax_logo.png" alt="Fornax Science Console"
     style="float: right; width: 200px; margin: 10px;" />
 
 # Documentation & Support
 The general documentation for using the Fornax Science Console are available in 
-the [documentation page](https://nasa-fornax.github.io/fornax-documentation/).
+the [documentation page](https://docs.fornax.sciencecloud.nasa.gov/).
 Help and support is available in the [Fornax discource forum](https://discourse.fornax.sciencecloud.nasa.gov).
 
 # Notebooks
@@ -20,6 +20,18 @@ terminal.
 
 ---
 # Latest Changes
+
+## 25.1120
+- Update fornax-labextension to open hub links (hub control and logout) in the page (v0.1.8).
+- Make setup-conda-env and setup-pip-env generic.
+- Updates to the deployment infrastructure (kernel files in the images).
+- Terminals now call ~/.bashrc (#125).
+- Several fixes and updates:
+  - Add pip to the jupyter environment for extension installs.
+  - Fix tractor install.
+  - Fix `%pip` in notebooks (#122).
+  - Update lsdb in the ztf environment.
+  - Add terminal culling.
 
 ## 25.1006
 - Add XMM SAS software to the high energy image.

@@ -17,11 +17,13 @@ ENV CACHE_DIR=/tmp/cache
 ENV DEFAULT_ENV=python3 \
     MAMBA_ROOT_PREFIX=$MAMBA_ROOT_PREFIX \
     LOCK_DIR=$ENV_DIR/lock \
+    USER_ENV_DIR=$HOME/user-envs \
     XDG_CACHE_HOME=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     PIP_CACHE_DIR=$CACHE_DIR/pip \
     UV_CACHE_DIR=$CACHE_DIR/uv \
+    UV_LINK_MODE=copy \
     # for vscode
     CODE_EXECUTABLE=code-server \
     CODE_EXTENSIONSDIR=$HOME/.local/share/code-server/extensions \
@@ -44,9 +46,12 @@ RUN mkdir -p $JUPYTER_DIR/share/jupyter/lab/settings/ \
  && jupyter labextension disable "@jupyterlab/apputils-extension:announcements" \
  && fix-permissions $JUPYTER_DIR
 COPY --chown=$NB_UID:$NB_GID overrides.json $JUPYTER_DIR/share/jupyter/lab/settings/
+# Copy our jupyter server config file
+COPY jupyter_server_config.py /tmp/
+RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py
 
 # Copy our scripts
-COPY --chmod=0777 --chown=$NB_UID:$NB_GID scripts/*.sh update-notebooks.sh link-notebooks.sh /usr/local/bin/
+COPY --chmod=0777 --chown=$NB_UID:$NB_GID scripts/* update-notebooks.sh link-notebooks.sh /usr/local/bin/
 USER $NB_USER
 
 
@@ -88,7 +93,7 @@ RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
 
 ## install DEFAULT_ENV ##
 COPY --chown=$NB_UID:$NB_GID requirements-$DEFAULT_ENV.txt /tmp/
-RUN cd /tmp/ && bash /usr/local/bin/uv-env-install.sh \
+RUN cd /tmp/ && bash /usr/local/bin/setup-pip-env <<< yes \
  # fix the display name of DEFAULT_ENV
  && $ENV_DIR/$DEFAULT_ENV/bin/python -m ipykernel install --name $DEFAULT_ENV \
     --prefix $JUPYTER_DIR --display-name "$DEFAULT_ENV"
@@ -111,6 +116,7 @@ else
   echo DEFAULT_ENV=\$DEFAULT_ENV not found
 fi
 ACTIVATE
+COPY add-dot-profile.sh /usr/local/bin/before-notebook.d/
 RUN cat /tmp/activate.sh >> /etc/bash.bashrc \
  && cat /tmp/activate.sh  >> /usr/local/bin/before-notebook.d/10activate-env.sh \
  && echo "bash /usr/local/bin/link-notebooks.sh" > /usr/local/bin/before-notebook.d/20link-notebooks.sh \
@@ -124,6 +130,18 @@ RUN cd /tmp/ && \
       xargs bash /usr/local/bin/apt-install.sh; \
       rm apt.txt; \
     fi
+# Add ldap-related config; related to libnss-ldap
+RUN \
+# && sed -i 's/passwd:         files/passwd:         files ldap/g' /etc/nsswitch.conf \
+# && sed -i 's/group:          files/group:          files ldap/g' /etc/nsswitch.conf \
+cat <<'EOF' > /etc/ldap.conf
+base dc=fornax,dc=core              
+uri ldap://glauth.fornax.core:30389 
+ldap_version 3                      
+binddn cn=svcacct,dc=fornax,dc=core
+bindpw T3mp3rman3nt 
+pam_password clear
+EOF
 
 # reset user and location
 WORKDIR ${HOME}
@@ -149,9 +167,20 @@ RUN update-notebooks.sh && link-notebooks.sh
 # SUPPORT_DATA_MOUNT can be set by JH
 RUN ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
 
+ARG BUILD_VERSION=0
+USER root
+RUN IFS=: read -r name ver <<< "$BUILD_VERSION" && echo "$ver" >> $LOCK_DIR/build-$name
+USER $NB_USER
+
 # ==== Start ONBUILD commands ==== #
 # These commands run in images the inherit fornax-images
 # ================================ #
+
+# add version number
+ONBUILD ARG BUILD_VERSION=0
+ONBUILD USER root
+ONBUILD RUN IFS=: read -r name ver <<< "$BUILD_VERSION" && echo "$ver" >> $LOCK_DIR/build-$name
+ONBUILD USER $NB_USER
 
 # Install any uv/conda environments and call build-* scripts
 ONBUILD RUN mkdir -p $HOME/build
@@ -159,8 +188,8 @@ ONBUILD COPY --chown=$NB_UID:$NB_GID build-* requirements-* conda-* $HOME/build/
 ONBUILD USER $NB_USER
 
 # # setup uv environments
-ONBUILD RUN cd build && bash /usr/local/bin/uv-env-install.sh \
- && bash /usr/local/bin/conda-env-install.sh
+ONBUILD RUN cd build && bash /usr/local/bin/setup-pip-env <<< yes \
+ && bash /usr/local/bin/setup-conda-env <<< yes
 # # ----------------------- #
 
 # Any other build-* scripts; e.g. build tractor, heasoft etc #

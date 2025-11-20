@@ -100,12 +100,6 @@ if __name__ == '__main__':
     )
 
     ap.add_argument(
-        '--export-envs', action='store_true',
-        help='Export the /opt/envs directory',
-        default=False
-    )
-
-    ap.add_argument(
         '--debug', action='store_true',
         help='Print debug messages',
         default=False
@@ -130,7 +124,6 @@ if __name__ == '__main__':
     build_args = args.build_args
     extra_pars = args.extra_pars
     list_images = args.list_images
-    export_envs = args.export_envs
 
     if list_images:
         # print available images
@@ -156,7 +149,7 @@ if __name__ == '__main__':
     builder = Builder(repository, logger, dryrun=dryrun, registry=registry)
 
     # get current branch name as default tag
-    if export_envs or (len(images) or release is not None) and tag is None:
+    if (len(images) or release is not None) and tag is None:
         out = builder.run(
             'git branch --show-current', timeout=100, capture_output=True
         )
@@ -176,18 +169,16 @@ if __name__ == '__main__':
     builder.out(f'release: {release}', logging.DEBUG)
     builder.out(f'update_lock: {update_lock}', logging.DEBUG)
     builder.out(f'export_lock: {export_lock}', logging.DEBUG)
+    builder.out(f'trigger_ecr: {trigger_ecr}', logging.DEBUG)
     builder.out(f'no_build: {no_build}', logging.DEBUG)
     builder.out(f'build_args: {build_args}', logging.DEBUG)
     builder.out(f'extra_pars: {extra_pars}', logging.DEBUG)
-    builder.out(f'extract_envs: {export_envs}', logging.DEBUG)
     builder.out('+++++++++++++', logging.DEBUG)
 
-    if export_envs:
-        builder.export_envs(images, tag)
-        sys.exit(0)
 
-    # we are either building or releasing
-    if release is not None:
+    # we are either building or releasing;
+    # Also, we use the release function when export_lock=True
+    if release is not None or export_lock:
         # if releasing, tag all images
         if images is None:
             images = [
@@ -201,7 +192,7 @@ if __name__ == '__main__':
             # but using the release function for re-tagging
             builder.release('develop', ['main'], images=None)
 
-        # do the release
+        # do the release; if release is None, we are exporting the locks
         builder.release(tag, release, images, export_lock)
 
         if trigger_ecr:
@@ -216,6 +207,8 @@ if __name__ == '__main__':
 
         builder.out(f'Images to build: {to_build}', logging.DEBUG)
         time_tag = datetime.now().strftime('%Y%m%d_%H%M')
+        if build_args is None:
+            build_args = []
         for image in to_build:
             builder.out(f'Working on: {image}', logging.DEBUG)
 
@@ -224,7 +217,8 @@ if __name__ == '__main__':
 
             if not no_build:
                 builder.build(
-                    image, tag, build_args, extra_pars, extra_tags=[time_tag]
+                    image, tag, build_args + [f'BUILD_VERSION={image}:{time_tag}'],
+                    extra_pars, extra_tags=[time_tag]
                 )
 
             if update_lock:
@@ -233,3 +227,6 @@ if __name__ == '__main__':
             if push:
                 builder.push(image, tag)
                 builder.push(image, time_tag)
+        
+        if trigger_ecr:
+            builder.push_to_ecr(ecr_endpoint, tag, release_tags=None, images=to_build)
