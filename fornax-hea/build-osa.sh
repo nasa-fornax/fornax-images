@@ -31,7 +31,9 @@ rm -rf * > /dev/null 2>&1
 ############# Definition of software versions #############
 osa_ubuntu_version=20.04
 osa_version=11.2
-osa_cat_version=43
+# These must be zero-filled to 4 digits
+osa_cat_version=0043
+osa_omc_cat_version=0005
 
 # TODO Due to the OPENSSL 1.1 dependency of the Ubuntu 20.04 OSA
 #  binary, we have to set a lower Python version than the current
@@ -170,14 +172,19 @@ OSA_PREV_PATH=$PATH
 # The absolute path to the OSA install directory
 export ISDC_ENV=$ENV_DIR/$ENV_NAME/${osa_install_dir}
 
+
+# Setting the path to the INTEGRAL reference catalog
+export ISDC_REF_CAT=\$SUPPORT_DATA_DIR/integral-osa/reference-catalogs/hec/gnrl_refr_cat_${osa_cat_version}.fits
+# And the same for the optical monitoring camera (OMC)
+export ISDC_OMC_CAT=\$SUPPORT_DATA_DIR/integral-osa/reference-catalogs/omc/omc_refr_cat_${osa_omc_cat_version}.fits
+
+
 # Initialize OSA by calling an included bash script
 #  This sets up a few environment variables, including adding to the PATH and
 #  LD_LIBRARY_PATH. There doesn't appear to be an uninit script, so we looked
 #  for the environment variables it sets and unset them in the deactivation script
 source \$ISDC_ENV/bin/isdc_init_env.sh
 
-# Setting the path to the INTEGRAL reference catalog
-export ISDC_REF_CAT=\$SUPPORT_DATA_DIR/integral-osa/reference-catalogs/hec/gnrl_refr_cat_00${osa_cat_version}.fits
 
 # Should stop the OSA GUI popping up
 export COMMONSCRIPT=1
@@ -202,6 +209,7 @@ cat <<EOF > $ENV_DIR/$ENV_NAME/etc/conda/deactivate.d/osa-general_deactivate.sh
 
 unset ISDC_ENV
 unset ISDC_REF_CAT
+unset ISDC_OMC_CAT
 
 unset COMMONSCRIPT
 
