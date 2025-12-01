@@ -35,7 +35,7 @@ channels:
   - nodefaults
 dependencies:
   - python=3.12
-  - heasoft=6.35.*
+  - heasoft=6.36.*
   - pip
   - pip:
     - pytest
