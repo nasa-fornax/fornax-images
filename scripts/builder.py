@@ -175,7 +175,7 @@ class Builder(TaskRunner):
             e.g. '--no-cache --network=host'
         
         """
-        images = ['fornax-main', 'fornax-hea']
+        images = ['fornax-base']#'fornax-main', 'fornax-hea']
         extra_args = extra_args or ''
         if not isinstance(extra_args, str):
             raise ValueError(f'Expected str for extra_args; got: {extra_args}')
