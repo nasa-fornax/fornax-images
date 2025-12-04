@@ -58,7 +58,7 @@ RUN mkdir -p $JUPYTER_DIR/share/jupyter/lab/settings/ \
  && jupyter labextension disable "@jupyterlab/apputils-extension:announcements" \
  && fix-permissions $JUPYTER_DIR \
  # make $ENV_DIR world-writable
- && mkdir -p $ENV_DIR && chmod 776 $ENV_DIR && setfacl -m u::rwx,g::rwx,o::rw $ENV_DIR && setfacl -m d:u::rwx,d:g::rwx,d:o::rw $ENV_DIR
+ && mkdir -p $ENV_DIR && chmod 777 $ENV_DIR && setfacl -m u::rwx,g::rwx,o::rwx $ENV_DIR && setfacl -m d:u::rwx,d:g::rwx,d:o::rwx $ENV_DIR
 COPY --chown=$NB_UID:$NB_GID overrides.json $JUPYTER_DIR/share/jupyter/lab/settings/
 # Copy our jupyter server config file
 COPY jupyter_server_config.py /tmp/
