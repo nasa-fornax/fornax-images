@@ -50,7 +50,7 @@ bash /usr/local/bin/setup-conda-env <<< yes
 CIAO_VERSION=$(micromamba list ciao -p $ENV_DIR/ciao --json | jq -r '.[0].version')
 CALDB_VERSION=4.12.0
 
-# These images form the basis of the environent on the Fornax cloud compute system, but
+# These images form the basis of the environment on the Fornax cloud compute system, but
 #  can also be used locally. We already provide these 'supporting files' in a storage
 #  mount on Fornax, but we want to include them in the full image as there is no
 #  way of downloading the CIAO spectral model files separately.
@@ -65,9 +65,11 @@ mkdir -p $SUPPORT_DATA_DIR/ciao-${CIAO_VERSION}/spectral/
 mv $ENV_DIR/ciao/spectral/modelData $SUPPORT_DATA_DIR/ciao-${CIAO_VERSION}/spectral/
 ln -sf $SUPPORT_DATA_DIR/ciao-${CIAO_VERSION}/spectral/modelData $ENV_DIR/ciao/spectral/modelData
 
-# Move
 #mv $ENV_DIR/ciao/CALDB $SUPPORT_DATA_DIR/ciao-caldb-${CALDB_VERSION}/CALDB | true
-#ln -sf $SUPPORT_DATA_DIR/ciao-caldb-${CALDB_VERSION}/CALDB $ENV_DIR/ciao/CALDB
+# Though we aren't downloading the CalDB as part of the CIAO environment (the users
+# can do that themselves) we do need to put a symlink so that the install on
+# Fornax will work!
+ln -sf $SUPPORT_DATA_DIR/ciao-caldb-${CALDB_VERSION}/CALDB $ENV_DIR/ciao/CALDB
 
 # Remove these files - we don't need to include them in the image at all
 rm -rf $ENV_DIR/ciao/test

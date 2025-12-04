@@ -47,13 +47,23 @@ EOF
 # Use the yml to create the ciao env
 bash /usr/local/bin/setup-conda-env  <<< yes
 
-# delete data; create simlinks below
-rm -rf $ENV_DIR/fermi/share/fermitools/refdata
-
-# Get fermitools version
+# Get fermitools version into an environment variable (will help us name a directory later on)
 FERMITOOLS_VERSION=$(micromamba list fermitools -p $ENV_DIR/fermi --json | jq -r '.[0].version')
 
-# link data files
+
+# These images form the basis of the environment on the Fornax cloud compute system, but
+#  can also be used locally. We already provide these 'supporting files' in a storage
+#  mount on Fornax, but we want to include them in the full image as there is no
+#  way of downloading the CIAO spectral model files separately.
+# First step is to make a directory to put them in, in the $SUPPORT_DATA_DIR
+#  directory that we made sure existed at the top of this script
+mkdir -p $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}
+
+# Then move the reference data files to the new directory, from their original
+#  location within the Conda environment
+mv $ENV_DIR/fermi/share/fermitools/refdata $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}
+
+# Finally, set up a symlink to the new home for the Fermi refdata
 ln -sf $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}/refdata $ENV_DIR/fermi/share/fermitools/refdata
 
 # clean
