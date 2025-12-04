@@ -41,17 +41,29 @@ ENV DEFAULT_ENV=python3 \
 
 # Copy our jupyter settings overrides
 USER root
+# Copy our scripts
+COPY --chmod=0777 --chown=$NB_UID:$NB_GID scripts/* update-notebooks.sh link-notebooks.sh /usr/local/bin/
+
+# Add any system packages. We want them all to be here fornax-base
+# so they can be transfered to fornax-slim
+COPY apt.txt* /tmp/
+RUN cd /tmp/ && \
+    if test -f apt.txt; then \
+      xargs bash /usr/local/bin/apt-install.sh; \
+      rm apt.txt; \
+    fi
+  
 RUN mkdir -p $JUPYTER_DIR/share/jupyter/lab/settings/ \
  # Disable the announcement extension
  && jupyter labextension disable "@jupyterlab/apputils-extension:announcements" \
- && fix-permissions $JUPYTER_DIR
+ && fix-permissions $JUPYTER_DIR \
+ # make $ENV_DIR world-writable
+ && mkdir -p $ENV_DIR && chmod 776 $ENV_DIR && setfacl -m u::rwx,g::rwx,o::rw $ENV_DIR && setfacl -m d:u::rwx,d:g::rwx,d:o::rw $ENV_DIR
 COPY --chown=$NB_UID:$NB_GID overrides.json $JUPYTER_DIR/share/jupyter/lab/settings/
 # Copy our jupyter server config file
 COPY jupyter_server_config.py /tmp/
 RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py
 
-# Copy our scripts
-COPY --chmod=0777 --chown=$NB_UID:$NB_GID scripts/* update-notebooks.sh link-notebooks.sh /usr/local/bin/
 USER $NB_USER
 
 
@@ -122,14 +134,6 @@ RUN cat /tmp/activate.sh >> /etc/bash.bashrc \
  && echo "bash /usr/local/bin/link-notebooks.sh" > /usr/local/bin/before-notebook.d/20link-notebooks.sh \
  && rm -r /tmp/* $HOME/.*
 
-# Add any system packages. We want them all to be here fornax-base
-# so they can be transfered to fornax-slim
-COPY apt.txt* /tmp/
-RUN cd /tmp/ && \
-    if test -f apt.txt; then \
-      xargs bash /usr/local/bin/apt-install.sh; \
-      rm apt.txt; \
-    fi
 # Add ldap-related config; related to libnss-ldap
 RUN \
 # && sed -i 's/passwd:         files/passwd:         files ldap/g' /etc/nsswitch.conf \
