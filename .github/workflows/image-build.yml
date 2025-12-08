@@ -38,6 +38,12 @@ jobs:
       - name: Git branch name
         id: git-branch-name
         run: echo "${{ github.head_ref || github.ref_name }}"
+      
+      - name: clean storage
+        run: |
+          df -h
+          sudo bash scripts/gh-clean.sh
+          df -h
 
 
       - name: Setup Python

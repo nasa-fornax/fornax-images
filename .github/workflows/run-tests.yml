@@ -35,6 +35,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
+      - name: clean storage
+        run: |
+          df -h
+          sudo bash scripts/gh-clean.sh
+          df -h
+      
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
