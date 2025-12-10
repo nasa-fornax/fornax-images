@@ -101,5 +101,19 @@ COPY --chown=$NB_UID:$NB_GID kernels /opt/jupyter/share/jupyter/kernels
 
 ## ----- From other images ----- ##
 
+# Add ldap-related config; related to libnss-ldap
+USER root
+RUN \
+   sed -i 's/passwd:         files/passwd:         files ldap/g' /etc/nsswitch.conf \
+&& sed -i 's/group:          files/group:          files ldap/g' /etc/nsswitch.conf \
+&& cat <<'EOF' > /etc/ldap.conf
+base dc=fornax,dc=core              
+uri ldap://glauth.fornax.core:30389 
+ldap_version 3                      
+binddn cn=svcacct,dc=fornax,dc=core
+bindpw T3mp3rman3nt 
+pam_password clear
+EOF
+
 USER ${NB_UID}
 WORKDIR $HOME
