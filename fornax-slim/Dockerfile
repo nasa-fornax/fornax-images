@@ -26,8 +26,8 @@ RUN mkdir -p /tmp/ && chmod 777 /tmp/
 
 # Define global variables
 ARG NB_USER="jovyan"
-ARG NB_UID="1000"
-ARG NB_GID="100"
+ARG NB_UID="1756"
+ARG NB_GID="1756"
 ARG PYTHON_VERSION=3.12
 ARG JUPYTER_PORT=8888
 ARG JUPYTER_DIR=/opt/jupyter
