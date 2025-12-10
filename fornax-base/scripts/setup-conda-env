@@ -94,6 +94,7 @@ for envfile in ${files[@]}; do
         # also save it in one location
         mkdir -p $LOCK_DIR
         cp $envdir/$env/${env}-lock.yml $LOCK_DIR
+        fix-permissions $envdir/$env
     fi
     # clean up
     find $envdir/$env -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete

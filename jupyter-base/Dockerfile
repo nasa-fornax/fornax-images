@@ -13,8 +13,8 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 
 # Define global variables
 ARG NB_USER="jovyan"
-ARG NB_UID="1000"
-ARG NB_GID="100"
+ARG NB_UID="1756"
+ARG NB_GID="1756"
 ARG PYTHON_VERSION=3.12
 ARG JUPYTER_PORT=8888
 ARG JUPYTER_DIR=/opt/jupyter
@@ -93,7 +93,8 @@ RUN if grep -q "${NB_UID}" /etc/passwd; then \
 RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
  && sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers \
  && sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers \
- && useradd --no-log-init --create-home --shell /bin/bash --uid "${NB_UID}" --no-user-group "${NB_USER}" \
+ && groupadd --gid "${NB_GID}" fornax \
+ && useradd --no-log-init --create-home --shell /bin/bash --uid "${NB_UID}" --gid "${NB_GID}" jovyan \
  && chmod g+w /etc/passwd \
  && cat $HOME/.bashrc >> /etc/bash.bashrc
 
@@ -122,6 +123,9 @@ RUN uv venv $JUPYTER_DIR --no-managed-python -p /usr/bin/python$PYTHON_VERSION \
  && uv clean \
  && jupyter lab clean \
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
- && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete
+ && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete \
+ && cd $HOME && rm -rf .* * \
+ && fix-permissions $JUPYTER_DIR
+
 
 WORKDIR $HOME

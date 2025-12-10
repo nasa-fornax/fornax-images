@@ -72,7 +72,8 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && mkdir -p $LOCK_DIR \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
 # run jupyterhub-singleuser once to cache the extension and speedup the start
-&& timeout 20s jupyterhub-singleuser || true
+&& timeout 20s jupyterhub-singleuser || true \
+&& fix-permissions $JUPYTER_DIR
 
 # Install system packages with micromamba
 # we use microconda instead of apt, so they are portable
@@ -83,6 +84,7 @@ RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
  && micromamba clean -yaf && rm /tmp/base.txt \
  && micromamba env export -p $MAMBA_ROOT_PREFIX > $MAMBA_ROOT_PREFIX/base-lock.yml \
  && cp $MAMBA_ROOT_PREFIX/base-lock.yml $LOCK_DIR/ \
+ && fix-permissions $MAMBA_ROOT_PREFIX \
  # we want our micromamba envs 1) in $ENV_DIR so they are portable,
  # but the same time 2) we want to be able to activate them with
  # micromamba activate env_name.
