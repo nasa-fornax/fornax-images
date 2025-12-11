@@ -21,6 +21,9 @@ terminal.
 ---
 # Latest Changes
 
+## dev
+- Update fornax-labextension to open spawn page in the same tab (v0.1.9).
+
 ## 25.1120
 - Update fornax-labextension to open hub links (hub control and logout) in the page (v0.1.8).
 - Make setup-conda-env and setup-pip-env generic.
