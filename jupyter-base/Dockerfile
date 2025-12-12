@@ -12,9 +12,9 @@ LABEL org.opencontainers.image.description="Fornax jupyter foundation image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
 # Define global variables
-ARG NB_USER="jovyan"
+ARG NB_USER="fornax"
 ARG NB_UID="1756"
-ARG NB_GID="1756"
+ARG NB_GID="100"
 ARG PYTHON_VERSION=3.12
 ARG JUPYTER_PORT=8888
 ARG JUPYTER_DIR=/opt/jupyter
@@ -64,6 +64,7 @@ RUN cd /usr/local/bin/ \
  && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/docker_healthcheck.py \
  && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/jupyter_server_config.py \
  && chmod +x start-notebook.py start-singleuser.py fix-permissions start.sh \
+ && sed -i 's/jovyan/$NB_USER/g' start.sh \
  # Add absolute path the scripts so the correct jupyter is sued
  && sed -i "s|\"jupyter|\"$JUPYTER_DIR/bin/jupyter|g" start-notebook.py \
  && sed -i "s|\"jupyter|\"$JUPYTER_DIR/bin/jupyter|g" start-singleuser.py \
@@ -93,8 +94,7 @@ RUN if grep -q "${NB_UID}" /etc/passwd; then \
 RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
  && sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers \
  && sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers \
- && groupadd --gid "${NB_GID}" fornax \
- && useradd --no-log-init --create-home --shell /bin/bash --uid "${NB_UID}" --gid "${NB_GID}" jovyan \
+ && useradd --no-log-init --create-home --shell /bin/bash --uid "${NB_UID}" --gid "${NB_GID}" $NB_USER \
  && chmod g+w /etc/passwd \
  && cat $HOME/.bashrc >> /etc/bash.bashrc
 
