@@ -3,11 +3,10 @@ import os
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
-from common import env_root, jupyter_env, jupyter_root  # noqa E402
+from common import env_root, jupyter_env, jupyter_root, notebook_dir  # noqa E402
 
 default_kernel = 'fermi'
 
-notebook_dir = os.environ.get('NOTEBOOK_DIR', '/home/jovyan/fornax-notebooks')
 notebooks = {}
 
 
