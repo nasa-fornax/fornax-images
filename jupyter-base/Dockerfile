@@ -93,8 +93,8 @@ RUN if grep -q "${NB_UID}" /etc/passwd; then \
 RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
  && sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers \
  && sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers \
- && groupadd --gid "${NB_GID}" fornax \
- && useradd --no-log-init --create-home --shell /bin/bash --uid "${NB_UID}" --gid "${NB_GID}" $NB_USER \
+ && groupadd --gid "1756" fornax \
+ && useradd --no-log-init --create-home --shell /bin/bash --uid "${NB_UID}" --gid "${NB_GID}" -G fornax $NB_USER \
  && chmod g+w /etc/passwd \
  && cat $HOME/.bashrc >> /etc/bash.bashrc
 
