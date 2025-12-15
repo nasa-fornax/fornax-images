@@ -17,7 +17,7 @@ ENV CACHE_DIR=/tmp/cache
 ENV DEFAULT_ENV=python3 \
     MAMBA_ROOT_PREFIX=$MAMBA_ROOT_PREFIX \
     LOCK_DIR=$ENV_DIR/lock \
-    USER_ENV_DIR=$HOME/user-envs \
+    USER_ENV_DIR="\$HOME/user-envs" \
     XDG_CACHE_HOME=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
@@ -26,7 +26,7 @@ ENV DEFAULT_ENV=python3 \
     UV_LINK_MODE=copy \
     # for vscode
     CODE_EXECUTABLE=code-server \
-    CODE_EXTENSIONSDIR=$HOME/.local/share/code-server/extensions \
+    CODE_EXTENSIONSDIR="\$HOME/.local/share/code-server/extensions" \
     NOTEBOOK_DIR=/opt/notebooks \
     # support data; JH can pass ARG SUPPORT_DATA_MOUNT; SUPPORT_DATA_DIR points to it
     # scripts that rely on support data should use SUPPORT_DATA_DIR
