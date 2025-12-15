@@ -1,5 +1,8 @@
 #!/usr/bin/bash
 
+# exit on failure
+set -e
+
 # Location of support data
 if [ -z $SUPPORT_DATA_DIR ]; then
     echo "ERROR: SUPPORT_DATA_DIR not defined"
