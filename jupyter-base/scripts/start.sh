@@ -151,9 +151,7 @@ if [ "$(id -u)" == 0 ]; then
 
     # NOTE: This hook is run as the root user!
     # shellcheck source=images/docker-stacks-foundation/run-hooks.sh
-    # Fornax: run as the requested user.
-    _log "Running hooks as ${NB_USER}:"
-    sudo -u $NB_USER source /usr/local/bin/run-hooks.sh /usr/local/bin/before-notebook.d
+    source /usr/local/bin/run-hooks.sh /usr/local/bin/before-notebook.d
     unset_explicit_env_vars
 
     _log "Running as ${NB_USER}:" "${cmd[@]}"
