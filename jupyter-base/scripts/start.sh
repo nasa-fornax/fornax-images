@@ -2,9 +2,6 @@
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
 
-# Fornax note: this is the same start.sh from jupyter stack, except
-# for the order of running the hook. We run them as the end user.
-
 set -e
 
 # The _log function is used for everything this script wants to log.
@@ -47,6 +44,10 @@ else
     export _START_SH_EXECUTED=1
 fi
 
+
+# NOTE: This hook will run as the user the container was started with!
+# shellcheck source=images/docker-stacks-foundation/run-hooks.sh
+source /usr/local/bin/run-hooks.sh /usr/local/bin/start-notebook.d
 
 # If the container started as the root user, then we have permission to refit
 # the jovyan user, and ensure file permissions, grant sudo rights, and such
@@ -150,16 +151,15 @@ if [ "$(id -u)" == 0 ]; then
 
     # NOTE: This hook is run as the root user!
     # shellcheck source=images/docker-stacks-foundation/run-hooks.sh
-    source /usr/local/bin/run-hooks.sh /usr/local/bin/before-notebook.d
+    # Fornax: run as the requested user.
+    _log "Running hooks as ${NB_USER}:"
+    sudo -u $NB_USER source /usr/local/bin/run-hooks.sh /usr/local/bin/before-notebook.d
     unset_explicit_env_vars
 
     _log "Running as ${NB_USER}:" "${cmd[@]}"
     if [ "${NB_USER}" = "root" ] && [ "${NB_UID}" = "$(id -u "${NB_USER}")" ] && [ "${NB_GID}" = "$(id -g "${NB_USER}")" ]; then
         HOME="/home/root" exec "${cmd[@]}"
     else
-        # Run hooks
-        source /usr/local/bin/run-hooks.sh /usr/local/bin/start-notebook.d
-
         exec sudo --preserve-env --set-home --user "${NB_USER}" \
             LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" \
             PATH="${PATH}" \
@@ -252,10 +252,10 @@ else
         _log "WARNING: no write access to /home/jovyan. Try starting the container with group 'users' (100), e.g. using \"--group-add=users\"."
     fi
 
+    # NOTE: This hook is run as the user we started the container as!
+    # shellcheck source=images/docker-stacks-foundation/run-hooks.sh
+    source /usr/local/bin/run-hooks.sh /usr/local/bin/before-notebook.d
     unset_explicit_env_vars
-
-    # Run hooks
-    source /usr/local/bin/run-hooks.sh /usr/local/bin/start-notebook.d
 
     _log "Executing the command:" "${cmd[@]}"
     exec "${cmd[@]}"
