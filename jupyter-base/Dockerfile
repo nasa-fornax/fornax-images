@@ -54,21 +54,9 @@ ENV JUPYTER_DIR=$JUPYTER_DIR \
     HOME=/home/${NB_USER}
 
 # Copy scripts from the jupyter stack repo
+COPY --chmod=0777 scripts/start* scripts/fix-permissions scripts/run-hooks.sh /usr/local/bin/
+COPY --chown=$NB_UID:$NB_GID scripts/docker_healthcheck.py scripts/jupyter_server_config.py /etc/jupyter/
 RUN cd /usr/local/bin/ \
- && JUPYTER_STACK_URL=https://raw.githubusercontent.com/jupyter/docker-stacks/refs/heads/main/images \
- && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/fix-permissions \
- && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/run-hooks.sh \
- && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/start.sh \
- && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/start-notebook.py \
- && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/start-singleuser.py \
- && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/docker_healthcheck.py \
- && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/jupyter_server_config.py \
- && chmod +x start-notebook.py start-singleuser.py fix-permissions start.sh \
- # Add absolute path the scripts so the correct jupyter is sued
- && sed -i "s|\"jupyter|\"$JUPYTER_DIR/bin/jupyter|g" start-notebook.py \
- && sed -i "s|\"jupyter|\"$JUPYTER_DIR/bin/jupyter|g" start-singleuser.py \
- && mkdir -p /etc/jupyter/ \
- && mv docker_healthcheck.py jupyter_server_config.py /etc/jupyter/ \
  && fix-permissions /etc/jupyter/ /opt/ \
  && mkdir -p start-notebook.d before-notebook.d
 
