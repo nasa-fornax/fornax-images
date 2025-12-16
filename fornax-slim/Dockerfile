@@ -76,6 +76,9 @@ ENV DEFAULT_ENV=python3 \
     CODE_EXECUTABLE=code-server \
     CODE_EXTENSIONSDIR="\$HOME/.local/share/code-server/extensions" \
     NOTEBOOK_DIR=/opt/notebooks \
+    # folder that start.sh need to fix permissions for
+    CHOWN_EXTRA=/opt/notebooks \
+    CHOWN_EXTRA_OPTS="-R" \
     # support data; JH can pass ARG SUPPORT_DATA_MOUNT; SUPPORT_DATA_DIR points to it
     # scripts that rely on support data should use SUPPORT_DATA_DIR
     SUPPORT_DATA_DIR=/opt/support-data \
