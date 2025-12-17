@@ -7,10 +7,10 @@ if test -z $NOTEBOOK_DIR; then
     return 0
 fi
 
-echo "Linking the notebooks in $HOME ..."
+echo "Linking the notebooks in /home/$NB_USER ..."
 
 # make symlink for NOTEBOOD_DIR in HOME
-cd $HOME
+cd /home/$NB_USER
 home_nb_dir=fornax-notebooks
 # if there is a folder and is not a symlink, rename it
 if test -d $home_nb_dir && ! test -L $home_nb_dir; then

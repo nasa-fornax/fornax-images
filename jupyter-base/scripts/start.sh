@@ -71,6 +71,13 @@ if [ "$(id -u)" == 0 ]; then
             _log "Updated the jovyan user:"
             _log "- username: jovyan       -> ${NB_USER}"
             _log "- home dir: /home/jovyan -> /home/${NB_USER}"
+            # remove jovyan/ubuntu users
+            for user in jovyan ubuntu; do
+                if [ -d /home/$user ]; then
+                    _log "Removing /home/$user"
+                    rm -rf /home/$user
+                fi
+            done
         fi
     elif ! id -u "${NB_USER}" &> /dev/null; then
         _log "ERROR: Neither the jovyan user nor '${NB_USER}' exists. This could be the result of stopping and starting, the container with a different NB_USER environment variable."
