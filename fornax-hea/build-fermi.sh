@@ -1,5 +1,9 @@
 #!/usr/bin/bash
 
+# exit on failure; error on undefiend vars; print commands
+set -eux
+set -o pipefail
+
 # Location of support data
 if [ -z $SUPPORT_DATA_DIR ]; then
     echo "ERROR: SUPPORT_DATA_DIR not defined"

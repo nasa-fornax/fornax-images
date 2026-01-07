@@ -1,5 +1,9 @@
 #!/usr/bin/bash
 
+# exit on failure; error on undefiend vars; print commands
+set -eux
+set -o pipefail
+
 # Build script to setup a conda environment for XMM's SAS toolkit - based on the
 #  build-ciao.sh script and the SciServer XMMSAS dockerfile
 #  (https://github.com/sciserver/sciserver-compute-images/blob/master/heasarc/xmmsas/Dockerfile)

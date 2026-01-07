@@ -2,7 +2,8 @@
 # Build astronomy.net and tractor
 # Assumes build-01-notebook-req.sh has been run
 
-set -e 
+# exit on failure; error on undefiend vars; print commands
+set -eux
 set -o pipefail
 
 

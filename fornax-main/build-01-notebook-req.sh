@@ -1,7 +1,9 @@
 #!/bin/bash
 # Create environments for the notebooks to run in
 # Download the notebook repo and use the requirement files
-set -e
+
+# exit on failure; error on undefiend vars; print commands
+set -eux
 set -o pipefail
 
 resolve_references() {
