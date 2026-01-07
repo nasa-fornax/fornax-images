@@ -1,4 +1,5 @@
 name: Image Build
+run-name: "Image Build: ${{ inputs.images }}"
 
 on:
   # push:
