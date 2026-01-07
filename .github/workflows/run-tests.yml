@@ -35,6 +35,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
+      - uses: ./.github/actions/clean-storage
+      
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
