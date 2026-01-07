@@ -54,7 +54,7 @@ COPY jupyter_server_config.py /tmp/
 RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py
 
 # Copy our scripts
-COPY --chmod=0777 --chown=$NB_UID:$NB_GID scripts/* update-notebooks.sh link-notebooks.sh /usr/local/bin/
+COPY --chmod=0555 --chown=$NB_UID:$NB_GID scripts/* update-notebooks.sh link-notebooks.sh /usr/local/bin/
 USER $NB_USER
 
 
