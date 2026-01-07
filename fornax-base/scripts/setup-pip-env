@@ -78,6 +78,7 @@ for envfile in ${files[@]}; do
         uv pip list --format=freeze > $VIRTUAL_ENV/$ENVFILE
         mkdir -p $LOCK_DIR
         cp $VIRTUAL_ENV/$ENVFILE $LOCK_DIR
+        fix-permissions $envdir/$env
     else
         uv run python -m ipykernel install --name $env --user
         KERNEL_JSON="$HOME/.local/share/jupyter/kernels/$env/kernel.json"
