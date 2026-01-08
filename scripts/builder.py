@@ -140,7 +140,7 @@ class Builder(TaskRunner):
             raise ValueError(f'image {image} does not exists')
 
         # skip base images
-        if image in ['foranx-jupyter']:
+        if image in ['fornax-jupyter']:
             return
 
         for file in COMMON_FILES:
@@ -313,7 +313,7 @@ class Builder(TaskRunner):
         full_tag = self.get_full_tag(image, tag)
         push_command = f'docker push {full_tag}'
         self.out(f"Pushing {full_tag} ...")
-        self.run(push_command, timeout=1000)
+        self.run(push_command, timeout=3000)
 
     def release(
         self, source_tag, release_tags, images=None, export_lock=False
@@ -351,7 +351,7 @@ class Builder(TaskRunner):
             # pull
             command = f'docker pull {full_source_tag}'
             self.out(f"Pulling {full_source_tag} ...")
-            self.run(command, timeout=1000)
+            self.run(command, timeout=3000)
 
             # export locks if requested
             if export_lock and image in ['fornax-main', 'fornax-hea']:
@@ -372,7 +372,7 @@ class Builder(TaskRunner):
                     # push
                     command = f'docker push {full_release_tag}'
                     self.out(f"Pushing {full_release_tag} ...")
-                    self.run(command, timeout=1000)
+                    self.run(command, timeout=3000)
 
     def push_to_ecr(
         self, endpoints, source_tag, release_tags=None, images=None

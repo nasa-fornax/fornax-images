@@ -8,6 +8,7 @@ import contextlib
 env_root = os.environ.get('ENV_DIR', '/opt/envs')
 jupyter_env = 'jupyter'
 jupyter_root = '/opt'
+notebook_dir = os.environ.get('NOTEBOOK_DIR', f"{os.environ['HOME']}/fornax-notebooks")
 
 
 class CommonTests:

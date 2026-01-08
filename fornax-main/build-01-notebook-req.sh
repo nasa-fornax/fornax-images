@@ -1,7 +1,9 @@
 #!/bin/bash
 # Create environments for the notebooks to run in
 # Download the notebook repo and use the requirement files
-set -e
+
+# exit on failure; print commands
+set -ex
 set -o pipefail
 
 resolve_references() {
@@ -33,7 +35,7 @@ for req in `ls requirements_*`; do
     resolve_references "$req" > "${reqlow/requirements_/requirements-py-}"
 done
 
-rm requirements_*
+rm -f requirements_*
 
 
 bash /usr/local/bin/setup-pip-env <<< yes

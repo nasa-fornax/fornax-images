@@ -17,26 +17,21 @@ ENV CACHE_DIR=/tmp/cache
 ENV DEFAULT_ENV=python3 \
     MAMBA_ROOT_PREFIX=$MAMBA_ROOT_PREFIX \
     LOCK_DIR=$ENV_DIR/lock \
-    USER_ENV_DIR=$HOME/user-envs \
     XDG_CACHE_HOME=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     PIP_CACHE_DIR=$CACHE_DIR/pip \
     UV_CACHE_DIR=$CACHE_DIR/uv \
     UV_LINK_MODE=copy \
-    # for vscode
-    CODE_EXECUTABLE=code-server \
-    CODE_EXTENSIONSDIR=$HOME/.local/share/code-server/extensions \
     NOTEBOOK_DIR=/opt/notebooks \
+    # folder that start.sh need to fix permissions for
+    CHOWN_EXTRA=/opt/notebooks \
+    CHOWN_EXTRA_OPTS="-R" \
     # support data; JH can pass ARG SUPPORT_DATA_MOUNT; SUPPORT_DATA_DIR points to it
     # scripts that rely on support data should use SUPPORT_DATA_DIR
     SUPPORT_DATA_DIR=/opt/support-data \
     # path
-    PATH=$MAMBA_ROOT_PREFIX/bin:$PATH \
-    # For firefly
-    FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
-    # for dask
-    DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/{port}/status"
+    PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
 
 
 # Copy our jupyter settings overrides
@@ -51,7 +46,7 @@ COPY jupyter_server_config.py /tmp/
 RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py
 
 # Copy our scripts
-COPY --chmod=0777 --chown=$NB_UID:$NB_GID scripts/* update-notebooks.sh link-notebooks.sh /usr/local/bin/
+COPY --chmod=0555 --chown=$NB_UID:$NB_GID scripts/* update-notebooks.sh link-notebooks.sh /usr/local/bin/
 USER $NB_USER
 
 
@@ -72,7 +67,8 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && mkdir -p $LOCK_DIR \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
 # run jupyterhub-singleuser once to cache the extension and speedup the start
-&& timeout 20s jupyterhub-singleuser || true
+&& timeout 20s jupyterhub-singleuser || true \
+&& fix-permissions $JUPYTER_DIR
 
 # Install system packages with micromamba
 # we use microconda instead of apt, so they are portable
@@ -83,6 +79,7 @@ RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
  && micromamba clean -yaf && rm /tmp/base.txt \
  && micromamba env export -p $MAMBA_ROOT_PREFIX > $MAMBA_ROOT_PREFIX/base-lock.yml \
  && cp $MAMBA_ROOT_PREFIX/base-lock.yml $LOCK_DIR/ \
+ && fix-permissions $MAMBA_ROOT_PREFIX \
  # we want our micromamba envs 1) in $ENV_DIR so they are portable,
  # but the same time 2) we want to be able to activate them with
  # micromamba activate env_name.
@@ -116,7 +113,7 @@ else
   echo DEFAULT_ENV=\$DEFAULT_ENV not found
 fi
 ACTIVATE
-COPY add-dot-profile.sh /usr/local/bin/before-notebook.d/
+COPY misc-setup.sh /usr/local/bin/before-notebook.d/
 RUN cat /tmp/activate.sh >> /etc/bash.bashrc \
  && cat /tmp/activate.sh  >> /usr/local/bin/before-notebook.d/10activate-env.sh \
  && echo "bash /usr/local/bin/link-notebooks.sh" > /usr/local/bin/before-notebook.d/20link-notebooks.sh \
@@ -130,18 +127,6 @@ RUN cd /tmp/ && \
       xargs bash /usr/local/bin/apt-install.sh; \
       rm apt.txt; \
     fi
-# Add ldap-related config; related to libnss-ldap
-RUN \
-# && sed -i 's/passwd:         files/passwd:         files ldap/g' /etc/nsswitch.conf \
-# && sed -i 's/group:          files/group:          files ldap/g' /etc/nsswitch.conf \
-cat <<'EOF' > /etc/ldap.conf
-base dc=fornax,dc=core              
-uri ldap://glauth.fornax.core:30389 
-ldap_version 3                      
-binddn cn=svcacct,dc=fornax,dc=core
-bindpw T3mp3rman3nt 
-pam_password clear
-EOF
 
 # reset user and location
 WORKDIR ${HOME}

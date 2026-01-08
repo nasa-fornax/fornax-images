@@ -1,6 +1,10 @@
 #!/bin/bash
 # This will be run as root inside Dockerfile
 
+# exit on failure; print commands
+set -ex
+set -o pipefail
+
 if test -f "apt.txt" ; then
     echo "Found apt.txt; using it ..."
     apt-get update --fix-missing > /dev/null

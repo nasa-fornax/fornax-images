@@ -1,9 +1,17 @@
 #!/bin/bash
-
 # handle conda environment and lock files
 # look for conda-{env}-lock.yml and conda-{env}.yml files
 
-# emvdir: where to install the new environment
+# exit on failure
+set -e
+set -o pipefail
+
+echo
+echo "  Setup conda-based python environment using micromamba, along with the notebook kernel."
+echo "  For help, see: $0 -h"
+echo
+
+# envdir: where to install the new environment
 # if not given, default to ENV_DIR
 arg=$1
 if [ -z $arg ]; then
@@ -14,7 +22,6 @@ elif [[ "$arg" == "--user" ]]; then
 
 elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
     echo "
-    Setup conda-based python environment using micromamba, along with the notebook kernel.
 
     USAGE:
     -----
@@ -94,6 +101,7 @@ for envfile in ${files[@]}; do
         # also save it in one location
         mkdir -p $LOCK_DIR
         cp $envdir/$env/${env}-lock.yml $LOCK_DIR
+        fix-permissions $envdir/$env
     fi
     # clean up
     find $envdir/$env -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete
