@@ -3,7 +3,11 @@
 # handle conda environment and lock files
 # look for conda-{env}-lock.yml and conda-{env}.yml files
 
-# emvdir: where to install the new environment
+# exit on failure; print commands
+set -ex
+set -o pipefail
+
+# envdir: where to install the new environment
 # if not given, default to ENV_DIR
 arg=$1
 if [ -z $arg ]; then

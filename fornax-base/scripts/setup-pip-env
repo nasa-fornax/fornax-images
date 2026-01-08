@@ -2,6 +2,10 @@
 # Handle uv environment
 # Creates an environment for every requirements-{env-name}.txt file
 
+# exit on failure; print commands
+set -ex
+set -o pipefail
+
 # emvdir: where to install the new environment
 # if not given, default to ENV_DIR
 arg=$1
@@ -67,9 +71,10 @@ for envfile in ${files[@]}; do
     fi
     # ensure we use the same python in jupyter so dask works
     uv venv $VIRTUAL_ENV -p $ENV_DIR/base/bin/python$PYTHON_VERSION
-    uv pip install -r $ENVFILE
     # add our useful packages
     uv pip install ipykernel pip
+    # uv pip is strict and sometimes fail in resolving dependencies; fall back to pip install
+    uv pip install -r $ENVFILE || $VIRTUAL_ENV/bin/pip install -r $ENVFILE
     # install the kernel so jupyter can find it;
     if [ "$envdir" == "$ENV_DIR" ]; then
         uv run python -m ipykernel install --name $env --prefix $JUPYTER_DIR
@@ -95,3 +100,4 @@ done
 
 # clean
 uv cache clean
+$VIRTUAL_ENV/bin/pip cache purge
