@@ -2,9 +2,14 @@
 # Handle uv environment
 # Creates an environment for every requirements-{env-name}.txt file
 
-# exit on failure; print commands
-set -ex
+# exit on failure
+set -e
 set -o pipefail
+
+echo
+echo "  Setup pip-based python environment using uv, along with the notebook kernel."
+echo "  For help, see: $0 -h"
+echo
 
 # emvdir: where to install the new environment
 # if not given, default to ENV_DIR
@@ -16,8 +21,7 @@ elif [[ "$arg" == "--user" ]]; then
     envdir=$USER_ENV_DIR
 
 elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-    echo "
-    Setup pip-based python environment using uv, along with the notebook kernel.
+    echo """
 
     USAGE:
     -----
@@ -31,7 +35,7 @@ elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
     
     Activate with: source \$ENV_DIR/{env_name}/bin/activate 
         (or source \$USER_ENV_DIR/{env_name}/bin/activate if you passed --user)
-"
+"""
     exit 0
 else
     echo "Unknown argument $1"
