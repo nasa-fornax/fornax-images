@@ -17,16 +17,12 @@ ENV CACHE_DIR=/tmp/cache
 ENV DEFAULT_ENV=python3 \
     MAMBA_ROOT_PREFIX=$MAMBA_ROOT_PREFIX \
     LOCK_DIR=$ENV_DIR/lock \
-    USER_ENV_DIR="\$HOME/user-envs" \
     XDG_CACHE_HOME=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     PIP_CACHE_DIR=$CACHE_DIR/pip \
     UV_CACHE_DIR=$CACHE_DIR/uv \
     UV_LINK_MODE=copy \
-    # for vscode
-    CODE_EXECUTABLE=code-server \
-    CODE_EXTENSIONSDIR="\$HOME/.local/share/code-server/extensions" \
     NOTEBOOK_DIR=/opt/notebooks \
     # folder that start.sh need to fix permissions for
     CHOWN_EXTRA=/opt/notebooks \
@@ -35,11 +31,7 @@ ENV DEFAULT_ENV=python3 \
     # scripts that rely on support data should use SUPPORT_DATA_DIR
     SUPPORT_DATA_DIR=/opt/support-data \
     # path
-    PATH=$MAMBA_ROOT_PREFIX/bin:$PATH \
-    # For firefly
-    FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
-    # for dask
-    DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/{port}/status"
+    PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
 
 
 # Copy our jupyter settings overrides
@@ -121,7 +113,7 @@ else
   echo DEFAULT_ENV=\$DEFAULT_ENV not found
 fi
 ACTIVATE
-COPY add-dot-profile.sh /usr/local/bin/before-notebook.d/
+COPY misc-setup.sh /usr/local/bin/before-notebook.d/
 RUN cat /tmp/activate.sh >> /etc/bash.bashrc \
  && cat /tmp/activate.sh  >> /usr/local/bin/before-notebook.d/10activate-env.sh \
  && echo "bash /usr/local/bin/link-notebooks.sh" > /usr/local/bin/before-notebook.d/20link-notebooks.sh \
