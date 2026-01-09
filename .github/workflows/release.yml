@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - uses: ./.github/actions/clean-storage
     
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -96,6 +98,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - uses: ./.github/actions/clean-storage
         
       - name: Setup Python
         uses: actions/setup-python@v5
