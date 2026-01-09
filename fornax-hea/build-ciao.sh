@@ -24,10 +24,9 @@ channels:
   - https://cxc.cfa.harvard.edu/conda/ciao
   - conda-forge
 dependencies:
-  - python=3.11
-  - ciao
+  - ciao=4.17.0
   - sherpa
-  - ciao-contrib
+  - ciao-contrib=4.17.0
   - marx
   - pip
   - pip:

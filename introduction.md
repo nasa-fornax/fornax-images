@@ -21,8 +21,8 @@ terminal.
 ---
 # Latest Changes
 
-## dev
-- Updates to support switching user storage to FSX.
+## 26.0109
+- Updates to support FSX user storage.
 - Update fornax-labextension to open spawn page in the same tab (v0.1.9) and display HTM files (v0.1.10).
 
 ## 25.1120
