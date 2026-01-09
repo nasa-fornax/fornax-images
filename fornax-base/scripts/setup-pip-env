@@ -2,6 +2,15 @@
 # Handle uv environment
 # Creates an environment for every requirements-{env-name}.txt file
 
+# exit on failure
+set -e
+set -o pipefail
+
+echo
+echo "  Setup pip-based python environment using uv, along with the notebook kernel."
+echo "  For help, see: $0 -h"
+echo
+
 # emvdir: where to install the new environment
 # if not given, default to ENV_DIR
 arg=$1
@@ -12,8 +21,7 @@ elif [[ "$arg" == "--user" ]]; then
     envdir=$USER_ENV_DIR
 
 elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-    echo "
-    Setup pip-based python environment using uv, along with the notebook kernel.
+    echo """
 
     USAGE:
     -----
@@ -27,7 +35,7 @@ elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
     
     Activate with: source \$ENV_DIR/{env_name}/bin/activate 
         (or source \$USER_ENV_DIR/{env_name}/bin/activate if you passed --user)
-"
+"""
     exit 0
 else
     echo "Unknown argument $1"
@@ -67,9 +75,10 @@ for envfile in ${files[@]}; do
     fi
     # ensure we use the same python in jupyter so dask works
     uv venv $VIRTUAL_ENV -p $ENV_DIR/base/bin/python$PYTHON_VERSION
-    uv pip install -r $ENVFILE
     # add our useful packages
     uv pip install ipykernel pip
+    # uv pip is strict and sometimes fail in resolving dependencies; fall back to pip install
+    uv pip install -r $ENVFILE || $VIRTUAL_ENV/bin/pip install -r $ENVFILE
     # install the kernel so jupyter can find it;
     if [ "$envdir" == "$ENV_DIR" ]; then
         uv run python -m ipykernel install --name $env --prefix $JUPYTER_DIR
@@ -78,6 +87,7 @@ for envfile in ${files[@]}; do
         uv pip list --format=freeze > $VIRTUAL_ENV/$ENVFILE
         mkdir -p $LOCK_DIR
         cp $VIRTUAL_ENV/$ENVFILE $LOCK_DIR
+        fix-permissions $envdir/$env
     else
         uv run python -m ipykernel install --name $env --user
         KERNEL_JSON="$HOME/.local/share/jupyter/kernels/$env/kernel.json"
@@ -94,3 +104,4 @@ done
 
 # clean
 uv cache clean
+$VIRTUAL_ENV/bin/pip cache purge

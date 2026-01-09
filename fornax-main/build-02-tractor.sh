@@ -2,7 +2,8 @@
 # Build astronomy.net and tractor
 # Assumes build-01-notebook-req.sh has been run
 
-set -e 
+# exit on failure; error on undefiend vars; print commands
+set -eux
 set -o pipefail
 
 
@@ -15,11 +16,12 @@ source $ENV_DIR/$pythonenv/bin/activate
 TARGET_DIR=`ls -d $ENV_DIR/$pythonenv/lib/python3.??/site-packages/`
 
 
-# We need some packages
+# We need some packages; backup the environment;
+cp -r $ENV_DIR/base $ENV_DIR/base.off
 micromamba install -y -p $ENV_DIR/base \
    make gcc cairo expat netpbm libpng zlib swig cfitsio binutils pkg-config
 uv pip install cython setuptools
-export PKG_CONFIG_PATH=/opt/envs/base
+export PKG_CONFIG_PATH=$ENV_DIR/base
 
 # Install astrometry.net and tractor
 cd /tmp
@@ -54,11 +56,9 @@ rm -rf $folder /tmp/tractor
 
 # clean up
 uv pip uninstall cython setuptools
-micromamba uninstall -y -p $ENV_DIR/base \
-   make gcc binutils pkg-config expat swig netpbm libpng
-# since we updated the base micromamba env, we need a new lock file
-micromamba env export -p $ENV_DIR/base > $ENV_DIR/base/base-lock.yml
-cp $ENV_DIR/base/base-lock.yml $LOCK_DIR/
+# restore the environment
+rm -rf $ENV_DIR/base
+mv $ENV_DIR/base.off $ENV_DIR/base
 
 # update the freeze file
 uv pip list --format=freeze > $VIRTUAL_ENV/requirements-py-multiband_photometry.txt

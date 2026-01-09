@@ -21,6 +21,10 @@ terminal.
 ---
 # Latest Changes
 
+## 26.0109
+- Updates to support FSX user storage.
+- Update fornax-labextension to open spawn page in the same tab (v0.1.9) and display HTM files (v0.1.10).
+
 ## 25.1120
 - Update fornax-labextension to open hub links (hub control and logout) in the page (v0.1.8).
 - Make setup-conda-env and setup-pip-env generic.

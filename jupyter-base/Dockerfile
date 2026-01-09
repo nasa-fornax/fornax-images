@@ -54,21 +54,9 @@ ENV JUPYTER_DIR=$JUPYTER_DIR \
     HOME=/home/${NB_USER}
 
 # Copy scripts from the jupyter stack repo
+COPY --chmod=0555 scripts/start* scripts/fix-permissions scripts/run-hooks.sh /usr/local/bin/
+COPY --chown=$NB_UID:$NB_GID scripts/docker_healthcheck.py scripts/jupyter_server_config.py /etc/jupyter/
 RUN cd /usr/local/bin/ \
- && JUPYTER_STACK_URL=https://raw.githubusercontent.com/jupyter/docker-stacks/refs/heads/main/images \
- && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/fix-permissions \
- && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/run-hooks.sh \
- && curl -fsSLO $JUPYTER_STACK_URL/docker-stacks-foundation/start.sh \
- && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/start-notebook.py \
- && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/start-singleuser.py \
- && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/docker_healthcheck.py \
- && curl -fsSLO $JUPYTER_STACK_URL/base-notebook/jupyter_server_config.py \
- && chmod +x start-notebook.py start-singleuser.py fix-permissions start.sh \
- # Add absolute path the scripts so the correct jupyter is sued
- && sed -i "s|\"jupyter|\"$JUPYTER_DIR/bin/jupyter|g" start-notebook.py \
- && sed -i "s|\"jupyter|\"$JUPYTER_DIR/bin/jupyter|g" start-singleuser.py \
- && mkdir -p /etc/jupyter/ \
- && mv docker_healthcheck.py jupyter_server_config.py /etc/jupyter/ \
  && fix-permissions /etc/jupyter/ /opt/ \
  && mkdir -p start-notebook.d before-notebook.d
 
@@ -93,9 +81,11 @@ RUN if grep -q "${NB_UID}" /etc/passwd; then \
 RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
  && sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers \
  && sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers \
- && useradd --no-log-init --create-home --shell /bin/bash --uid "${NB_UID}" --no-user-group "${NB_USER}" \
+ && useradd --no-log-init --create-home --shell /bin/bash --uid "${NB_UID}" --gid "${NB_GID}" --no-user-group $NB_USER \
  && chmod g+w /etc/passwd \
- && cat $HOME/.bashrc >> /etc/bash.bashrc
+ && cat $HOME/.bashrc >> /etc/bash.bashrc \
+ # remove /home/ubuntu
+ && if test -d /home/ubuntu; then rm -f /home/ubuntu;fi
 
 # Install uv & micromamba
 RUN cd /tmp/ \
@@ -122,6 +112,9 @@ RUN uv venv $JUPYTER_DIR --no-managed-python -p /usr/bin/python$PYTHON_VERSION \
  && uv clean \
  && jupyter lab clean \
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
- && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete
+ && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete \
+ && cd $HOME && rm -rf .* * \
+ && fix-permissions $JUPYTER_DIR
+
 
 WORKDIR $HOME

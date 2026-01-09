@@ -1,4 +1,5 @@
 name: Image Build
+run-name: "Image Build: ${{ inputs.images }}"
 
 on:
   # push:
@@ -38,7 +39,8 @@ jobs:
       - name: Git branch name
         id: git-branch-name
         run: echo "${{ github.head_ref || github.ref_name }}"
-
+      
+      - uses: ./.github/actions/clean-storage
 
       - name: Setup Python
         uses: actions/setup-python@v5

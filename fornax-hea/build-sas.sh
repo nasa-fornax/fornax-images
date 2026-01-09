@@ -1,5 +1,9 @@
 #!/usr/bin/bash
 
+# exit on failure; error on undefiend vars; print commands
+set -eux
+set -o pipefail
+
 # Build script to setup a conda environment for XMM's SAS toolkit - based on the
 #  build-ciao.sh script and the SciServer XMMSAS dockerfile
 #  (https://github.com/sciserver/sciserver-compute-images/blob/master/heasarc/xmmsas/Dockerfile)
@@ -178,7 +182,7 @@ cat <<EOF > $ENV_DIR/$ENV_NAME/etc/conda/deactivate.d/sas-general_deactivate.sh
 unset SAS_PERL
 unset SAS_PYTHON
 
-export LD_LIBRARY_PATH=$SAS_PREV_LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=\$SAS_PREV_LD_LIBRARY_PATH
 
 unset SAS_DIR
 unset SAS_CCFPATH

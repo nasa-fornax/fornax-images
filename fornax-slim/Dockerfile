@@ -65,26 +65,21 @@ ENV CACHE_DIR=/tmp/cache
 ENV DEFAULT_ENV=python3 \
     MAMBA_ROOT_PREFIX=$MAMBA_ROOT_PREFIX \
     LOCK_DIR=$ENV_DIR/lock \
-    USER_ENV_DIR=$HOME/user-envs \
     XDG_CACHE_HOME=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     XDG_CACHE_DIR=$CACHE_DIR \
     PIP_CACHE_DIR=$CACHE_DIR/pip \
     UV_CACHE_DIR=$CACHE_DIR/uv \
     UV_LINK_MODE=copy \
-    # for vscode
-    CODE_EXECUTABLE=code-server \
-    CODE_EXTENSIONSDIR=$HOME/.local/share/code-server/extensions \
     NOTEBOOK_DIR=/opt/notebooks \
+    # folder that start.sh need to fix permissions for
+    CHOWN_EXTRA=/opt/notebooks \
+    CHOWN_EXTRA_OPTS="-R" \
     # support data; JH can pass ARG SUPPORT_DATA_MOUNT; SUPPORT_DATA_DIR points to it
     # scripts that rely on support data should use SUPPORT_DATA_DIR
     SUPPORT_DATA_DIR=/opt/support-data \
     # path
-    PATH=$MAMBA_ROOT_PREFIX/bin:$PATH \
-    # For firefly
-    FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
-    # for dask
-    DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/{port}/status"
+    PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
 
 # For outside mount when using outside fornax
 RUN mkdir -p /opt/workspace
@@ -100,6 +95,20 @@ COPY --chown=$NB_UID:$NB_GID kernels /opt/jupyter/share/jupyter/kernels
 
 
 ## ----- From other images ----- ##
+
+# Add ldap-related config; related to libnss-ldap
+USER root
+RUN \
+   sed -i 's/passwd:         files/passwd:         files ldap/g' /etc/nsswitch.conf \
+&& sed -i 's/group:          files/group:          files ldap/g' /etc/nsswitch.conf \
+&& cat <<'EOF' > /etc/ldap.conf
+base dc=fornax,dc=core              
+uri ldap://glauth.fornax.core:30389 
+ldap_version 3                      
+binddn cn=svcacct,dc=fornax,dc=core
+bindpw T3mp3rman3nt 
+pam_password clear
+EOF
 
 USER ${NB_UID}
 WORKDIR $HOME
