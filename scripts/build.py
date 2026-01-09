@@ -129,7 +129,7 @@ if __name__ == '__main__':
         # print available images
         image_list = [
             image for image in IMAGE_ORDER
-            if image not in ['jupyter-base', 'fornax-base', 'image-slim']
+            if image not in ['jupyter-base', 'fornax-base', 'fornax-slim']
         ]
         print(json.dumps(image_list))
         sys.exit(0)
