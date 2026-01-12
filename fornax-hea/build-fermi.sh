@@ -10,6 +10,9 @@ if [ -z $SUPPORT_DATA_DIR ]; then
     exit 1
 fi
 
+# get current dir
+script_dir=$(pwd)
+
 # install Fermitools
 WORKDIR=/tmp/fermi
 mkdir -p $WORKDIR
@@ -38,14 +41,11 @@ EOF
 # Use the yml to create the ciao env
 bash /usr/local/bin/setup-conda-env  <<< yes
 
-# delete data; create simlinks below
-rm -rf $ENV_DIR/fermi/share/fermitools/refdata
-
 # Get fermitools version
 FERMITOOLS_VERSION=$(micromamba list fermitools -p $ENV_DIR/fermi --json | jq -r '.[0].version')
 
-# link data files
-ln -sf $SUPPORT_DATA_DIR/fermitools-${FERMITOOLS_VERSION}/refdata $ENV_DIR/fermi/share/fermitools/refdata
+# (re)move data files;
+bash $script_dir/build-map-data.sh $ENV_DIR/fermi/share/fermitools/refdata fermitools-${FERMITOOLS_VERSION}
 
 # clean
 cd $HOME

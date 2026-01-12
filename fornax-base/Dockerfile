@@ -8,7 +8,6 @@ LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-imag
 LABEL org.opencontainers.image.description="Fornax Base Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
-ARG SUPPORT_DATA_MOUNT=/shared-storage/support-data
 ARG MAMBA_ROOT_PREFIX=$ENV_DIR/base
 
 
@@ -27,8 +26,7 @@ ENV DEFAULT_ENV=python3 \
     # folder that start.sh need to fix permissions for
     CHOWN_EXTRA=/opt/notebooks \
     CHOWN_EXTRA_OPTS="-R" \
-    # support data; JH can pass ARG SUPPORT_DATA_MOUNT; SUPPORT_DATA_DIR points to it
-    # scripts that rely on support data should use SUPPORT_DATA_DIR
+    # Location of the support data
     SUPPORT_DATA_DIR=/opt/support-data \
     # path
     PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
@@ -47,6 +45,15 @@ RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py
 
 # Copy our scripts
 COPY --chmod=0555 --chown=$NB_UID:$NB_GID scripts/* update-notebooks.sh link-notebooks.sh /usr/local/bin/
+
+# Support data location; SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
+# SUPPORT_DATA_MOUNT is used here to allow the images to be used
+# outside the platform; in the platform, this is replaced by JH deployment
+RUN SUPPORT_DATA_MOUNT=/shared-storage/support-data \
+ && mkdir -p $SUPPORT_DATA_MOUNT \
+ && ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR \
+ && fix-permissions $SUPPORT_DATA_MOUNT
+
 USER $NB_USER
 
 
@@ -147,10 +154,6 @@ RUN cd $JUPYTER_DIR \
 # Add the notebooks to the image
 RUN update-notebooks.sh && link-notebooks.sh
 
-
-# Support data location; SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
-# SUPPORT_DATA_MOUNT can be set by JH
-RUN ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
 
 ARG BUILD_VERSION=0
 USER root
