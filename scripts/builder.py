@@ -348,11 +348,6 @@ class Builder(TaskRunner):
         for image in to_release:
             full_source_tag = self.get_full_tag(image, source_tag)
 
-            # clear cache
-            command = f'docker rmi $(docker images -aq)'
-            self.out(f'Clearing docker cache')
-            self.run(command, timeout=3000)
-
             # pull
             command = f'docker pull {full_source_tag}'
             self.out(f"Pulling {full_source_tag} ...")
