@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import glob
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
@@ -38,6 +39,20 @@ def test_pysas_import():
 
 def test_version():
     subprocess.check_call(["sas", "--version"])
+
+def test_data_dir():
+    """Check data directories"""
+    dirname = glob.glob(f'{env_root}/sas/xmmsas_*')
+    assert len(dirname) == 1
+    dirname = dirname[0].split('/')[-1]
+    version = dirname.split("_", 1)[1].split("-", 1)[0]
+    support_dir = os.environ['SUPPORT_DATA_DIR']
+    assert os.path.exists(f'{support_dir}/xmmsas-{version}/data')
+    assert len(glob.glob(f'{support_dir}/xmmsas-{version}/data/*')) != 0
+
+    # check for symlinks
+    assert os.path.exists(f'{env_root}/sas/{dirname}/lib/data')
+    assert os.path.islink(f'{env_root}/sas/{dirname}/lib/data')
 
 
 # def test_ccf():
