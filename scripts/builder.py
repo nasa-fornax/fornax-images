@@ -349,7 +349,7 @@ class Builder(TaskRunner):
             full_source_tag = self.get_full_tag(image, source_tag)
 
             # clear cache
-            command = f'docker system prune -f'
+            command = f'docker rmi $(docker images -aq)'
             self.out(f'Clearing docker cache')
             self.run(command, timeout=3000)
 
