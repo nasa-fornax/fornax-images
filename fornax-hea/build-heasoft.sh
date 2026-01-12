@@ -10,6 +10,9 @@ if [ -z $SUPPORT_DATA_DIR ]; then
     exit 1
 fi
 
+# get current dir
+script_dir=$(pwd)
+
 # install heasoft; do it in a script instead of yml file so
 # we get more control over the spectral data files
 WORKDIR=/tmp/heasoft
@@ -25,7 +28,7 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - python=3.12
+  - python=$PYTHON_VERSION
   - heasoft=6.35.*
   - pip
   - pip:
@@ -39,19 +42,16 @@ EOF
 # Use conda-heasoft.yml to create the heasoft env
 bash /usr/local/bin/setup-conda-env <<< yes
 
-# remove refdata that comes in the package. We'll use a the one in SUPPORT_DATA_DIR instead.
-rm -rf $ENV_DIR/heasoft/heasoft/refdata
-
 # Extract the heasoft version
 HEA_VERSION=$(micromamba list heasoft -p $ENV_DIR/heasoft --json | jq -r '.[0].version')
+
+# (re)move data files;
+bash $script_dir/build-map-data.sh $ENV_DIR/heasoft/heasoft/refdata heasoft-$HEA_VERSION
+bash $script_dir/build-map-data.sh $ENV_DIR/heasoft/heasoft/spectral/modelData heasoft-$HEA_VERSION/spectral
 
 # Tweak Xspec settings for a no-X11 environment
 # add xspec model data from the data location
 printf "setplot splashpage off\ncpd /GIF\n" >> $ENV_DIR/heasoft/heasoft/spectral/scripts/global_customize.tcl
-# xspec modelData
-ln -sf $SUPPORT_DATA_DIR/heasoft-${HEA_VERSION}/spectral/modelData $ENV_DIR/heasoft/heasoft/spectral/modelData
-# link refdata, including heasoft, xstar etc.
-ln -sf $SUPPORT_DATA_DIR/heasoft-${HEA_VERSION}/refdata $ENV_DIR/heasoft/heasoft/refdata
 
 
 # Add CALDB; use remote caldb for now
