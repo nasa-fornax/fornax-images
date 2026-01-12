@@ -21,6 +21,9 @@ terminal.
 ---
 # Latest Changes
 
+## 26.0112
+- Fix user names in some environment variables.
+
 ## 26.0109
 - Updates to support FSX user storage.
 - Update fornax-labextension to open spawn page in the same tab (v0.1.9) and display HTM files (v0.1.10).

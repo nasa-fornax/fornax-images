@@ -15,10 +15,10 @@ fi
 ## ----------------------------------------- ##
 ## Define some runtime environment variables ##
 # for custom user environments
-export USER_ENV_DIR="$HOME/user-envs"
+export USER_ENV_DIR="/home/$NB_USER/user-envs"
 # for vscode
 export CODE_EXECUTABLE=code-server
-export CODE_EXTENSIONSDIR="$HOME/.local/share/code-server/extensions"
+export CODE_EXTENSIONSDIR="/home/$NB_USER/.local/share/code-server/extensions"
 # For firefly
 export FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
 # for dask
