@@ -1,6 +1,8 @@
 import sys
 import os
 import subprocess
+import glob
+import json
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
@@ -45,3 +47,16 @@ def test_caldb():
     assert os.environ['CALDB'] != ''
     assert 'CALDBCONFIG' in os.environ
     assert 'CALDBALIAS' in os.environ
+
+def test_data_dir():
+    """Check data directories"""
+    conda_meta = glob.glob(f'{env_root}/ciao/conda-meta/ciao-?.*.json')
+    assert len(conda_meta) == 1
+    version = json.load(open(conda_meta[0]))['version']
+    support_dir = os.environ['SUPPORT_DATA_DIR']
+    assert os.path.exists(f'{support_dir}/ciao-{version}/spectral/modelData')
+    assert len(glob.glob(f'{support_dir}/ciao-{version}/spectral/modelData/*')) != 0
+
+    # check for symlinks
+    assert os.path.exists(f'{env_root}/ciao/spectral/modelData')
+    assert os.path.islink(f'{env_root}/ciao/spectral/modelData')

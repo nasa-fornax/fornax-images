@@ -1,5 +1,7 @@
 import sys
 import os
+import glob
+import json
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
@@ -34,3 +36,16 @@ def test_conda_env():
 def test_check_packages():
     import fermipy # noqa 401
     import gt_apps  # noqa 401
+
+def test_data_dir():
+    """Check data directories"""
+    conda_meta = glob.glob(f'{env_root}/fermi/conda-meta/fermitools-?.*.json')
+    assert len(conda_meta) == 1
+    version = json.load(open(conda_meta[0]))['version']
+    support_dir = os.environ['SUPPORT_DATA_DIR']
+    assert os.path.exists(f'{support_dir}/fermitools-{version}/refdata')
+    assert len(glob.glob(f'{support_dir}/fermitools-{version}/refdata/*')) != 0
+
+    # check for symlinks
+    assert os.path.exists(f'{env_root}/fermi/share/fermitools/refdata')
+    assert os.path.islink(f'{env_root}/fermi/share/fermitools/refdata')
