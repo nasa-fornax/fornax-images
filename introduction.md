@@ -21,6 +21,9 @@ terminal.
 ---
 # Latest Changes
 
+## dev
+- Add R and Julia environments
+
 ## 26.0112
 - Fix user names in some environment variables.
 
