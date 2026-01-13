@@ -19,4 +19,5 @@ ENV PATH=$ENV_DIR/julia/bin:$PATH \
 RUN curl -fsSL https://install.julialang.org | sh -s -- -y -p $ENV_DIR/julia/ \
  # add julia kernel
  && julia -e 'using Pkg; Pkg.add("IJulia")' \
- && mv ~/.local/share/jupyter/kernels/julia-* $JUPYTER_DIR/share/jupyter/kernels
+ && mv ~/.local/share/jupyter/kernels/julia-* $JUPYTER_DIR/share/jupyter/kernels \
+ && fix-permissions $JULIA_DEPOT_PATH

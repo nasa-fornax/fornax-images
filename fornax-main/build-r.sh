@@ -22,4 +22,5 @@ micromamba create -y -p $ENV_DIR/Renv -f $envfile
 
 # add the environment as a jupyter kernel
 micromamba run -p $ENV_DIR/Renv R -e "IRkernel::installspec(prefix = Sys.getenv('JUPYTER_DIR'))"
+fix-permissions $ENV_DIR/Renv
 micromamba clean -yaf
