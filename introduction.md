@@ -21,6 +21,9 @@ terminal.
 ---
 # Latest Changes
 
+## dev
+- Upgrade heasfot to 6.36 and ciao to 4.18.0
+
 ## 26.0112
 - Fix user names in some environment variables.
 
