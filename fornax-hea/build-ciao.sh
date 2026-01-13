@@ -27,9 +27,9 @@ channels:
   - https://cxc.cfa.harvard.edu/conda/ciao
   - conda-forge
 dependencies:
-  - ciao=4.17.0
+  - ciao=4.18.0
   - sherpa
-  - ciao-contrib=4.17.0
+  - ciao-contrib=4.18.0
   - marx
   - pip
   - pip:
@@ -50,7 +50,7 @@ rm -rf $ENV_DIR/ciao/docs
 
 # get ciao version
 CIAO_VERSION=$(micromamba list ciao -p $ENV_DIR/ciao --json | jq -r '.[0].version')
-CALDB_VERSION=4.12.0
+CALDB_VERSION=4.12.3
 
 # (re)move data files;
 bash $script_dir/build-map-data.sh $ENV_DIR/ciao/spectral/modelData ciao-${CIAO_VERSION}/spectral
