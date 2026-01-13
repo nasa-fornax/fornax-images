@@ -1,6 +1,8 @@
 import sys
 import os
 import subprocess
+import glob
+import json
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
@@ -86,3 +88,20 @@ def test_xmm_sas():
 def test_notebook_kernels():
     """Kernel defnitions should exist"""
     CommonTests.test_kernels_exist(KERNELS)
+
+def test_data_dir():
+    """Check data directories"""
+    conda_meta = glob.glob(f'{env_root}/heasoft/conda-meta/heasoft-*.json')
+    assert len(conda_meta) == 1
+    version = json.load(open(conda_meta[0]))['version']
+    support_dir = os.environ['SUPPORT_DATA_DIR']
+    assert os.path.exists(f'{support_dir}/heasoft-{version}/refdata')
+    assert len(glob.glob(f'{support_dir}/heasoft-{version}/refdata/*')) != 0
+    assert os.path.exists(f'{support_dir}/heasoft-{version}/spectral')
+
+    # check for symlinks
+    assert os.path.exists(f'{env_root}/heasoft/heasoft/refdata')
+    assert os.path.islink(f'{env_root}/heasoft/heasoft/refdata')
+
+    assert os.path.exists(f'{env_root}/heasoft/heasoft/spectral')
+    assert os.path.islink(f'{env_root}/heasoft/heasoft/spectral/modelData')
