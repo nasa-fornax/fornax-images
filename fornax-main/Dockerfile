@@ -12,3 +12,11 @@ LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-imag
 LABEL org.opencontainers.image.description="Fornax Main Astronomy Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
+# add julia to path
+ENV PATH=$ENV_DIR/julia/bin:$PATH \
+    JULIA_DEPOT_PATH=$ENV_DIR/julia \
+    JULIAUP_DEPOT_PATH=$ENV_DIR/julia
+RUN curl -fsSL https://install.julialang.org | sh -s -- -y -p $ENV_DIR/julia/ \
+ # add julia kernel
+ && julia -e 'using Pkg; Pkg.add("IJulia")' \
+ && mv ~/.local/share/jupyter/kernels/julia-* $JUPYTER_DIR/share/jupyter/kernels
