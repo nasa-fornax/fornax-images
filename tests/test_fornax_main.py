@@ -138,8 +138,8 @@ def test_notebook_kernels():
 
 def test_julia():
     """Julia and its kernel defnitions should exist"""
-    assert 'JULIAUP_DEPOT_PATH' in os.environ
-    jpath = os.environ['JULIAUP_DEPOT_PATH']
+    assert 'JULIA_DEPOT_PATH' in os.environ
+    jpath = os.environ['JULIA_DEPOT_PATH']
     assert os.path.exists(jpath)
     assert glob.glob(f'{jpath}/*') != 0
     version = glob.glob(f'{jpath}/environments/v*')[0].split('/')[-1][1:]

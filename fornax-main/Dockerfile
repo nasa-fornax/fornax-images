@@ -17,11 +17,7 @@ ARG JULIA_VERSION=1.8.0
 ENV JULIA_DEPOT_PATH=$ENV_DIR/julia-$JULIA_VERSION \
     JULIA_PKGDIR=$ENV_DIR/julia-$JULIA_VERSION
 USER root
-RUN ln -s $ENV_DIR/julia-${JULIA_VERSION}/bin/julia /usr/local/bin/ \
- && mkdir -p /etc/julia \
- && cat <<'JRC' > /etc/julia/juliarc.jl
-push!(Libdl.DL_LOAD_PATH, "$MAMBA_ROOT_PREFIX/lib")
-JRC
+RUN ln -s $ENV_DIR/julia-${JULIA_VERSION}/bin/julia /usr/local/bin/
 USER $NB_USER
 RUN mkdir -p $ENV_DIR && cd $ENV_DIR \
  && JULIA_DIR=julia-${JULIA_VERSION} \
@@ -29,4 +25,8 @@ RUN mkdir -p $ENV_DIR && cd $ENV_DIR \
  && tar -xf ${JULIA_DIR}-linux-x86_64.tar.gz && rm ${JULIA_DIR}-linux-x86_64.tar.gz \
  && julia -e 'import Pkg; Pkg.update(); Pkg.add(["IJulia"]); Pkg.precompile();' \
  && mv ~/.local/share/jupyter/kernels/julia-* $JUPYTER_DIR/share/jupyter/kernels \
- && fix-permissions $ENV_DIR/${JULIA_DIR}
+ && fix-permissions $ENV_DIR/${JULIA_DIR} \
+ && mkdir -p ${JULIA_DIR}/config \
+ && cat <<'JRC' > ${JULIA_DIR}/config/juliarc.jl
+push!(Libdl.DL_LOAD_PATH, "$MAMBA_ROOT_PREFIX/lib")
+JRC

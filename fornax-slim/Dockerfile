@@ -95,9 +95,9 @@ COPY --chown=$NB_UID:$NB_GID kernels /opt/jupyter/share/jupyter/kernels
 
 
 ## ----- From other images ----- ##
-ENV PATH=$ENV_DIR/julia/bin:$PATH \
-    JULIA_DEPOT_PATH=$ENV_DIR/julia \
-    JULIAUP_DEPOT_PATH=$ENV_DIR/julia
+ARG JULIA_VERSION=1.8.0
+ENV JULIA_DEPOT_PATH=$ENV_DIR/julia-$JULIA_VERSION \
+    JULIA_PKGDIR=$ENV_DIR/julia-$JULIA_VERSION
 
 # Add ldap-related config; related to libnss-ldap
 USER root
