@@ -23,6 +23,7 @@ terminal.
 
 ## dev
 - Add R and Julia environments
+- CALDB now uses data from AWS S3.
 
 ## 26.0112
 - Fix user names in some environment variables.
