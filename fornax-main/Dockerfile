@@ -15,10 +15,8 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 # setup julia
 ARG JULIA_VERSION=1.8.0
 ENV JULIA_DEPOT_PATH=$ENV_DIR/julia-$JULIA_VERSION \
-    JULIA_PKGDIR=$ENV_DIR/julia-$JULIA_VERSION
-USER root
-RUN ln -s $ENV_DIR/julia-${JULIA_VERSION}/bin/julia /usr/local/bin/
-USER $NB_USER
+    JULIA_PKGDIR=$ENV_DIR/julia-$JULIA_VERSION \
+    PATH=$ENV_DIR/julia-$JULIA_VERSION/bin:$PATH
 RUN mkdir -p $ENV_DIR && cd $ENV_DIR \
  && JULIA_DIR=julia-${JULIA_VERSION} \
  && curl -SsLO https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%.*}/${JULIA_DIR}-linux-x86_64.tar.gz \
