@@ -74,6 +74,7 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
 # we use microconda instead of apt, so they are portable
 COPY --chown=$NB_UID:$NB_GID base.txt /tmp/
 RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
+ && mkdir -p $ENV_DIR && fix-permissions $ENV_DIR \
  && micromamba create -y -p $MAMBA_ROOT_PREFIX python=$PY_EXACT_VERSION \
  && xargs -a /tmp/base.txt micromamba install -y -p $MAMBA_ROOT_PREFIX \
  && micromamba clean -yaf && rm /tmp/base.txt \
