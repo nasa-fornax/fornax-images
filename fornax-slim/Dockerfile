@@ -100,6 +100,10 @@ ENV JULIA_DEPOT_PATH=$ENV_DIR/julia-$JULIA_VERSION \
     JULIA_PKGDIR=$ENV_DIR/julia-$JULIA_VERSION \
     PATH=$ENV_DIR/julia-$JULIA_VERSION/bin:$PATH
 
+# add a build version
+ARG BUILD_VERSION=0
+RUN IFS=: read -r name ver <<< "$BUILD_VERSION" && echo "$ver" >> $LOCK_DIR/build-$name
+
 # Add ldap-related config; related to libnss-ldap
 USER root
 RUN \

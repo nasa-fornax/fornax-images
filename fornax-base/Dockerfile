@@ -154,9 +154,7 @@ RUN update-notebooks.sh && link-notebooks.sh
 RUN ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
 
 ARG BUILD_VERSION=0
-USER root
 RUN IFS=: read -r name ver <<< "$BUILD_VERSION" && echo "$ver" >> $LOCK_DIR/build-$name
-USER $NB_USER
 
 # ==== Start ONBUILD commands ==== #
 # These commands run in images the inherit fornax-images
@@ -164,9 +162,7 @@ USER $NB_USER
 
 # add version number
 ONBUILD ARG BUILD_VERSION=0
-ONBUILD USER root
 ONBUILD RUN IFS=: read -r name ver <<< "$BUILD_VERSION" && echo "$ver" >> $LOCK_DIR/build-$name
-ONBUILD USER $NB_USER
 
 # Install any uv/conda environments and call build-* scripts
 ONBUILD RUN mkdir -p $HOME/build
