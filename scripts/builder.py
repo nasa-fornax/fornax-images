@@ -388,7 +388,8 @@ class Builder(TaskRunner):
         release_tags: list or None
             A list of target tag names for the release (no repo name)
         images: list or None
-            The list of images to tag for release. By default, all images
+            The list of images to tag for release. By default, all images.
+            Currentlu, only fornax-slim is supported for triggering.
 
         """
         # check the passed tags
@@ -404,8 +405,10 @@ class Builder(TaskRunner):
         if images is not None and not isinstance(images, list):
             raise ValueError(f'Expected images to be a list; got {images}')
 
-        # get a list of images to release
-        images_to_process = images if images is not None else list(IMAGE_ORDER)
+        # get a list of images to release; Only fornax-slim need to be triggered
+        supported_images = ['fornax-slim']
+        images_to_process = images if images is not None else supported_images
+        images_to_process = [im for im in images_to_process if im in supported_images]
         for image in images_to_process:
             if image not in IMAGE_ORDER:
                 raise ValueError(f'Unknown Requested image {image}.')

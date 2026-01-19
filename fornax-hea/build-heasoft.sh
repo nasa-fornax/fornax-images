@@ -64,7 +64,8 @@ wget -qL https://heasarc.gsfc.nasa.gov/FTP/caldb/software/tools/alias_config.fit
 cat << EOF > $ENV_DIR/heasoft/etc/conda/activate.d/caldb_activate.sh
 export CALDBCONFIG=$caldb_dir/caldb.config
 export CALDBALIAS=$caldb_dir/alias_config.fits
-export CALDB=https://heasarc.gsfc.nasa.gov/FTP/caldb
+# export CALDB=https://heasarc.gsfc.nasa.gov/FTP/caldb
+export CALDB=https://nasa-heasarc.s3.us-east-1.amazonaws.com/caldb
 EOF
 
 # clean and reset

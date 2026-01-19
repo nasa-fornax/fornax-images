@@ -213,7 +213,7 @@ class TestBuilder(unittest.TestCase):
     @patch('urllib.request.urlopen')
     def test_build__push_to_ecr(self, mock_urlopen):
         endpoint = 'http://some-endpoint'
-        image = 'fornax-base'
+        image = 'fornax-slim'
         msg, status = 'mock response data', 202
         mock_response = MagicMock()
         mock_response.status = status
@@ -240,7 +240,7 @@ class TestBuilder(unittest.TestCase):
 
     def test_build__push_to_ecr_not_found(self):
         endpoint = 'http://some-endpoint'
-        image = 'fornax-base'
+        image = 'fornax-slim'
         msg, status = 'Not Found', 404
         mock_urlopen = MagicMock()
         mock_urlopen.side_effect = urllib.error.HTTPError(
@@ -266,7 +266,7 @@ class TestBuilder(unittest.TestCase):
 
     def test_build__push_to_ecr_other_error(self):
         endpoint = 'http://some-endpoint'
-        image = 'fornax-base'
+        image = 'fornax-slim'
         msg, status = 'Not Found', 403
         mock_urlopen = MagicMock()
         mock_urlopen.side_effect = urllib.error.HTTPError(
@@ -282,7 +282,7 @@ class TestBuilder(unittest.TestCase):
     @patch('urllib.request.urlopen')
     def test_build__push_to_ecr_multiple_images(self, mock_urlopen):
         endpoint = 'http://some-endpoint'
-        images = ['fornax-base', 'fornax-main']
+        images = ['fornax-slim', 'fornax-slim']
         msg, status = 'mock response data', 202
         mock_response = MagicMock()
         mock_response.status = status
@@ -299,7 +299,7 @@ class TestBuilder(unittest.TestCase):
     @patch('urllib.request.urlopen')
     def test_build__push_to_multiple_ecr(self, mock_urlopen):
         endpoints = ['http://some-endpoint1', 'http://some-endpoint2']
-        image = 'fornax-base'
+        image = 'fornax-slim'
         msg, status = 'mock response data', 202
         mock_response = MagicMock()
         mock_response.status = status

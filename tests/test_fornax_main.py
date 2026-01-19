@@ -3,6 +3,7 @@ import os
 import ast
 import re
 import pytest
+import glob
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
@@ -134,3 +135,18 @@ def test_notebook_permissions(notebook):
 def test_notebook_kernels():
     """Kernel defnitions should exist"""
     CommonTests.test_kernels_exist(KERNELS)
+
+def test_julia():
+    """Julia and its kernel defnitions should exist"""
+    assert 'JULIA_DEPOT_PATH' in os.environ
+    jpath = os.environ['JULIA_DEPOT_PATH']
+    assert os.path.exists(jpath)
+    assert glob.glob(f'{jpath}/*') != 0
+    version = glob.glob(f'{jpath}/environments/v*')[0].split('/')[-1][1:]
+    CommonTests.test_kernels_exist([f'julia-{version}'])
+
+def test_r():
+    """R and its kernel defnitions should exist"""
+    assert os.path.exists(f'{env_root}/Renv')
+    assert glob.glob(f'{env_root}/Renv/*') != 0
+    CommonTests.test_kernels_exist([f'ir'])
