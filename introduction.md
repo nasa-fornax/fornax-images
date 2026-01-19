@@ -21,7 +21,7 @@ terminal.
 ---
 # Latest Changes
 
-## dev
+## 26.0119
 - Add R and Julia environments
 - CALDB now uses data from AWS S3.
 
