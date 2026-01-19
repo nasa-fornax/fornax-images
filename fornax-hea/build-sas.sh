@@ -191,13 +191,14 @@ unset SAS_CCFPATH
 EOF
 ###########################################################
 
-# (re)move data files;
+
+################### (Re)Move data files ###################
 bash $script_dir/build-map-data.sh $ENV_DIR/$ENV_NAME/${sas_install_dir}/lib/data xmmsas-${sas_version}/
 
 # We also remove the documentation source and build, once again to save space (don't bother symlinking this one,
 #  the documentation are very easily found online).
 rm -r $ENV_DIR/$ENV_NAME/${sas_install_dir}/doc
-######################################################
+###########################################################
 
 
 ###################### Final clean up #####################
