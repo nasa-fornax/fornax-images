@@ -8,4 +8,7 @@ jupyter_cpu_alive
 dask-labextension
 jupyter-firefly-extensions
 pip
+sos
+sos-notebook
+jupyterlab-sos
 # notebook-intelligence
