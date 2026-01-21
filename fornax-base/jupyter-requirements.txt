@@ -9,6 +9,7 @@ dask-labextension
 jupyter-firefly-extensions
 pip
 sos
+sos-python
 sos-notebook
 jupyterlab-sos
 # notebook-intelligence
