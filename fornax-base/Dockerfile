@@ -81,6 +81,7 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
 # we use microconda instead of apt, so they are portable
 COPY --chown=$NB_UID:$NB_GID base.txt /tmp/
 RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
+ && mkdir -p $ENV_DIR && fix-permissions $ENV_DIR \
  && micromamba create -y -p $MAMBA_ROOT_PREFIX python=$PY_EXACT_VERSION \
  && xargs -a /tmp/base.txt micromamba install -y -p $MAMBA_ROOT_PREFIX \
  && micromamba clean -yaf && rm /tmp/base.txt \
@@ -156,9 +157,7 @@ RUN update-notebooks.sh && link-notebooks.sh
 
 
 ARG BUILD_VERSION=0
-USER root
 RUN IFS=: read -r name ver <<< "$BUILD_VERSION" && echo "$ver" >> $LOCK_DIR/build-$name
-USER $NB_USER
 
 # ==== Start ONBUILD commands ==== #
 # These commands run in images the inherit fornax-images
@@ -166,9 +165,7 @@ USER $NB_USER
 
 # add version number
 ONBUILD ARG BUILD_VERSION=0
-ONBUILD USER root
 ONBUILD RUN IFS=: read -r name ver <<< "$BUILD_VERSION" && echo "$ver" >> $LOCK_DIR/build-$name
-ONBUILD USER $NB_USER
 
 # Install any uv/conda environments and call build-* scripts
 ONBUILD RUN mkdir -p $HOME/build

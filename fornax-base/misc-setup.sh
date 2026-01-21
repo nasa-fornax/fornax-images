@@ -4,13 +4,18 @@
 # JL terminals source ~/.profile not ~/.bashrc
 # But some user software may need ~/.bashrc (e.g. rust, julia)
 
+# if something fails, keep going
+set +ex
 if [ ! -f /home/$NB_USER/.profile ]; then
     cat <<PROFILE > /home/$NB_USER/.profile
 if [ -f /home/$NB_USER/.bashrc ]; then
     source /home/$NB_USER/.bashrc
 fi
 PROFILE
+    chown $NB_USER:$NB_USER /home/$NB_USER/.profile
 fi
+# reset exit-on-error
+set -e
 
 ## ----------------------------------------- ##
 ## Define some runtime environment variables ##

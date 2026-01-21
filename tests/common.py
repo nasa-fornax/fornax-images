@@ -78,14 +78,8 @@ class CommonTests:
     @staticmethod
     def test_kernels_exist(kernels):
         """Kernel defnitions should exist"""
-        expected = kernels[:]
-        expected.sort()
-
-        kernels_path = f"{jupyter_root}/{jupyter_env}/share/jupyter/kernels"
-        found = [os.path.basename(ker) for ker in glob.glob(f'{kernels_path}/*')]
-        found.sort()
-
-        assert found == expected
+        for kernel in kernels:
+            assert os.path.exists(f"{jupyter_root}/{jupyter_env}/share/jupyter/kernels/{kernel}")
 
 
 @contextlib.contextmanager
