@@ -16,6 +16,9 @@ if [ -z $SUPPORT_DATA_DIR ]; then
     exit 1
 fi
 
+# get current dir
+script_dir=$(pwd)
+
 # Sets up the working directory where SAS will assembled
 WORKDIR=/tmp/sas
 mkdir -p $WORKDIR
@@ -100,7 +103,6 @@ fi
 cat <<EOF > conda-$ENV_NAME.yml
 name: $ENV_NAME
 channels:
-  - https://heasarc.gsfc.nasa.gov/FTP/software/conda
   - conda-forge
 dependencies:
   - python=$py_version
@@ -190,19 +192,13 @@ EOF
 ###########################################################
 
 
-################### Remove XMM SAS data ###################
-# TODO UPDATE THIS APPROACH WHEN AMI IS IN PRODUCTION
-# Here we delete an existing directory and put a symlink in its place, in order to minimize the footprint of the
-#  Fornax-Hea image. This data directory IS necessary for SAS to work, but we have made sure it is in place on
-#  the Fornax system; this approach does break the Fornax-Hea SAS install anywhere but on Fornax, so we will improve
-#  this approach as soon as possible
-rm -r $ENV_DIR/$ENV_NAME/${sas_install_dir}/lib/data
-ln -s $SUPPORT_DATA_DIR/xmmsas-${sas_version}/sas_data $ENV_DIR/$ENV_NAME/${sas_install_dir}/lib/data
+################### (Re)Move data files ###################
+bash $script_dir/build-map-data.sh $ENV_DIR/$ENV_NAME/${sas_install_dir}/lib/data xmmsas-${sas_version}/
 
 # We also remove the documentation source and build, once again to save space (don't bother symlinking this one,
 #  the documentation are very easily found online).
 rm -r $ENV_DIR/$ENV_NAME/${sas_install_dir}/doc
-######################################################
+###########################################################
 
 
 ###################### Final clean up #####################
