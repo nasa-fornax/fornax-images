@@ -10,6 +10,8 @@ jupyter-firefly-extensions
 pip
 sos
 sos-python
+sos-r
+sos-julia
 sos-notebook
 jupyterlab-sos
 # notebook-intelligence
