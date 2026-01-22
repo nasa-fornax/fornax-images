@@ -21,6 +21,9 @@ terminal.
 ---
 # Latest Changes
 
+## dev
+- Update heasoft to 6.36 and ciao to 4.18.0
+
 ## 26.0119
 - Add R and Julia environments
 - CALDB now uses data from AWS S3.
