@@ -1,6 +1,6 @@
 # Latest Changes
 
-## dev
+## 26.0123
 - Update heasoft to 6.36 and ciao to 4.18.0
 - Add archive notebooks for IRSA and HEASARC.
 - Update Fornax menu to separate the introduction from changelog.
