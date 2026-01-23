@@ -146,10 +146,15 @@ RUN mkdir -p /opt/workspace
 VOLUME /opt/workspace
 
 # landing page; even an empty one
-COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md* $JUPYTER_DIR
+COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md* changes.md* $JUPYTER_DIR
 RUN cd $JUPYTER_DIR \
     && if test -f introduction.md; then \
       pandoc introduction.md -o introduction.html --standalone --metadata title="Welcome to Fornax Science Console!"; \
+      sed -i 's/max-width: 36em;/max-width: 50em;/' introduction.html; \
+    fi \
+    && if test -f changes.md; then \
+      pandoc changes.md -o changes.html --standalone --metadata title="Fornax Software Release Notes!"; \
+      sed -i 's/max-width: 36em;/max-width: 50em;/' changes.html; \
     fi
 
 # Add the notebooks to the image

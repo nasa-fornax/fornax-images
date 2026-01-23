@@ -43,9 +43,12 @@ for i in ${!notebook_repos[@]}; do
     echo "+++++ Done with $name!"
 done
 
-# bring in the intro page
+# bring in the intro and release notes page
 if test -f $JUPYTER_DIR/introduction.html && ! test -L $NOTEBOOK_DIR/introduction.html; then
     cp $JUPYTER_DIR/introduction.html $NOTEBOOK_DIR
+fi
+if test -f $JUPYTER_DIR/changes.html && ! test -L $NOTEBOOK_DIR/changes.html; then
+    cp $JUPYTER_DIR/changes.html $NOTEBOOK_DIR
 fi
 
 # Now make the notebooks files read-only

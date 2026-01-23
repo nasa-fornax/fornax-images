@@ -19,7 +19,8 @@ IMAGE_ORDER = (
 )
 
 COMMON_FILES = [
-    'introduction.md'
+    'introduction.md',
+    'changes.md'
 ]
 
 
