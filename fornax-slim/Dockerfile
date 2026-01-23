@@ -4,12 +4,13 @@ ARG REPOSITORY=nasa-fornax/fornax-images
 ARG REGISTRY=ghcr.io
 
 FROM ${REGISTRY}/${REPOSITORY}/fornax-base:${BASE_TAG} AS base
+FROM ${REGISTRY}/${REPOSITORY}/fornax-main:${BASE_TAG} AS main
 FROM scratch
 
 
 # Copy everything *except* the folder you want to remove
 COPY --from=base /opt/jupyter /opt/jupyter
-COPY --from=base /opt/notebooks /opt/notebooks
+COPY --from=main /opt/notebooks /opt/notebooks
 COPY --from=base /usr /usr
 COPY --from=base /bin /bin
 COPY --from=base /etc /etc
