@@ -1,4 +1,6 @@
 
+# Welcome to Fornax
+
 <img src="https://raw.githubusercontent.com/nasa-fornax/fornax-documentation/refs/heads/main/_static/fornax_logo.png" alt="Fornax Science Console"
     style="float: right; width: 200px; margin: 10px;" />
 
@@ -34,7 +36,7 @@ These notebooks are also available on [github](https://github.com/heasarc/heasar
 and in [rendered format](https://heasarc.github.io/heasarc-tutorials/).
 
 - **MAST tutorials**: [MAST]() tutorials are available on [github](https://github.com/spacetelescope/mast_notebooks)
-and and in [rendered format](https://spacetelescope.github.io/mast_notebooks/intro.html). A subset of
+and in [rendered format](https://spacetelescope.github.io/mast_notebooks/intro.html). A subset of
 those notbeooks will be available here soon.
 
 These notebooks and the subsets available on Fornax are updated continuously. If you have question
