@@ -35,15 +35,15 @@ export DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/
 script=/tmp/kernel-warmer.sh
 cat <<EOF > $script
 echo "Starting kernel warmer ..."
-for dd in \$(echo python3 heasoft py-* ciao fermi); do
-    env=\$ENV_DIR/\$dd
+cd $ENV_DIR
+for env in python3 heasoft \$(ls -d py-*) ciao fermi; do
     if test -x "\$env/bin/python"; then
         echo "warming \$env .."
         \$env/bin/python -m ipykernel -h > /dev/null
     fi
 done
 echo "warming base .."
-find \$ENV_DIR/base/bin/ -type f | xargs -n 100 cat >/dev/null
+find base/bin/ -type f | xargs -n 100 cat >/dev/null
 echo "Done with kernel warmer ..."
 
 # remove the script
