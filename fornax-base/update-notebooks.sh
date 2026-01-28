@@ -45,10 +45,10 @@ done
 
 # bring in the intro and release notes page
 if test -f $JUPYTER_DIR/introduction.md && ! test -L $NOTEBOOK_DIR/introduction.md; then
-    cp $JUPYTER_DIR/introduction.md $NOTEBOOK_DIR
+    cp $JUPYTER_DIR/introduction.md $NOTEBOOK_DIR/introduction.mdv
 fi
 if test -f $JUPYTER_DIR/changes.md && ! test -L $NOTEBOOK_DIR/changes.md; then
-    cp $JUPYTER_DIR/changes.md $NOTEBOOK_DIR
+    cp $JUPYTER_DIR/changes.md $NOTEBOOK_DIR/changes.mdv
 fi
 
 # Now make the notebooks files read-only
