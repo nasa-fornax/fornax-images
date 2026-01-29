@@ -37,6 +37,11 @@ dependencies:
     - astropy
     - s3fs
     - boto3
+    - xga>=0.6.3
+    - pandas
+    - tqdm
+    - scikit-learn
+    - umap-learn
 EOF
 
 # Use conda-heasoft.yml to create the heasoft env
