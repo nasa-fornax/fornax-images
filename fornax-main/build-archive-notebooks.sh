@@ -10,9 +10,6 @@ if test -z $NOTEBOOK_DIR; then
 fi
 
 ## -------- START IRSA notebooks -------- ##
-cd /tmp/
-git clone --branch deploy_to_fornax --depth 1 https://github.com/Caltech-IPAC/irsa-tutorials/
-mv irsa-tutorials/irsa-tutorials $NOTEBOOK_DIR
 
 # setup the kernel
 cd $NOTEBOOK_DIR/irsa-tutorials
@@ -26,17 +23,10 @@ setup-pip-env <<< yes
 for nb in `find . -name '*.md'`; do
     $JUPYTER_DIR/bin/jupytext --set-kernel py-irsa-tutorials $nb
 done
-
-# clean
-rm -rf /tmp/irsa-tutorials
 ## -------- END IRSA notebooks -------- ##
 
 
 ## -------- START HEASARC notebooks -------- ##
-cd /tmp/
-git clone --branch production-notebooks --depth 1 https://github.com/heasarc/heasarc-tutorials
-mv heasarc-tutorials/ $NOTEBOOK_DIR
-
 cd $NOTEBOOK_DIR/heasarc-tutorials/
 rm README.md
 find . -type f -name '*.ipynb' -delete
