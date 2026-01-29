@@ -34,6 +34,8 @@ export DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/
 # warmup ipykernel so it loads faster in the environments
 script=/tmp/kernel-warmer.sh
 cat <<EOF > $script
+set +ex
+sleep 20
 echo "Starting kernel warmer ..."
 cd $ENV_DIR
 for env in python3 heasoft \$(ls -d py-*) ciao fermi; do
