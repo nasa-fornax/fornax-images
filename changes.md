@@ -1,9 +1,9 @@
 # Latest Changes
 
-## 26.0128
+## 26.0129
 - Update heasoft to 6.36 and ciao to 4.18.0
 - Add archive notebooks for IRSA and HEASARC.
-- Update Fornax menu to separate the introduction from changelog and use markdown viewer (labextension: 0.1.13).
+- Update Fornax menu to separate the introduction from changelog and use markdown viewer (labextension: 0.1.14).
 
 ## 26.0119
 - Add R and Julia environments
