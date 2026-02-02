@@ -51,6 +51,8 @@ echo "Done with kernel warmer ..."
 # remove the script
 rm -- $script
 EOF
-# run it in the background
-bash $script & disown
+# run it in the background if we are inside JH
+if [ -z "${JUPYTERHUB_USER+x}" ]; then
+    bash $script & disown
+fi
 ## ----------------------------------------- ##
