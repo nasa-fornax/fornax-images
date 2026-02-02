@@ -535,5 +535,5 @@ class Builder(TaskRunner):
         self.run(f'mkdir -p {lock_dir}', 100)
         cmd = (f'docker run --entrypoint="" --rm -v $PWD/{lock_dir}:/host '
                f'--user `id -u` {extra_args} '
-               f"{full_tag} bash -c 'cp $LOCK_DIR/* /host/'")
+               f"{full_tag} bash -c 'cp -r $LOCK_DIR/* /host/'")
         self.run(cmd, 1000)

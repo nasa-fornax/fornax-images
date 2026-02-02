@@ -1,7 +1,8 @@
 # Latest Changes
 
-## 26.0129
+## 26.0202
 - Update heasoft to 6.36 and ciao to 4.18.0
+- Add basic astronomy packages to julia
 - Add archive notebooks for IRSA and HEASARC.
 - Update Fornax menu to separate the introduction from changelog and use markdown viewer (labextension: 0.1.14).
 

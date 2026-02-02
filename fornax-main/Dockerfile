@@ -21,9 +21,11 @@ RUN mkdir -p $ENV_DIR && cd $ENV_DIR \
  && JULIA_DIR=julia-${JULIA_VERSION} \
  && curl -SsLO https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%.*}/${JULIA_DIR}-linux-x86_64.tar.gz \
  && tar -xf ${JULIA_DIR}-linux-x86_64.tar.gz && rm ${JULIA_DIR}-linux-x86_64.tar.gz \
+ && julia -e 'import Pkg; Pkg.update(); Pkg.add(["FITSIO", "DataFrames", "Plots", "AstroLib", "AstroImages"]);' \
  && julia -e 'import Pkg; Pkg.update(); Pkg.add(["IJulia"]); using IJulia;Pkg.precompile();' \
  && mv ~/.local/share/jupyter/kernels/julia-* $JUPYTER_DIR/share/jupyter/kernels \
  && mkdir -p ${JULIA_DIR}/config \
+ && mkdir -p $LOCK_DIR/julia && cp $JULIA_PKGDIR/environments/*/*toml $LOCK_DIR/julia \
  && cat <<'JRC' > ${JULIA_DIR}/config/juliarc.jl && fix-permissions $ENV_DIR/${JULIA_DIR}
 push!(Libdl.DL_LOAD_PATH, joinpath(ENV["MAMBA_ROOT_PREFIX"], "lib"))
 JRC
