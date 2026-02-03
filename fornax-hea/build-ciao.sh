@@ -10,6 +10,9 @@ if [ -z $SUPPORT_DATA_DIR ]; then
     exit 1
 fi
 
+# get current dir
+script_dir=$(pwd)
+
 # install ciao; do it in a script instead of yml file so
 # get more control over the spectral data files
 WORKDIR=/tmp/ciao
@@ -24,9 +27,9 @@ channels:
   - https://cxc.cfa.harvard.edu/conda/ciao
   - conda-forge
 dependencies:
-  - ciao=4.17.0
+  - ciao=4.18.0
   - sherpa
-  - ciao-contrib=4.17.0
+  - ciao-contrib=4.18.0
   - marx
   - pip
   - pip:
@@ -40,11 +43,6 @@ EOF
 # Use the yml to create the ciao env
 bash /usr/local/bin/setup-conda-env <<< yes
 
-
-# delete the model data and caldb; create simlinks below
-rm -rf $ENV_DIR/ciao/spectral/modelData
-rm -rf $ENV_DIR/ciao/CALDB | true
-
 # Remove these files
 rm -rf $ENV_DIR/ciao/test
 rm -rf $ENV_DIR/ciao/docs
@@ -52,12 +50,15 @@ rm -rf $ENV_DIR/ciao/docs
 
 # get ciao version
 CIAO_VERSION=$(micromamba list ciao -p $ENV_DIR/ciao --json | jq -r '.[0].version')
-CALDB_VERSION=4.12.0
+CALDB_VERSION=4.12.3
 
-# link modelData
-ln -sf $SUPPORT_DATA_DIR/ciao-${CIAO_VERSION}/spectral/modelData $ENV_DIR/ciao/spectral/modelData
-# link caldb.
-ln -sf $SUPPORT_DATA_DIR/ciao-caldb-${CALDB_VERSION}/CALDB $ENV_DIR/ciao/CALDB
+# (re)move data files;
+bash $script_dir/build-map-data.sh $ENV_DIR/ciao/spectral/modelData ciao-${CIAO_VERSION}/spectral
+bash $script_dir/build-map-data.sh $ENV_DIR/ciao/CALDB ciao-caldb-${CALDB_VERSION}
+
+# Remove these files - we don't need to include them in the image at all
+rm -rf $ENV_DIR/ciao/test
+rm -rf $ENV_DIR/ciao/docs
 
 
 # Writing scripts to ensure the CALDB and HEASoft PFILES paths are properly set up when the CIAO environment is loaded
@@ -79,7 +80,7 @@ EOF
 cat << EOF > $ENV_DIR/ciao/etc/conda/activate.d/ciao-pfiles_activate.sh
 #!/bin/bash
 # Intended to solve parameter file copying issues for HEASoft tools when using the CIAO conda environment
-export PFILES="$PFILES:$ENV_DIR/heasoft/heasoft/syspfiles"
+export PFILES="\$PFILES:$ENV_DIR/heasoft/heasoft/syspfiles"
 EOF
 #####################
 
