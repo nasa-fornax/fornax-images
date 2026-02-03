@@ -52,7 +52,7 @@ echo "Done with kernel warmer ..."
 rm -- $script
 EOF
 # run it in the background if we are inside JH
-if [ -z "${JUPYTERHUB_USER+x}" ]; then
+if [ -n "${JUPYTERHUB_USER+x}" ]; then
     bash $script & disown
 fi
 ## ----------------------------------------- ##
