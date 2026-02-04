@@ -1,5 +1,8 @@
 # Latest Changes
 
+## 26.0204
+- Add a kernel warmer script
+
 ## 26.0202
 - Update heasoft to 6.36 and ciao to 4.18.0
 - Add basic astronomy packages to julia

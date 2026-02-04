@@ -35,7 +35,7 @@ export DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/
 script=/tmp/kernel-warmer.sh
 cat <<EOF > $script
 set +ex
-sleep 20
+sleep 40
 echo "Starting kernel warmer ..."
 cd $ENV_DIR
 for env in python3 heasoft \$(ls -d py-*) ciao fermi; do
@@ -52,7 +52,7 @@ echo "Done with kernel warmer ..."
 rm -- $script
 EOF
 # run it in the background if we are inside JH
-if [ -z "${JUPYTERHUB_USER+x}" ]; then
+if [ -n "${JUPYTERHUB_USER+x}" ]; then
     bash $script & disown
 fi
 ## ----------------------------------------- ##

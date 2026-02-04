@@ -68,7 +68,19 @@ if [ -d irsa-tutorials/irsa-tutorials ]; then
     mv irsa-tutorials.off/irsa-tutorials .
     rm -r irsa-tutorials.off
 fi
+
+# fix kernel names for irsa
+for nb in `find . -name 'irsa-tutorials/*.md'`; do
+    $JUPYTER_DIR/bin/jupytext --set-kernel py-irsa-tutorials $nb
+done
+
+# remove extra files from heasarc tutorials
+cd $NOTEBOOK_DIR/heasarc-tutorials/
+rm README.md
+find . -type f -name '*.ipynb' -delete
+
 # add fornax-main manifest
+cd $NOTEBOOK_DIR
 cat <<EOF > fornax-demo-notebooks/fornax-manifest.txt
 crossmatch/ztf_ps1_crossmatch.md: Cross-Match ZTF and Pan-STARRS using LSDB
 forced_photometry/multiband_photometry.md: Automated Multiband Forced Photometry on Large Datasets
