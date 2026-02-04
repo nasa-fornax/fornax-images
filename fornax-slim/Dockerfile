@@ -10,7 +10,7 @@ FROM scratch
 
 # Copy everything *except* the folder you want to remove
 COPY --from=base /opt/jupyter /opt/jupyter
-COPY --from=main /opt/notebooks /opt/notebooks
+COPY --from=base /opt/notebooks /opt/notebooks
 COPY --from=base /usr /usr
 COPY --from=base /bin /bin
 COPY --from=base /etc /etc
