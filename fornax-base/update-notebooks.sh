@@ -80,6 +80,7 @@ rm README.md
 find . -type f -name '*.ipynb' -delete
 
 # add fornax-main manifest
+cd $NOTEBOOK_DIR
 cat <<EOF > fornax-demo-notebooks/fornax-manifest.txt
 crossmatch/ztf_ps1_crossmatch.md: Cross-Match ZTF and Pan-STARRS using LSDB
 forced_photometry/multiband_photometry.md: Automated Multiband Forced Photometry on Large Datasets
