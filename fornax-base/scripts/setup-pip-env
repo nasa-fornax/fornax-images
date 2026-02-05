@@ -87,7 +87,10 @@ for envfile in ${files[@]}; do
         uv pip list --format=freeze > $VIRTUAL_ENV/$ENVFILE
         mkdir -p $LOCK_DIR
         cp $VIRTUAL_ENV/$ENVFILE $LOCK_DIR
-        fix-permissions $envdir/$env
+        # run the following only when building the image
+        if [[ "$(id -un)" == "jovyan" ]];; then
+            fix-permissions $envdir/$env
+        fi
     else
         uv run python -m ipykernel install --name $env --user
         KERNEL_JSON="$HOME/.local/share/jupyter/kernels/$env/kernel.json"
