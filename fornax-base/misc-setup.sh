@@ -21,6 +21,8 @@ set -e
 ## Define some runtime environment variables ##
 # for custom user environments
 export USER_ENV_DIR="/home/$NB_USER/user-envs"
+# allow micromamba to find $USER_ENV_DIR
+export CONDA_ENVS_PATH=$USER_ENV_DIR
 # for vscode
 export CODE_EXECUTABLE=code-server
 export CODE_EXTENSIONSDIR="/home/$NB_USER/.local/share/code-server/extensions"
