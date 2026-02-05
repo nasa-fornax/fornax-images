@@ -88,7 +88,7 @@ for envfile in ${files[@]}; do
         mkdir -p $LOCK_DIR
         cp $VIRTUAL_ENV/$ENVFILE $LOCK_DIR
         # run the following only when building the image
-        if [[ "$(id -un)" == "jovyan" ]];; then
+        if [[ "$(id -un)" == "jovyan" ]]; then
             fix-permissions $envdir/$env
         fi
     else
