@@ -53,6 +53,7 @@ def test_env_vars():
     slim_envs = _extract_env_vars(f'{wdir}/../fornax-slim/Dockerfile')
     assert(set(envs) == set(slim_envs))
 
+    assert 'FORNAX_SOFTWARE_VERSION' in os.environ
 
 
 def _extract_env_vars(dockerfile):
