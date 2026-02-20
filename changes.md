@@ -2,6 +2,7 @@
 
 ## 26.0220
 - Add ML tools the python3 environments.
+- Expose the image version as a variable FORNAX_SOFTWARE_VERSION.
 
 ## 26.0204
 - Add a kernel warmer script

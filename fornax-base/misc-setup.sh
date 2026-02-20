@@ -31,6 +31,9 @@ export FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
 # for dask
 export DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/{port}/status"
 
+# image version
+export FORNAX_SOFTWARE_VERSION=$(sed -n '/^##/ { s/^##[[:space:]]*//; p; q; }' $JUPYTER_DIR/changes.md)
+
 ## ----------------------------------------- ##
 ## run a kernel warmer in the background     ##
 # warmup ipykernel so it loads faster in the environments
