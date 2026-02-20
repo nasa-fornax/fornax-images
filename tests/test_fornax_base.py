@@ -38,6 +38,7 @@ def test_base_env():
 def test_update_notebooks_script():
     # needed by fornax-labextension >= 0.1.5
     os.path.exists('/usr/local/bin/update-notebooks.sh')
+    os.path.exists(f"{os.environ['JUPYTER_DIR']}/bin/parse_nb_manifest.py")
 
 
 def test_firefly_basic():
