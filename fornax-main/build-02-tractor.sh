@@ -29,6 +29,8 @@ folder=astrometry.net-$astrometry_version
 curl -SsLO https://github.com/dstndstn/astrometry.net/releases/download/0.97/$folder.tar.gz
 tar -zxvf $folder.tar.gz && rm $folder.tar.gz
 cd $folder
+# cairo headers can be under cairo folder
+export CFLAGS="-I$ENV_DIR/base/include/cairo"
 make
 make py
 make extra
@@ -65,3 +67,4 @@ uv pip list --format=freeze > $VIRTUAL_ENV/requirements-py-multiband_photometry.
 
 micromamba clean -yaf
 uv cache clean
+rm -rf /tmp/*
