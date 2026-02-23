@@ -10,6 +10,37 @@ jupyter_env = 'jupyter'
 jupyter_root = '/opt'
 notebook_dir = os.environ.get('NOTEBOOK_DIR', f"{os.environ['HOME']}/fornax-notebooks")
 
+notebooks = {
+    'multiband_photometry': {
+        'file': ('fornax-demo-notebooks/forced_photometry/'
+                 'multiband_photometry.md'),
+        'env': 'py-multiband_photometry'
+    },
+    'light_curve_classifier': {
+        'file': 'fornax-demo-notebooks/light_curves/light_curve_classifier.md',
+        'env': 'py-light_curve_classifier'
+    },
+    'light_curve_collector': {
+        'file': 'fornax-demo-notebooks/light_curves/light_curve_collector.md',
+        'env': 'py-light_curve_collector'
+    },
+    'scale_up': {
+        'file': 'fornax-demo-notebooks/light_curves/scale_up.md',
+        'env': 'py-scale_up'
+    },
+    'ml_agnzoo': {
+        'file': 'fornax-demo-notebooks/light_curves/ML_AGNzoo.md',
+        'env': 'py-ml_agnzoo'
+    },
+    'spectra_collector': {
+        'file': 'fornax-demo-notebooks/spectroscopy/spectra_collector.md',
+        'env': 'py-spectra_collector'
+    },
+    'ztf_ps1_crossmatch': {
+        'file': 'fornax-demo-notebooks/crossmatch/ztf_ps1_crossmatch.md',
+        'env': 'py-ztf_ps1_crossmatch'
+    }
+}
 
 class CommonTests:
 
