@@ -8,3 +8,6 @@ jq
 awscli
 htop
 code-server
+compilers
+make
+pkg-config
