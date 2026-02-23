@@ -1,8 +1,10 @@
 # Latest Changes
 
-## 26.0220
+## 26.0223
 - Add ML tools the python3 environments.
 - Expose the image version as a variable FORNAX_SOFTWARE_VERSION.
+- Make standard compilers available by default.
+- 
 
 ## 26.0204
 - Add a kernel warmer script
