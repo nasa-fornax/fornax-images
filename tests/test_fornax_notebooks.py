@@ -1,4 +1,8 @@
+import os
 import pytest
+
+sys.path.insert(0, os.path.dirname(__file__))
+from common import CommonTests, change_dir  # noqa E402
 from common import env_root, jupyter_env, jupyter_root, notebook_dir, notebooks  # noqa E402
 
 
