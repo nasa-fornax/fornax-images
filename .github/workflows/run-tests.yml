@@ -1,4 +1,5 @@
 name: image-tests
+run-name: "Image tests: ${{ inputs.images }}"
 on:
   # call from the image build pipeline
   workflow_call:
