@@ -25,3 +25,4 @@ setup-pip-env <<< yes
 # All notbeooks are using the heasoft environment for now.
 
 ## -------- END HEASARC notebooks -------- ##
+rm -rf /tmp/*
