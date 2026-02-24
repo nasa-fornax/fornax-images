@@ -22,11 +22,10 @@ resolve_references() {
 }
 
 cd /tmp/
-git clone --single-branch --branch deployed_notebooks https://github.com/nasa-fornax/fornax-demo-notebooks
 
 if [ -d build ]; then rm -rf build; fi
 mkdir build
-find fornax-demo-notebooks -type f -name "requirements_*txt" -exec cp {} build/ \;
+find $NOTEBOOK_DIR/fornax-demo-notebooks -type f -name "requirements_*txt" -exec cp {} build/ \;
 cd build
 
 for req in `ls requirements_*`; do
@@ -41,5 +40,5 @@ rm -f requirements_*
 bash /usr/local/bin/setup-pip-env <<< yes
 
 cd /tmp/
-rm -rf fornax-demo-notebooks build
+rm -rf build
 uv cache clean

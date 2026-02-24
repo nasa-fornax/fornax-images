@@ -21,6 +21,8 @@ set -e
 ## Define some runtime environment variables ##
 # for custom user environments
 export USER_ENV_DIR="/home/$NB_USER/user-envs"
+# allow micromamba to find $USER_ENV_DIR
+export CONDA_ENVS_PATH=$USER_ENV_DIR
 # for vscode
 export CODE_EXECUTABLE=code-server
 export CODE_EXTENSIONSDIR="/home/$NB_USER/.local/share/code-server/extensions"
@@ -28,6 +30,9 @@ export CODE_EXTENSIONSDIR="/home/$NB_USER/.local/share/code-server/extensions"
 export FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
 # for dask
 export DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/{port}/status"
+
+# image version
+export FORNAX_SOFTWARE_VERSION=$(sed -n '/^##/ { s/^##[[:space:]]*//; p; q; }' $JUPYTER_DIR/changes.md)
 
 ## ----------------------------------------- ##
 ## run a kernel warmer in the background     ##

@@ -91,9 +91,9 @@ light_curves/scale_up.md: Make Multi-wavelength light Curves for Large Samples
 spectroscopy/spectra_collector.md: Extract Multi-wavelength Spectroscopy From Archival Data
 EOF
 # parse the manifests
-if [ -f $JUPYTER_DIR/parse_nb_manifest.py ]; then
+if [ -f $JUPYTER_DIR/bin/parse_nb_manifest.py ]; then
     echo "Parsing manifests of archive notebooks"
-    $JUPYTER_DIR/bin/python $JUPYTER_DIR/parse_nb_manifest.py
+    $JUPYTER_DIR/bin/python $JUPYTER_DIR/bin/parse_nb_manifest.py
 fi
 
 # Now make the notebooks files read-only

@@ -11,3 +11,9 @@ pytest
 dask[distributed]
 bokeh
 s3fs
+torch
+torchvision
+scikit-learn
+xgboost
+tensorflow
+keras

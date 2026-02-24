@@ -45,7 +45,8 @@ RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py
 
 # Copy our scripts
 COPY --chmod=0555 --chown=$NB_UID:$NB_GID scripts/* update-notebooks.sh link-notebooks.sh /usr/local/bin/
-COPY --chown=$NB_UID:$NB_GID parse_nb_manifest.py $JUPYTER_DIR
+RUN mv /usr/local/bin/update-notebooks.sh /usr/local/bin/_update-notebooks.sh
+COPY --chown=$NB_UID:$NB_GID parse_nb_manifest.py $JUPYTER_DIR/bin/
 
 # Support data location; SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
 # SUPPORT_DATA_MOUNT is used here to allow the images to be used
@@ -150,7 +151,7 @@ VOLUME /opt/workspace
 COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md* changes.md* $JUPYTER_DIR
 
 # Add the notebooks to the image
-RUN update-notebooks.sh && link-notebooks.sh
+RUN _update-notebooks.sh && link-notebooks.sh
 
 
 ARG BUILD_VERSION=0
@@ -182,9 +183,6 @@ ONBUILD RUN cd build \
  && ./$script \
  ; done
 # --------------------------- #
-
-# Update the notebooks
-ONBUILD RUN update-notebooks.sh
 
 
 ONBUILD RUN rm -r $HOME/build

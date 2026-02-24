@@ -30,6 +30,7 @@ channels:
 dependencies:
   - python=$PYTHON_VERSION
   - heasoft=6.36.*
+  - uncompresspy
   - pip
   - pip:
     - pytest

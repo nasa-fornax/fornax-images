@@ -7,42 +7,9 @@ import glob
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
-from common import env_root, jupyter_env, jupyter_root, notebook_dir  # noqa E402
+from common import env_root, jupyter_env, jupyter_root, notebook_dir, notebooks  # noqa E402
 
 default_kernel = 'python3'
-
-
-notebooks = {
-    'multiband_photometry': {
-        'file': ('fornax-demo-notebooks/forced_photometry/'
-                 'multiband_photometry.md'),
-        'env': 'py-multiband_photometry'
-    },
-    'light_curve_classifier': {
-        'file': 'fornax-demo-notebooks/light_curves/light_curve_classifier.md',
-        'env': 'py-light_curve_classifier'
-    },
-    'light_curve_collector': {
-        'file': 'fornax-demo-notebooks/light_curves/light_curve_collector.md',
-        'env': 'py-light_curve_collector'
-    },
-    'scale_up': {
-        'file': 'fornax-demo-notebooks/light_curves/scale_up.md',
-        'env': 'py-scale_up'
-    },
-    'ml_agnzoo': {
-        'file': 'fornax-demo-notebooks/light_curves/ML_AGNzoo.md',
-        'env': 'py-ml_agnzoo'
-    },
-    'spectra_collector': {
-        'file': 'fornax-demo-notebooks/spectroscopy/spectra_collector.md',
-        'env': 'py-spectra_collector'
-    },
-    'ztf_ps1_crossmatch': {
-        'file': 'fornax-demo-notebooks/crossmatch/ztf_ps1_crossmatch.md',
-        'env': 'py-ztf_ps1_crossmatch'
-    }
-}
 
 KERNELS = ['python3'] + [val['env'] for val in notebooks.values()]
 
@@ -99,7 +66,7 @@ def test_imports(notebook):
     with change_dir(f'{notebook_dir}/{nb_path}'):
         # we need the folder to be writable
         CommonTests.run_cmd(
-            f'jupytext --to py {nb_filename}'
+            f'{jupyter_root}/{jupyter_env}/bin/jupytext --to py {nb_filename}'
         )
 
         with open(py_filename) as fp:
