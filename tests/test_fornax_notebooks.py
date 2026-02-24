@@ -18,8 +18,5 @@ def test_run_notebooks(notebook):
     assert os.path.exists(f'{notebook_dir}/{nb_file}')
     with change_dir(f'{notebook_dir}/{nb_path}'):
         CommonTests.run_cmd(
-            f'{jupyter_root}/{jupyter_env}/bin/jupytext --to py {nb_filename}'
-        )
-        CommonTests.run_cmd(
-            f'{env_root}/{env}/bin/python {py_filename}'
+            f'{jupyter_root}/{jupyter_env}/bin/jupytext --execute {nb_filename}'
         )
