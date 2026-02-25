@@ -11,8 +11,8 @@ from common import env_root, jupyter_env, jupyter_root, notebook_dir, notebooks 
 def test_run_notebooks(notebook):
     """Do a full run of the notebook"""
     # skip the nootebook that needs large RAM for now.
-    if notebook == 'light_curve_collector':
-        return
+    if notebook in ['light_curve_collector']:
+        pytest.skip(f'Skipping {notebook}')
     nb_file = notebooks[notebook]['file']
     env = notebooks[notebook]['env']
     nb_path = os.path.dirname(nb_file)
