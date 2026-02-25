@@ -1,0 +1,23 @@
+name: image-tests-2
+on:
+  workflow_dispatch:
+    # inputs:
+    #   images:
+    #     description: 'Images of the form: ["image-1","image-2"]'
+    #     required: true
+    #     type: string
+  
+jobs:
+  my-job:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/nasa-fornax/fornax-images/fornax-main:develop
+      # credentials:
+      #   username: ${{ secrets.DOCKER_USERNAME }}
+      #   password: ${{ secrets.DOCKER_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          echo "Running inside custom container"
+          pwd
+          ls
