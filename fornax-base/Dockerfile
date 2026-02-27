@@ -75,9 +75,11 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
  && mkdir -p $LOCK_DIR \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
-# run jupyterhub-singleuser once to cache the extension and speedup the start
-&& timeout 20s jupyterhub-singleuser || true \
-&& fix-permissions $JUPYTER_DIR
+ # Install SoS-notebook kernel properly \
+ && $JUPYTER_DIR/bin/python -m sos_notebook.install --prefix=$JUPYTER_DIR \
+ # run jupyterhub-singleuser once to cache the extension and speedup the start
+ && timeout 20s jupyterhub-singleuser || true \
+ && fix-permissions $JUPYTER_DIR
 
 # Install system packages with micromamba
 # we use microconda instead of apt, so they are portable
