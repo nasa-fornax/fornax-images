@@ -18,6 +18,11 @@ sed -i -e '/jupytext/d' -e '/jupyterlab-myst/d' -e '/firefly-extensions/d' requi
 mv requirements-irsa-tutorials.txt requirements-py-irsa-tutorials.txt
 # setup the environment
 setup-pip-env <<< yes
+
+# the spherex notebook is separate
+cd spherex/spherex_source_discovery
+mv conda-spherex_sdt.yml conda-py-spherex_sdt.yml
+setup-conda-env <<< yes
 ## -------- END IRSA notebooks -------- ##
 
 

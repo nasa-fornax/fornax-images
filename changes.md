@@ -1,5 +1,9 @@
 # Latest Changes
 
+## 26.0302
+- Add tex processing with tectonic and enable exporting notebooks as pdf.
+- Add the environment for SPHEREx Source Discovery Tool.
+
 ## 26.0223
 - Add ML tools to the python3 environments.
 - Expose the image version as a variable FORNAX_SOFTWARE_VERSION.
