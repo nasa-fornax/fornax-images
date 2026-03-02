@@ -29,7 +29,7 @@ cd spherex/spherex_source_discovery
 mv conda-spherex_sdt.yml conda-py-spherex_sdt.yml
 setup-conda-env <<< yes
 
-nb=spherex/spherex_source_discovery/spherex_source_discovery_tool_demo.md
+nb=spherex_source_discovery_tool_demo.md
 $JUPYTER_DIR/bin/jupytext --set-kernel py-spherex_sdt $nb
 ## -------- END IRSA notebooks -------- ##
 
