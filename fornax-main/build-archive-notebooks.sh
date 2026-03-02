@@ -19,10 +19,18 @@ mv requirements-irsa-tutorials.txt requirements-py-irsa-tutorials.txt
 # setup the environment
 setup-pip-env <<< yes
 
-# the spherex notebook is separate
+# fix kernel names for irsa
+for nb in `find . -name '*.md'`; do
+    $JUPYTER_DIR/bin/jupytext --set-kernel py-irsa-tutorials $nb
+done
+
+# SPHEREx is special
 cd spherex/spherex_source_discovery
 mv conda-spherex_sdt.yml conda-py-spherex_sdt.yml
 setup-conda-env <<< yes
+
+nb=spherex/spherex_source_discovery/spherex_source_discovery_tool_demo.md
+$JUPYTER_DIR/bin/jupytext --set-kernel py-spherex_sdt $nb
 ## -------- END IRSA notebooks -------- ##
 
 
