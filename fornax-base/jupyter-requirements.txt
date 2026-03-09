@@ -9,4 +9,9 @@ dask-labextension
 jupyter-firefly-extensions
 pip
 jupyter-ai
+jupyter-ai-chat-commands
+jupyter-ai-jupyternaut
+jupyter-ai-tools
+jupyter-server-mcp
+jupyter-server-documents
 # notebook-intelligence
