@@ -8,4 +8,5 @@ jupyter_cpu_alive
 dask-labextension
 jupyter-firefly-extensions
 pip
+jupyter-ai
 # notebook-intelligence

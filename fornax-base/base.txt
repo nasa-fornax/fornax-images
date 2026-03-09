@@ -12,3 +12,4 @@ compilers
 make
 pkg-config
 tectonic
+ollama
