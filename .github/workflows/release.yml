@@ -23,6 +23,15 @@ jobs:
       images: ${{ steps.image-list.outputs.IMAGE_LIST }}
 
     steps:
+      - name: Check source branch is main
+        run: |
+          if [ "${{ github.ref_name }}" != "main" ]; then
+            echo "❌ Releases must be created from main branch."
+            echo "    Current ref: ${{ github.ref_name }}"
+            exit 1
+          fi
+          echo "✅ Branch check passed."
+      
       - name: Checkout repository
         uses: actions/checkout@v4
     
