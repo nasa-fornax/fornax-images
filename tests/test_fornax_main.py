@@ -12,6 +12,8 @@ from common import env_root, jupyter_env, jupyter_root, notebook_dir, notebooks 
 default_kernel = 'python3'
 
 KERNELS = ['python3'] + [val['env'] for val in notebooks.values()]
+# also irsa kernels
+KERNELS += ['py-irsa-tutorials', 'py-spherex_sdt']
 
 def test_python_path():
     CommonTests._test_python_path(default_kernel, env_root)
@@ -38,6 +40,8 @@ def test_base_env():
 def test_notebooks_folder():
     assert os.path.exists(notebook_dir)
     assert os.path.exists(f'{notebook_dir}/fornax-demo-notebooks')
+    assert os.path.exists(f'{notebook_dir}/irsa-tutorials')
+    assert os.path.exists(f'{notebook_dir}/heasarc-tutorials')
 
 
 @pytest.mark.parametrize("notebook",  list(notebooks.keys()))

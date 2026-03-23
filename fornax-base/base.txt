@@ -11,3 +11,4 @@ code-server
 compilers
 make
 pkg-config
+tectonic

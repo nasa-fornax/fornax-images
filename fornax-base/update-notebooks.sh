@@ -69,11 +69,6 @@ if [ -d irsa-tutorials/irsa-tutorials ]; then
     rm -r irsa-tutorials.off
 fi
 
-# fix kernel names for irsa
-for nb in `find . -name 'irsa-tutorials/*.md'`; do
-    $JUPYTER_DIR/bin/jupytext --set-kernel py-irsa-tutorials $nb
-done
-
 # remove extra files from heasarc tutorials
 cd $NOTEBOOK_DIR/heasarc-tutorials/
 rm README.md
