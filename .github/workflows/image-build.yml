@@ -42,6 +42,12 @@ jobs:
       
       - uses: ./.github/actions/clean-storage
 
+      - name: Check links in the intro page
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: "introduction.md"
+          fail: true
+
       - name: Setup Python
         uses: actions/setup-python@v5
         id: setup_python
