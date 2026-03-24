@@ -47,3 +47,20 @@ def test_dask_basic():
     # need dask-distributed
     import dask.distributed # noqa E402
     assert 'DASK_DISTRIBUTED__DASHBOARD__LINK' in os.environ
+
+
+def test_sos_kernel_registered():
+    # Checks to see if the SoS kernel is registered
+    CommonTests.test_kernels_exist(['sos'])
+
+def test_sos_notebook_basic():
+    # Just seeing if we can import sos_notebook in the Jupyter environment
+    # from sos_notebook.test_utils import Notebook
+    imp_cmd = f"{jupyter_root}/{jupyter_env}/bin/python -c 'import sos_notebook'"
+    result = CommonTests.run_cmd(imp_cmd)
+
+    # Prints the error message if the import fails
+    if result.returncode != 0:
+        print()
+        print(result.stdout)
+        print()

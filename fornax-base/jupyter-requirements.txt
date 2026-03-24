@@ -8,4 +8,10 @@ dask-labextension
 jupyter-firefly-extensions
 jdaviz
 pip
+sos
+sos-python
+sos-r
+sos-julia
+sos-notebook
+jupyterlab-sos
 # notebook-intelligence
