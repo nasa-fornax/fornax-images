@@ -1,5 +1,7 @@
 from pathlib import Path
 import re
+import yaml
+from yaml import Loader
 
 
 manifests = {
@@ -9,7 +11,7 @@ manifests = {
     },
     'irsa': {
         'folder': 'irsa-tutorials',
-        'manifest': 'notebook_manifest_descriptions.txt',
+        'manifest': 'notebook_metadata.yml',
     },
     'heasarc': {
         'folder': 'heasarc-tutorials',
@@ -50,11 +52,21 @@ class Parser:
     
     def parse_irsa(manifest):
         """Parse IRSA manifest"""
+        dir_name = manifests['irsa']['folder']
         with open(manifest) as fp:
-            lines = fp.readlines()
-        # remove the extra level
-        lines = [line.replace('irsa-tutorials/', '') for line in lines]
-        return Parser.std_parse(lines, 'irsa')
+            desc = yaml.load(fp, Loader=Loader)
+        nb_desc = {}
+        for nb in desc:
+            section = nb['section']
+            path = nb['file'].replace('tutorials/', '')
+            description = nb['description']
+            title = nb['title']
+            if section not in nb_desc:
+                nb_desc[section] = []
+            nb_desc[section].append(f'   - [{title}]({dir_name}/{path}): {description}')
+
+        md_desc = '\n'.join([f'- {cat}:\n' + ('\n'.join(vals)) for cat, vals in nb_desc.items()])
+        return md_desc
 
     
     def parse_heasarc(manifest):
