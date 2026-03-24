@@ -1,5 +1,12 @@
 # Latest Changes
 
+## 26.0401
+- Update fornax-labextension to 0.1.17, which includes:
+  - Absorb jupyter_cpu_alive
+  - Style changes for the launcher.
+  - Disable terminal culling when a there CPU activity.
+- Install jdaviz in the main jupyter environment.
+
 ## 26.0302
 - Add tex processing with tectonic and enable exporting notebooks as pdf.
 - Add the environment for SPHEREx Source Discovery Tool.
