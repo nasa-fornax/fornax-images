@@ -4,8 +4,8 @@ jupyter-resource-usage
 jupyterlab-git
 jupyterlab-myst
 jupyter-vscode-proxy
-jupyter_cpu_alive
 dask-labextension
 jupyter-firefly-extensions
+jdaviz
 pip
 # notebook-intelligence
