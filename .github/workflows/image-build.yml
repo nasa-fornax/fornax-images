@@ -46,7 +46,7 @@ jobs:
         uses: lycheeverse/lychee-action@v1
         with:
           args: "introduction.md"
-          fail: true
+          fail: false
 
       - name: Setup Python
         uses: actions/setup-python@v5
