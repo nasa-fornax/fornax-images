@@ -1,5 +1,9 @@
 # Latest Changes
 
+## 26.0423
+- Bug fix:
+  - Missing jupyter_keepalive
+
 ## 26.0401
 - Update fornax-labextension to 0.1.17, which includes:
   - Absorb jupyter_cpu_alive
