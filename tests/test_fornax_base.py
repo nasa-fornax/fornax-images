@@ -1,5 +1,6 @@
 import sys
 import os
+import subprocess
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests  # noqa E402
 from common import env_root, jupyter_env, jupyter_root  # noqa E402
@@ -47,3 +48,13 @@ def test_dask_basic():
     # need dask-distributed
     import dask.distributed # noqa E402
     assert 'DASK_DISTRIBUTED__DASHBOARD__LINK' in os.environ
+
+def test_keepalive():
+    # ensures jupyter_keepalive is installed
+    jpy_env = f'{jupyter_root}/{jupyter_env}'
+    result = subprocess.run(
+        [f'{jpy_env}/bin/python', "-c", f"import jupyter_keepalive"],
+        capture_output=True,
+        text=True
+    )
+    assert result.returncode == 0
