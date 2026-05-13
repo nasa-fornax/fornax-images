@@ -1,8 +1,7 @@
 ARG BASE_TAG=latest
-ARG REPOSITORY=nasa-fornax/fornax-images
-ARG REGISTRY=ghcr.io
+ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
-FROM ${REGISTRY}/${REPOSITORY}/jupyter-base:${BASE_TAG}
+FROM ${REPOSITORY}/jupyter-base:${BASE_TAG}
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
 LABEL org.opencontainers.image.description="Fornax Base Image"

@@ -1,10 +1,9 @@
 
 ARG BASE_TAG=latest
-ARG REPOSITORY=nasa-fornax/fornax-images
-ARG REGISTRY=ghcr.io
+ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
-FROM ${REGISTRY}/${REPOSITORY}/fornax-base:${BASE_TAG} AS base
-FROM ${REGISTRY}/${REPOSITORY}/fornax-main:${BASE_TAG} AS main
+FROM ${REPOSITORY}/fornax-base:${BASE_TAG} AS base
+FROM ${REPOSITORY}/fornax-main:${BASE_TAG} AS main
 FROM scratch
 
 
