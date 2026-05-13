@@ -1,461 +1,295 @@
 import unittest
-from unittest.mock import patch, MagicMock
-import logging
+from unittest.mock import patch, MagicMock, call
+from argparse import Namespace
 import sys
 import os
-import pathlib
-import tempfile
-import glob
-from io import StringIO
-import urllib.request
-import urllib.error
 
 
 sys.path.insert(0, f'{os.path.dirname(__file__)}/../scripts/')
-from builder import TaskRunner, Builder  # noqa: E402
-from changed_images import find_changed_images  # noqa: E402
-
-
-class TestTaskRunner(unittest.TestCase):
-
-    def setUp(self):
-        logger = logging.getLogger()
-        self.builder_run = TaskRunner(logger, dryrun=False)
-        self.builder_dry = TaskRunner(logger, dryrun=True)
-        self.logger = logger
-
-    def test_run(self):
-        out = self.builder_run.run('pwd -P', timeout=100, capture_output=True)
-        self.assertEqual(out.stdout.strip().lower(), os.getcwd().lower())
-
-    def test_out(self):
-        msg = 'test logging ...'
-        self.logger.handlers.clear()
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            self.builder_run.out(msg)
-            output = mock_out.getvalue().strip()
-        self.assertEqual(msg, output.split(':')[-1].strip())
-
-    def test_dryrun(self):
-        out = self.builder_dry.run('ls', timeout=100, capture_output=True)
-        self.assertEqual(out, None)
-
-        out = self.builder_run.run('ls', timeout=100, capture_output=True)
-        self.assertNotEqual(out, None)
+from build import Builder, DEFAULT_REPO, IMAGE_ORDER  # noqa: E402
 
 
 class TestBuilder(unittest.TestCase):
 
     def setUp(self):
-        logger = logging.getLogger()
-        self.repo = 'some-repo'
-        self.registry = 'my-registry'
-        self.tag = 'some-tag'
-        self.image = 'some-image'
+        """Set up default arguments for each test."""
+        self.default_args = Namespace(
+            dryrun=False,
+            debug=False,
+            images=['fornax-main'],
+            tag='test-tag',
+            build=False,
+            push=False,
+            retag=None,
+            ecr=None,
+            extra_args=None,
+            build_vars=None,
+            export_locks=False,
+            repo=None
+        )
 
-        self.builder_run = Builder(
-            self.repo, logger, registry=self.registry, dryrun=False
+    def test_initialization(self):
+        """Test if the builder initializes defaults correctly."""
+        builder = Builder(self.default_args)
+        self.assertEqual(builder.repo, DEFAULT_REPO)
+        self.assertEqual(builder.tag, 'test-tag')
+        self.assertFalse(builder.dryrun)
+
+    @patch('build.subprocess.run')
+    def test_run(self, mock_subprocess_run):
+        """Test the run method."""
+        builder = Builder(self.default_args)
+        builder.run("docker --version", timeout=10)
+
+        # Verify subprocess.run was called with the right arguments
+        mock_subprocess_run.assert_called_once_with(
+            "docker --version",
+            shell=True,
+            check=True,
+            text=True,
+            timeout=10
         )
-        self.builder_dry = Builder(
-            self.repo, logger, registry=self.registry, dryrun=True
-        )
-        self.logger = logger
+
+    def test_check_input_missing_images(self):
+        """Test validation fails when build is requested but no
+        images are provided."""
+
+        self.default_args.images = None
+
+        # build
+        self.default_args.build = True
+        builder = Builder(self.default_args)
+        with self.assertRaises(ValueError) as context:
+            builder.check_input()
+        self.assertTrue("No images passed" in str(context.exception))
+        self.default_args.build = False
+
+        # push
+        self.default_args.push = True
+        builder = Builder(self.default_args)
+        with self.assertRaises(ValueError) as context:
+            builder.check_input()
+        self.assertTrue("No images passed" in str(context.exception))
+        self.default_args.push = False
+
+        # export-locks
+        self.default_args.export_locks = True
+        builder = Builder(self.default_args)
+        with self.assertRaises(ValueError) as context:
+            builder.check_input()
+        self.assertTrue("No images passed" in str(context.exception))
+        self.default_args.export_locks = None
+
+    @patch('build.Builder.run')
+    def test_check_input_gets_git_branch(self, mock_run):
+        """Test that missing tag attempts to fetch from git."""
+        self.default_args.build = True
+        self.default_args.tag = None
+        builder = Builder(self.default_args)
+
+        # Mock the stdout of the git command
+        mock_result = MagicMock()
+        mock_result.stdout = "main-branch\n"
+        mock_run.return_value = mock_result
+
+        builder.check_input()
+
+        # Assert git branch was checked and tag was updated
+        mock_run.assert_called_once_with(
+            'git branch --show-current', 100, capture_output=True)
+        self.assertEqual(builder.tag, 'main-branch')
+
+    def test_check_input_retag(self):
+        """Test retag in check_input."""
+        self.default_args.retag = ''
+        builder = Builder(self.default_args)
+        with self.assertRaises(ValueError) as context:
+            builder.check_input()
+        self.assertTrue("--retag expects a list" in str(context.exception))
+
+    def test_check_input_ecr(self):
+        """Test ecr in check_input."""
+        # not a list
+        self.default_args.ecr = ''
+        builder = Builder(self.default_args)
+        with self.assertRaises(ValueError) as context:
+            builder.check_input()
+        self.assertTrue("--ecr expects a list" in str(context.exception))
+
+        # not url
+        self.default_args.ecr = ['not-url']
+        builder = Builder(self.default_args)
+        with self.assertRaises(ValueError) as context:
+            builder.check_input()
+        self.assertTrue(
+            "--ecr expects url endpoints" in str(context.exception))
+
+    def test_check_input_build_vars(self):
+        """Test --build-vars in check_input."""
+        self.default_args.build_vars = ''
+        builder = Builder(self.default_args)
+        builder.check_input()
+        self.assertEqual(builder.build_vars, [])
+
+        # check wrong format
+        wrong_format = ['var1', 'var1 = 23 var2=1']
+        for wrong in wrong_format:
+            self.default_args.build_vars = wrong
+            builder = Builder(self.default_args)
+            with self.assertRaises(ValueError) as context:
+                builder.check_input()
+            self.assertTrue(
+                "--build-var expects" in str(context.exception))
 
     def test_get_full_tag(self):
-        full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
-        self.assertEqual(
-            full_tag, f'{self.registry}/{self.repo}/{self.image}:{self.tag}'
+        """Test getting full tag."""
+        builder = Builder(self.default_args)
+        full_tag = builder.get_full_tag('fornax-main', 'dev')
+        self.assertEqual(full_tag, f"{DEFAULT_REPO}/fornax-main:dev")
+
+        # Test failure on invalid tag format
+        with self.assertRaises(ValueError):
+            builder.get_full_tag('fornax-main', 'invalid:tag')
+
+    @patch('build.Builder.run')
+    def test_do_export_locks(self, mock_run):
+        """Test docker build command generation."""
+        self.default_args.export_locks = True
+        self.default_args.images = ['fornax-1', 'fornax-2']
+
+        builder = Builder(self.default_args)
+
+        builder.do_export_locks()
+
+        # call run twice, create a folder and export
+        self.assertEqual(mock_run.call_count, 4)
+
+        def full_tag(image):
+            return f'{DEFAULT_REPO}/{image}:{self.default_args.tag}'
+
+        def lock_dir(image):
+            return f'{image}_locks'
+
+        expected_calls = [
+            call(f"mkdir -p {lock_dir('fornax-1')}", 100),
+            call(f"docker run --entrypoint=\"\" --rm -v $PWD/{lock_dir('fornax-1')}:/host --user `id -u` {full_tag('fornax-1')} bash -c 'cp -r $LOCK_DIR/* /host/'", 1000),  # noqa E501
+            call(f"mkdir -p {lock_dir('fornax-2')}", 100),
+            call(f"docker run --entrypoint=\"\" --rm -v $PWD/{lock_dir('fornax-2')}:/host --user `id -u` {full_tag('fornax-2')} bash -c 'cp -r $LOCK_DIR/* /host/'", 1000),  # noqa E501
+        ]
+        mock_run.assert_has_calls(expected_calls, any_order=False)
+
+    @patch('build.Builder.run')
+    @patch('build.Builder.copy_common_files')
+    @patch('build.Builder.extract_kernel_files')
+    def test_do_build(self, mock_extract, mock_copy, mock_run):
+        """Test docker build command generation."""
+        self.default_args.build = True
+        self.default_args.images = ['fornax-slim']
+        self.default_args.build_vars = ['TEST_VAR=123']
+        self.default_args.extra_args = ['--network=host']
+
+        builder = Builder(self.default_args)
+        time_tag = "20260512_1200"
+
+        builder.do_build(time_tag)
+
+        # Verify common files were copied and kernels were extracted
+        mock_copy.assert_called_with('fornax-slim')
+        mock_extract.assert_called_once()
+
+        # Verify the generated docker build command
+        # You can inspect the arguments passed to 'run'
+        called_args = mock_run.call_args_list[0][0][0]
+        self.assertIn("docker build", called_args)
+        self.assertIn("--platform=linux/amd64", called_args)
+        self.assertIn("--build-arg TEST_VAR=123", called_args)
+        self.assertIn("--network=host", called_args)
+        self.assertIn(
+            f"--tag {DEFAULT_REPO}/fornax-slim:test-tag", called_args)
+        self.assertIn(
+            f"--tag {DEFAULT_REPO}/fornax-slim:{time_tag}", called_args)
+
+    @patch('build.Builder.run')
+    def test_do_push(self, mock_run):
+        """Test docker push command generation."""
+        self.default_args.push = True
+        self.default_args.images = ['fornax-main']
+
+        builder = Builder(self.default_args)
+
+        builder.do_push()
+        mock_run.assert_called_once()
+
+        # Verify the generated docker build command
+        # You can inspect the arguments passed to 'run'
+        called_args = mock_run.call_args_list[0][0][0]
+        self.assertIn("docker push", called_args)
+        self.assertIn(
+            f"{DEFAULT_REPO}/{self.default_args.images[0]}:test-tag",
+            called_args
         )
 
-    def test_check_tags(self):
-        self.logger.handlers.clear()
-        with self.assertRaises(ValueError):
-            self.builder_dry._check_tags('repo:tag')
-        with self.assertRaises(ValueError):
-            self.builder_dry._check_tags(['repo'])
-        self.builder_dry._check_tags('tag')
+    @patch('build.Builder.run')
+    def test_do_retag(self, mock_run):
+        """Test docker retag command generation."""
+        self.default_args.retag = ['main', 'stable']
+        self.default_args.images = ['fornax-main']
 
-    def test_build__basic(self):
-        self.logger.handlers.clear()
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            self.builder_dry.build(self.image, self.tag)
-            output = mock_out.getvalue().strip()
-            print(output)
-        full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
-        cmd = ('docker build --platform=linux/amd64 '
-               f'--build-arg REPOSITORY={self.repo} '
-               f'--build-arg REGISTRY={self.registry} '
-               f'--build-arg BASE_TAG={self.tag} '
-               f'--tag {full_tag} {self.image}')
-        self.assertEqual(cmd, output.split('::')[-1].strip())
+        builder = Builder(self.default_args)
 
-    def test_build__build_args_is_list(self):
-        self.logger.handlers.clear()
-        with self.assertRaises(ValueError):
-            self.builder_dry.build(self.image, self.tag, build_args='ENV=val')
+        builder.do_retag()
+        # we expect 5 calls: 1 pull, and 1-tag, 1-push for each tag.
+        self.assertEqual(mock_run.call_count, 5)
 
-    def test_build__build_args(self):
-        self.logger.handlers.clear()
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            self.builder_dry.build(self.image, self.tag,
-                                   build_args=['ENV=val', 'ENV2=val'])
-            output = mock_out.getvalue().strip()
-        full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
-        cmd = ('docker build --platform=linux/amd64 '
-               f'--build-arg ENV=val --build-arg ENV2=val '
-               f'--build-arg REPOSITORY={self.repo} '
-               f'--build-arg REGISTRY={self.registry} '
-               f'--build-arg BASE_TAG={self.tag} '
-               f'--tag {full_tag} {self.image}')
-        self.assertEqual(cmd, output.split('::')[-1].strip())
+        expected_calls = [
+            call('docker pull ghcr.io/nasa-fornax/fornax-images/fornax-main:test-tag', timeout=3000),  # noqa E501
+            call('docker tag ghcr.io/nasa-fornax/fornax-images/fornax-main:test-tag ghcr.io/nasa-fornax/fornax-images/fornax-main:main', timeout=1000),  # noqa E501
+            call('docker push ghcr.io/nasa-fornax/fornax-images/fornax-main:main', timeout=3000),  # noqa E501
+            call('docker tag ghcr.io/nasa-fornax/fornax-images/fornax-main:test-tag ghcr.io/nasa-fornax/fornax-images/fornax-main:stable', timeout=1000),  # noqa E501
+            call('docker push ghcr.io/nasa-fornax/fornax-images/fornax-main:stable', timeout=3000)  # noqa E501
+        ]
+        mock_run.assert_has_calls(expected_calls, any_order=False)
 
-    def test_build__extra_args(self):
-        self.logger.handlers.clear()
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            self.builder_dry.build(self.image, self.tag,
-                                   extra_args='--some-par')
-            output = mock_out.getvalue().strip()
-        full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
-        cmd = ('docker build --platform=linux/amd64 '
-               f'--build-arg REPOSITORY={self.repo} '
-               f'--build-arg REGISTRY={self.registry} '
-               f'--build-arg BASE_TAG={self.tag} --some-par '
-               f'--tag {full_tag} {self.image}')
-        self.assertEqual(cmd, output.split('::')[-1].strip())
+    @patch('build.Builder.run')
+    def test_do_retag_no_image(self, mock_run):
+        """Test docker retag command when no image is passed."""
+        self.default_args.retag = ['main']
+        self.default_args.images = None
 
-    def test_build__extra_tagss(self):
-        self.logger.handlers.clear()
-        extra_tag = 'extra-tag'
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            self.builder_dry.build(self.image, self.tag,
-                                   extra_tags=[extra_tag])
-            output = mock_out.getvalue().strip()
-        full_tag = self.builder_dry.get_full_tag(self.image, self.tag)
-        full_extra_tag = self.builder_dry.get_full_tag(self.image, extra_tag)
-        cmd = ('docker build --platform=linux/amd64 '
-               f'--build-arg REPOSITORY={self.repo} '
-               f'--build-arg REGISTRY={self.registry} '
-               f'--build-arg BASE_TAG={self.tag} '
-               f'--tag {full_tag} --tag {full_extra_tag} {self.image}')
-        self.assertEqual(cmd, output.split('::')[-1].strip())
+        builder = Builder(self.default_args)
 
-    def test_build__push_not_str(self):
-        self.logger.handlers.clear()
-        with self.assertRaises(ValueError):
-            self.builder_dry.push(self.image, 123)
+        builder.do_retag()
+        # we expect 12 calls: (1 pull, and 1-tag, 1-push) for each image
+        self.assertEqual(mock_run.call_count, 12)
 
-    def test_build__push_wrong_format(self):
-        self.logger.handlers.clear()
-        with self.assertRaises(ValueError):
-            self.builder_dry.push(self.image, f'{self.image}:{self.tag}')
-
-    def test_build__push(self):
-        self.logger.handlers.clear()
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            self.builder_dry.push(self.image, self.tag)
-            output = mock_out.getvalue().strip()
-        cmd = (f'docker push {self.registry}/{self.repo}/'
-               f'{self.image}:{self.tag}')
-        self.assertEqual(cmd, output.split('::')[-1].strip())
-
-    def test_build__release__tag_not_list(self):
-        with self.assertRaises(ValueError):
-            self.builder_dry.release('tag', 'out')
-        # the following should work
-        self.builder_dry.release('tag', ['out'])
-
-    def test_build__release__wrong_tag(self):
-        # wrong release tag
-        with self.assertRaises(ValueError):
-            self.builder_dry.release('tag', ['tag:out'])
-
-        # wrong source tag
-        with self.assertRaises(ValueError):
-            self.builder_dry.release('tag:in', ['tag'])
-
-    def test_build__release__images_not_list(self):
-        with self.assertRaises(ValueError):
-            self.builder_dry.release('tag', ['out'], images='images')
-
-    def test_build__release__images_unknown_image(self):
-        with self.assertRaises(ValueError):
-            self.builder_dry.release('tag', ['out'], images=['some_image'])
-        # the following should work
-        self.builder_dry.release('tag', ['out'], ['fornax-base'])
-
-    def test_build__release(self):
-        self.logger.handlers.clear()
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            self.builder_dry.release(
-                f'{self.tag}', [f'{self.tag}-out'], images=['fornax-base'])
-            output = mock_out.getvalue().strip()
-        source_tag = self.builder_dry.get_full_tag('fornax-base', self.tag)
-        release_tag = self.builder_dry.get_full_tag('fornax-base',
-                                                    f'{self.tag}-out')
-        self.assertTrue(f'docker pull {source_tag}' in output)
-        self.assertTrue(f'docker tag {source_tag} {release_tag}' in output)
-        self.assertTrue(f'docker push {release_tag}' in output)
-        self.logger.handlers.clear()
-
-    def test_build__push_to_ecr__no_endpoint(self):
-        endpoint = None
-        with self.assertRaises(ValueError):
-            self.builder_dry.push_to_ecr(
-                endpoint, self.tag, release_tags=None, images=[self.image])
-
-    @patch('urllib.request.urlopen')
-    def test_build__push_to_ecr(self, mock_urlopen):
-        endpoint = 'http://some-endpoint'
-        image = 'fornax-slim'
-        msg, status = 'mock response data', 202
-        mock_response = MagicMock()
-        mock_response.status = status
-        mock_response.read.return_value = msg.encode()
-        mock_response.__enter__.return_value = mock_response  # For 'with'
-        mock_urlopen.return_value = mock_response
-        self.logger.handlers.clear()
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            self.builder_run.push_to_ecr(
-                endpoint, self.tag, release_tags=None, images=[image])
-            output = mock_out.getvalue().strip()
-        called_request = mock_urlopen.call_args[0][0]
-        # check instance
-        assert isinstance(called_request, urllib.request.Request)
-
-        # check url
-        expected_url = f'{endpoint}?image={image}&tag={self.tag}'
-        assert called_request.full_url == expected_url
-
-        # check the printed messages
-        self.assertTrue(f'returned status: {status}' in output)
-        self.assertTrue(f'returned response: {msg}' in output)
-
-    def test_build__push_to_ecr_not_found(self):
-        endpoint = 'http://some-endpoint'
-        image = 'fornax-slim'
-        msg, status = 'Not Found', 404
-        mock_urlopen = MagicMock()
-        mock_urlopen.side_effect = urllib.error.HTTPError(
-            url=endpoint, code=status, msg=msg,
-            hdrs=None, fp=None
-        )
-        self.logger.handlers.clear()
-        with (patch('sys.stderr', new=StringIO()) as mock_out,
-              patch("urllib.request.urlopen", new=mock_urlopen)):
-            logging.basicConfig(level=logging.DEBUG)
-            self.builder_run.push_to_ecr(
-                endpoint, self.tag, release_tags=None, images=[image])
-            output = mock_out.getvalue().strip()
-        called_request = mock_urlopen.call_args[0][0]
-
-        # check url
-        expected_url = f'{endpoint}?image={image}&tag={self.tag}'
-        assert called_request.full_url == expected_url
-
-        # check the printed messages
-        self.assertTrue(f'returned status: {status}' in output)
-        self.logger.handlers.clear()
-
-    def test_build__push_to_ecr_other_error(self):
-        endpoint = 'http://some-endpoint'
-        image = 'fornax-slim'
-        msg, status = 'Not Found', 403
-        mock_urlopen = MagicMock()
-        mock_urlopen.side_effect = urllib.error.HTTPError(
-            url=endpoint, code=status, msg=msg,
-            hdrs=None, fp=None
-        )
-        with patch("urllib.request.urlopen", new=mock_urlopen):
-            with self.assertRaises(urllib.error.HTTPError):
-                self.builder_run.push_to_ecr(
-                    endpoint, self.tag, release_tags=None, images=[image])
-        self.logger.handlers.clear()
-
-    @patch('urllib.request.urlopen')
-    def test_build__push_to_ecr_multiple_images(self, mock_urlopen):
-        endpoint = 'http://some-endpoint'
-        images = ['fornax-slim', 'fornax-slim']
-        msg, status = 'mock response data', 202
-        mock_response = MagicMock()
-        mock_response.status = status
-        mock_response.read.return_value = msg.encode()
-        mock_response.__enter__.return_value = mock_response  # For 'with'
-        mock_urlopen.return_value = mock_response
-        self.builder_run.push_to_ecr(
-            endpoint, self.tag, release_tags=None, images=images)
-        for iimage, image in enumerate(images):
-            called_request = mock_urlopen.call_args_list[iimage][0][0]
-            expected_url = f'{endpoint}?image={image}&tag={self.tag}'
-            assert called_request.full_url == expected_url
-
-    @patch('urllib.request.urlopen')
-    def test_build__push_to_multiple_ecr(self, mock_urlopen):
-        endpoints = ['http://some-endpoint1', 'http://some-endpoint2']
-        image = 'fornax-slim'
-        msg, status = 'mock response data', 202
-        mock_response = MagicMock()
-        mock_response.status = status
-        mock_response.read.return_value = msg.encode()
-        mock_response.__enter__.return_value = mock_response  # For 'with'
-        mock_urlopen.return_value = mock_response
-        self.logger.handlers.clear()
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            self.builder_run.push_to_ecr(
-                endpoints, self.tag, release_tags=None, images=[image])
-            output = mock_out.getvalue().strip()
-        for irq in [0, 1]:
-            called_request = mock_urlopen.call_args_list[irq][0][0]
-            # check instance
-            assert isinstance(called_request, urllib.request.Request)
-
-            # check url
-            expected_url = f'{endpoints[irq]}?image={image}&tag={self.tag}'
-            assert called_request.full_url == expected_url
-
-            # check the printed messages
-            self.assertTrue(f'returned status: {status}' in output)
-            self.assertTrue(f'returned response: {msg}' in output)
-            self.logger.handlers.clear()
-
-    def test_remove_lockfiles(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            files = ["conda-lock.yml", "conda-notebook-lock.yml",
-                     "conda-a.yml"]
-            for fn in files:
-                fn = os.path.join(tmpdir, fn)
-                pathlib.Path(fn).touch()
-            self.builder_run.remove_lockfiles(tmpdir)
-            self.assertEqual(glob.glob(f'{tmpdir}/conda-*lock.yml'), [])
-            self.assertEqual(
-                glob.glob(f"{tmpdir}/conda-*"),
-                [os.path.join(tmpdir, "conda-a.yml")],
-            )
-
-    def test_update_lockfiles(self):
-        # dummy builder to write to stdout
-        class DummyResult:
-            stdout = "woo\nyoo\nname:\nnextline"
-        ran = []
-
-        def run(cmd, timeout, **kw):
-            ran.append((cmd, timeout))
-            return DummyResult
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            files = [
-                "conda-notebook-lock.yml",
-                "conda-a.yml",
-                "conda-a-lock.yml",
+        expected_calls = []
+        for im in [_im for _im in IMAGE_ORDER if _im.startswith('fornax-')]:
+            expected_calls += [
+                call(f'docker pull ghcr.io/nasa-fornax/fornax-images/{im}:test-tag', timeout=3000),  # noqa E501
+                call(f'docker tag ghcr.io/nasa-fornax/fornax-images/{im}:test-tag ghcr.io/nasa-fornax/fornax-images/{im}:main', timeout=1000),  # noqa E501
+                call(f'docker push ghcr.io/nasa-fornax/fornax-images/{im}:main', timeout=3000),  # noqa E501
             ]
-            for fn in files:
-                fn = os.path.join(tmpdir, fn)
-                pathlib.Path(fn).touch()
-            _run = self.builder_dry.run
-            self.builder_dry.run = run
-            self.builder_dry.update_lockfiles(tmpdir, self.tag)
-            self.builder_dry.run = _run
-            with open(os.path.join(tmpdir, "conda-a-lock.yml"), "r") as f:
-                result = f.read()
-            nowfiles = os.listdir(tmpdir)
-            self.assertEqual(len(nowfiles), 3)
-            self.assertEqual(result, "name:\nnextline")
-        self.logger.handlers.clear()
+        mock_run.assert_has_calls(expected_calls, any_order=False)
 
+    @patch('build.urllib.request.urlopen')
+    def test_do_ecr(self, mock_urlopen):
+        """Test triggering ECR endpoint."""
+        self.default_args.ecr = ['https://fake.endpoint.com']
+        self.default_args.images = ['fornax-slim']
+        builder = Builder(self.default_args)
 
-class TestChangedImages(unittest.TestCase):
+        # Setup mock response
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.read.return_value = b"Success"
+        mock_urlopen.return_value = mock_resp
 
-    def setUp(self):
-        logger = logging.getLogger()
-        self.runner = TaskRunner(logger, dryrun=True)
-        self.logger = logger
+        builder.do_ecr()
 
-    def test_pull_request(self):
-        pull_request_event = {
-            'event_name': 'pull_request',
-            'event': {
-                'base_ref': '7905b4edab6'
-            }
-        }
-        self.logger.handlers.clear()
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            res = find_changed_images(pull_request_event, self.runner)
-            output = mock_out.getvalue().strip()
-        base_ref = pull_request_event['event']['base_ref']
-        self.assertTrue(f'git fetch origin {base_ref}' in output)
-        self.assertTrue(
-            f'git --no-pager diff --name-only HEAD origin/${base_ref} '
-            "| xargs -n1 dirname | awk -F'/' '{print $1}' | sort -u" in output
+        # Verify urlopen was called
+        mock_urlopen.assert_called_once()
+        called_request = mock_urlopen.call_args[0][0]
+        self.assertEqual(
+            called_request.full_url,
+            f"{self.default_args.ecr[0]}?image=fornax-slim&tag=test-tag"
         )
-        self.assertEqual(res, [])
-        self.logger.handlers.clear()
-
-    def test_push(self):
-        push_event = {
-            'event_name': 'push',
-            'event': {
-                'before': '299390bb5c8',
-                'after': '2add5c8e038'
-            }
-        }
-        self.logger.handlers.clear()
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            res = find_changed_images(push_event, self.runner)
-            output = mock_out.getvalue().strip()
-        before = push_event['event']['before']
-        after = push_event['event']['after']
-        self.assertTrue(f'git fetch origin {before}' in output)
-        self.assertTrue((
-            f'git --no-pager diff-tree --name-only -r {before}..{after}'
-            " | xargs -n1 dirname | awk -F'/' '{print $1}' | sort -u")
-            in output
-        )
-        self.assertEqual(res, [])
-        self.logger.handlers.clear()
-
-    def test_push_new(self):
-        push_event = {
-            'event_name': 'push',
-            'event': {
-                'before': '00000000000',
-                'after': '2add5c8e038'
-            }
-        }
-        self.logger.handlers.clear()
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            res = find_changed_images(push_event, self.runner)
-            output = mock_out.getvalue().strip()
-        self.assertTrue(
-            ("find . -type f -name 'Dockerfile' -exec dirname {} \\; "
-             "| sed 's|^\\./||'") in output)
-        self.assertEqual(res, [])
-        self.logger.handlers.clear()
-
-    def test_else_event(self):
-        else_event = {'event_name': 'other'}
-        self.logger.handlers.clear()
-        with patch('sys.stderr', new=StringIO()) as mock_out:
-            logging.basicConfig(level=logging.DEBUG)
-            res = find_changed_images(else_event, self.runner)
-            output = mock_out.getvalue().strip()
-        self.assertTrue(
-            ("git ls-files | xargs -n1 dirname | awk -F'/' "
-             "'{print $1}' | sort -u") in output
-        )
-        self.assertEqual(res, [])
-        self.logger.handlers.clear()
-
-
-if __name__ == "__main__":
-    unittest.main()
