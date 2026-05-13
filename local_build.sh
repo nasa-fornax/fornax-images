@@ -30,7 +30,7 @@ echo "========================"
 
 
 if test $action == "build"; then
-    python scripts/build.py --extra-pars="--network=host" $image
+    python scripts/build.py --build --extra-args="--network=host" $image
 fi
 
 if test $action == "run"; then
