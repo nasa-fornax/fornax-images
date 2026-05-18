@@ -1,5 +1,12 @@
 # Latest Changes
 
+## 26.0520
+- Bug fixes:
+  - Update fornax-labextension fix culling bug.
+- Updates to help with xspec interactive sessions: 
+  - Add xspec jupyterlab extension for plotting.
+  - Enable help commands inside terminals.
+
 ## 26.0423
 - Bug fix:
   - Missing jupyter_keepalive
