@@ -76,7 +76,7 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && mkdir -p $LOCK_DIR \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
 # run jupyterhub-singleuser once to cache the extension and speedup the start
-&& timeout 20s jupyterhub-singleuser || true \
+&& (timeout 20s jupyterhub-singleuser || true) \
 && fix-permissions $JUPYTER_DIR
 
 # Install system packages with micromamba
