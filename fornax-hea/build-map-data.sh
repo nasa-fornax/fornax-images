@@ -13,7 +13,7 @@ src=$1
 dest=$2
 if [[ -z $src || -z $dest ]]; then
     printf "USAGE: \n $0 src dest\n"
-    exit 1
+    exit 0
 fi
 dirname=$(basename $src)
 echo " Mapping: | $src -> $dest"

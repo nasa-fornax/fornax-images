@@ -31,6 +31,7 @@ dependencies:
   - python=$PYTHON_VERSION
   - heasoft=6.36.*
   - uncompresspy
+  - lynx
   - pip
   - pip:
     - pytest
@@ -43,6 +44,7 @@ dependencies:
     - tqdm
     - scikit-learn
     - umap-learn
+    - https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer.tar.gz
 EOF
 
 # Use conda-heasoft.yml to create the heasoft env
@@ -57,7 +59,10 @@ bash $script_dir/build-map-data.sh $ENV_DIR/heasoft/heasoft/spectral/modelData h
 
 # Tweak Xspec settings for a no-X11 environment
 # add xspec model data from the data location
-printf "setplot splashpage off\ncpd /GIF\n" >> $ENV_DIR/heasoft/heasoft/spectral/scripts/global_customize.tcl
+printf "setplot splashpage off\ncpd /nu" >> $ENV_DIR/heasoft/heasoft/spectral/scripts/global_customize.tcl
+
+# set lynx as default for opening help files
+sed -i 's/HTML_COMMAND:[[:space:]]*firefox/HTML_COMMAND:  lynx/g' $ENV_DIR/heasoft/heasoft/spectral/manager/Xspec.init
 
 # XSPEC modelData - THIS LINK WILL BE BROKEN IN THE IMAGE - but we will direct users to download and install
 #  the XSPEC model package instead

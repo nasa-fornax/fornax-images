@@ -6,6 +6,7 @@
 - Updates to help with xspec interactive sessions: 
   - Add xspec jupyterlab extension for plotting.
   - Enable help commands inside terminals.
+- Add a beta version of the fviewer: the fits image and table viewer
 
 ## 26.0423
 - Bug fix:
