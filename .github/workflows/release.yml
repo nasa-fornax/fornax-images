@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     
     permissions:
-      contents: read
+      contents: write  # to upload locks
       packages: read
     
     strategy:
