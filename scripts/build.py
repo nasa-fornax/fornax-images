@@ -201,15 +201,13 @@ class Builder:
         if self.push:
             self.do_push(time_tag)
 
-        # do ecr?
-        if self.ecr is not None:
-            self.do_ecr()
-            return
-
         # do we need a re-tag
         if self.retag:
             self.do_retag()
-            return
+
+        # do ecr?
+        if self.ecr is not None:
+            self.do_ecr()
 
     def check_tags(self, *args):
         """Check the format of the tag. It should be a string
@@ -423,10 +421,13 @@ class Builder:
         """Notify ECR endpoint with new images/tags ..'"""
         # Currently, only fornax-slim is in the ECR
         ecr_images = ['fornax-slim']
-        images = [im for im in ecr_images if im in self.images]
-        if len(images) == 0:
-            self.print('No images for ecr notification!')
-            return
+        if self.retag:
+            images = ecr_images
+        else:
+            images = [im for im in ecr_images if im in self.images]
+            if len(images) == 0:
+                self.print('No images for ecr notification!')
+                return
 
         # check the tags
         retag = [] if self.retag is None else self.retag

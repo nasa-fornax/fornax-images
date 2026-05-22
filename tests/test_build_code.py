@@ -260,7 +260,7 @@ class TestBuilder(unittest.TestCase):
 
         builder.do_retag()
         # we expect 12 calls: (1 pull, and 1-tag, 1-push) for each image
-        self.assertEqual(mock_run.call_count, 12)
+        self.assertEqual(mock_run.call_count, (len(IMAGE_ORDER) - 1)*3)
 
         expected_calls = []
         for im in [_im for _im in IMAGE_ORDER if _im.startswith('fornax-')]:
@@ -292,4 +292,46 @@ class TestBuilder(unittest.TestCase):
         self.assertEqual(
             called_request.full_url,
             f"{self.default_args.ecr[0]}?image=fornax-slim&tag=test-tag"
+        )
+
+    @patch('build.urllib.request.urlopen')
+    @patch('build.Builder.run')
+    def test_release(self, mock_run, mock_urlopen):
+        """Test release flow; retag, ecr but no build."""
+        self.default_args.retag = ['main']
+        self.default_args.ecr = ['https://fake.endpoint.com']
+        self.default_args.images = None
+
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.read.return_value = b"Success"
+        mock_urlopen.return_value = mock_resp
+
+        builder = Builder(self.default_args)
+        builder.run_with_args()
+        # 12 calls from retag: (1 pull, and 1-tag, 1-push) for each image
+        self.assertEqual(mock_run.call_count, 12)
+
+        expected_calls = []
+        for im in [_im for _im in IMAGE_ORDER if _im.startswith('fornax-')]:
+            expected_calls += [
+                call(f'docker pull ghcr.io/nasa-fornax/fornax-images/{im}:test-tag', timeout=3000),  # noqa E501
+                call(f'docker tag ghcr.io/nasa-fornax/fornax-images/{im}:test-tag ghcr.io/nasa-fornax/fornax-images/{im}:main', timeout=1000),  # noqa E501
+                call(f'docker push ghcr.io/nasa-fornax/fornax-images/{im}:main', timeout=3000),  # noqa E501
+            ]
+        mock_run.assert_has_calls(expected_calls, any_order=False)
+
+        # we also expect ecr to be called
+        # Verify urlopen was called twice, 1 for original tag
+        # and 1 for new tag
+        self.assertEqual(mock_urlopen.call_count, 2)
+        called_request = mock_urlopen.call_args_list[0][0][0]
+        self.assertEqual(
+            called_request.full_url,
+            f"{self.default_args.ecr[0]}?image=fornax-slim&tag=test-tag"
+        )
+        called_request = mock_urlopen.call_args_list[1][0][0]
+        self.assertEqual(
+            called_request.full_url,
+            f"{self.default_args.ecr[0]}?image=fornax-slim&tag=main"
         )
