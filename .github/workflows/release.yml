@@ -22,6 +22,9 @@ jobs:
           fi
           echo "✅ Branch check passed."
       
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      
       - name: Setup Environment
         uses: ./.github/actions/setup
         with:
@@ -52,6 +55,10 @@ jobs:
         image: ${{ fromJson(needs.prep-release.outputs.images) }}
 
     steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      
       - name: Setup Environment
         uses: ./.github/actions/setup
         with:
@@ -92,6 +99,9 @@ jobs:
       packages: write
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
       - name: Setup Environment
         uses: ./.github/actions/setup
         with:
@@ -114,6 +124,10 @@ jobs:
     if: github.event.release.target_commitish == 'main'
     
     steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
       - name: Steup Environment
         uses: ./.github/actions/setup
         with:
