@@ -115,6 +115,7 @@ dependencies:
     - s3fs
     - boto3
     - xmmpysas
+    - https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer.tar.gz
 EOF
 
 # Use the yml to create the SAS env

@@ -7,70 +7,79 @@ on:
       images:
         required: true
         type: string
+      tag:
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       images:
-        description: 'Images of the form: ["image-1","image-2"]'
+        # we need json array format so we can run in a matrix
+        description: 'Images of the form: image-1 image-2'
+        required: true
+        type: string
+      tag:
         required: true
         type: string
 
-env:
-  REGISTRY: ghcr.io
-
 jobs:
-  test-images:
+  parse-input:
+    # convert input: 'image-1 image-2' to json array to be used in matrix
     runs-on: ubuntu-latest
-    if: inputs.images != '[]'
+    outputs:
+      images_json: ${{ steps.create-json.outputs.IMAGES_JSON }}
+    steps:
+      - name: Convert string to JSON array
+        id: create-json
+        run: |
+          JSON_ARRAY=$(jq -R -c 'split(" ")' <<< "${{ inputs.images }}")
+          echo "IMAGES_JSON=$JSON_ARRAY" >> $GITHUB_OUTPUT
+
+  test-images:
+    needs: parse-input
+    runs-on: ubuntu-latest
+    
+    # Sets the permissions granted to the `GITHUB_TOKEN`
+    permissions:
+      contents: read
+      packages: read
+
     strategy:
       matrix:
-        image: ${{ fromJson(inputs.images) }}
+        image: ${{ fromJson(needs.parse-input.outputs.images_json) }}
   
     steps:
-      - name: Configure tests
-        id: configure
-        run: |
-          echo "uid=$(id -u)" >> $GITHUB_OUTPUT
-          echo "gid=$(id -g)" >> $GITHUB_OUTPUT
-          echo "Images passed for testing: ${{ inputs.images }}"
-  
+
       - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - uses: ./.github/actions/clean-storage
-      
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
+        uses: actions/checkout@v6
+  
+      - name: Setup Environment
+        uses: ./.github/actions/setup
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: "Pull Image: ${{ matrix.image }}"
         run: |
-          tag=${{ github.head_ref || github.ref_name }}
+          tag=${{ inputs.tag }}
           image=${{ matrix.image }}
           docker pull ghcr.io/${{ github.repository }}/$image:$tag
+          # make shorthand tag
           docker tag ghcr.io/${{ github.repository }}/$image:$tag $image
 
       - name: "Run image tests inside the image: ${{ matrix.image }}"
         run: |
           image=${{ matrix.image }}
-          testcmd="pytest -s -v "
           docker run -i --rm -v .:/opt/workspace/repo-code \
             $image \
-            bash -c "$testcmd /opt/workspace/repo-code/tests/test_${image//-/_}.py"
+            bash -c "pytest -s -v /opt/workspace/repo-code/tests/test_${image//-/_}.py"
       
       - name: "Run full notbeook tests: ${{ matrix.image }}"
         if: github.event_name == 'workflow_dispatch' && matrix.image == 'fornax-main'
         run: |
-          image=${{ matrix.image }}
-          testcmd="pytest -s -v "
           docker run -i --rm -v .:/opt/workspace/repo-code \
-            $image \
-            bash -c "$testcmd /opt/workspace/repo-code/tests/test_fornax_notebooks.py"
+            ${{ matrix.image }} \
+            bash -c "pytest -s -v /opt/workspace/repo-code/tests/test_fornax_notebooks.py"
     
       - name: "Run jupyter-lab: ${{ matrix.image }}"
         run: |
-          image=${{ matrix.image }}
-          cmd="docker run -i --rm $image"
+          cmd="docker run -i --rm ${{ matrix.image }}"
           timeout 10 $cmd || [[ $? -eq 124 ]] && { echo "Timed out as expected."; } || exit $?

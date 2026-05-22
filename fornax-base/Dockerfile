@@ -1,8 +1,7 @@
 ARG BASE_TAG=latest
-ARG REPOSITORY=nasa-fornax/fornax-images
-ARG REGISTRY=ghcr.io
+ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
-FROM ${REGISTRY}/${REPOSITORY}/jupyter-base:${BASE_TAG}
+FROM ${REPOSITORY}/jupyter-base:${BASE_TAG}
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
 LABEL org.opencontainers.image.description="Fornax Base Image"
@@ -77,7 +76,7 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && mkdir -p $LOCK_DIR \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
 # run jupyterhub-singleuser once to cache the extension and speedup the start
-&& timeout 20s jupyterhub-singleuser || true \
+&& (timeout 20s jupyterhub-singleuser || true) \
 && fix-permissions $JUPYTER_DIR
 
 # Install system packages with micromamba

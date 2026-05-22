@@ -14,14 +14,15 @@ logging.basicConfig(
 logger = logging.getLogger('::AMI-Builder::')
 logger.setLevel(level=logging.DEBUG)
 
+
 def get_image_date_tag(image):
     """Use GH API to look up the data tag give a name tag
-    
+
     Parameters:
     ----------
     image: str
         image from fornax-images repo of the form: image:tag
-    
+
     """
     parts = image.split(':')
     if len(parts) != 2:
@@ -39,15 +40,15 @@ def get_image_date_tag(image):
     session = requests.Session()
 
     # get all tags
-    url = f'https://api.github.com/users/nasa-fornax/packages/container/fornax-images%2F{image}/versions'
+    url = f'https://api.github.com/users/nasa-fornax/packages/container/fornax-images%2F{image}/versions'  # noqa E501
     matched_tags = []
     while url and len(matched_tags) == 0:
         resp = session.get(url, headers=headers)
         resp.raise_for_status()
         data = resp.json()
         for version in data:
-            tags = version.get("metadata", {}).get("container", {}).get("tags", [])
-            name = version.get('name', None)
+            tags = version.get(
+                "metadata", {}).get("container", {}).get("tags", [])
             if input_tag in tags:
                 matched_tags = tags
                 break
@@ -58,12 +59,11 @@ def get_image_date_tag(image):
             for link in links:
                 if 'rel="next"' in link:
                     url = link.split(";")[0].strip()[1:-1]
-    
+
     pattern = re.compile(r"\d{8}_\d{4}")
     matches = [tag for tag in matched_tags if pattern.search(tag)]
     date_tag = matches[0] if len(matches) == 1 else None
     return date_tag
-
 
 
 def main():
@@ -85,7 +85,7 @@ def main():
     ap.add_argument(
         '--src',
         default=None,
-        help=("Source ssm tag when copying; the target is --dst if given else --ssm-path")
+        help=("Source ssm tag when copying; the target is --dst if given else --ssm-path")  # noqa E501
     )
 
     ap.add_argument(
@@ -127,7 +127,7 @@ def main():
     for image in images:
         if ':' not in image:
             raise ValueError(f'image {image} has not tag')
-    
+
     # Find the date tag for the passed images
     date_images = []
     for image in images:
@@ -153,13 +153,14 @@ def main():
     for ie, ami_endpoint in enumerate(ami_endpoints):
         logger.info(f'Calling endpoint {ie+1}')
         req = requests.post(ami_endpoint, json=params)
-    
+
     logger.info(f'status: {req.status_code}')
     logger.info(f'text: {req.text}')
-    
+
     # raise for status != 200
     if req.status_code != 200:
         raise ValueError('Call returned with status != 200')
+
 
 if __name__ == '__main__':
     main()

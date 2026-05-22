@@ -4,26 +4,16 @@ on:
   release:
     types: [published]
 
-env:
-  REGISTRY: ghcr.io
-
 jobs:
 
   prep-release:
     runs-on: ubuntu-latest
-
-    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in
-    # this job.
-    permissions:
-      contents: read
-      packages: read
-      attestations: write
     
     outputs:
       images: ${{ steps.image-list.outputs.IMAGE_LIST }}
 
     steps:
-      - name: Check source branch is main
+      - name: Check the release is from main
         run: |
           if [ "${{ github.event.release.target_commitish }}" != "main" ]; then
             echo "❌ Releases must be created from main branch."
@@ -32,55 +22,48 @@ jobs:
           fi
           echo "✅ Branch check passed."
       
-      - name: Checkout repository
-        uses: actions/checkout@v4
-    
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Environment
+        uses: ./.github/actions/setup
         with:
-          python-version: '3.12'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          clean_storage: false
+          registry_login: false
       
-      - name: print a list of images
+      - name: List images with kernels
         id: image-list
         run: |
-          images=$(python scripts/build.py --list-images)
-          echo "Image List: ${images}"
-          echo "IMAGE_LIST=${images}" >> $GITHUB_OUTPUT
+          images=$(python scripts/build.py --kernel-images)
+          IMAGES_JSON=$(jq -R -c 'split(" ")' <<< "$images")
+          echo "Image List: ${IMAGES_JSON}"
+          echo "IMAGE_LIST=${IMAGES_JSON}" >> $GITHUB_OUTPUT
 
-        
-  upload-locks:
+  # Run lock export in parallel        
+  export-locks:
     needs: prep-release
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: read
+    
     strategy:
       fail-fast: false
       matrix:
         image: ${{ fromJson(needs.prep-release.outputs.images) }}
 
     steps:
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - uses: ./.github/actions/clean-storage
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Environment
+        uses: ./.github/actions/setup
         with:
-          python-version: '3.12'
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Export the locks
         run: |
-          python scripts/build.py --debug --no-build \
-              --registry "$REGISTRY" --repository "${{ github.repository }}" \
+          python scripts/build.py --debug \
+              --repo "ghcr.io/${{ github.repository }}" \
               --tag develop \
-              --export-lock "${{ matrix.image }}"
+              --export-locks \
+              "${{ matrix.image }}"
             
           # pack lock files into a zip file
           if [ -d ${{ matrix.image }}_locks ]; then
@@ -88,63 +71,55 @@ jobs:
           fi
       
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.image }}-environment-locks
           path: ./${{ matrix.image }}-environment-locks.zip
       
       - name: Upload lock files to the release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: ./${{ matrix.image }}-environment-locks.zip
 
   
-  release-images:
-    needs: upload-locks
+  tag-images-for-release:
+    needs: export-locks
     runs-on: ubuntu-latest
     if: github.event.release.target_commitish == 'main'
+
+    permissions:
+      contents: read
+      packages: write
+    
     steps:
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - uses: ./.github/actions/clean-storage
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Environment
+        uses: ./.github/actions/setup
         with:
-          python-version: '3.12'
-      
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Tag main images with release tags
         run: |
-          ENDPOINT="${{ secrets.ECR_ENDPOINT }} ${{ secrets.ECR_ENDPOINT_PROD }}"
+          ENDPOINT="--ecr ${{ secrets.ECR_ENDPOINT }} --ecr ${{ secrets.ECR_ENDPOINT_PROD }}"
+          
           # Note that all images are tagged for release
-          python scripts/build.py --debug --no-build \
-              --registry "$REGISTRY" --repository "${{ github.repository }}" \
-              --tag "${{ github.event.release.target_commitish }}" \
-              --release main stable "${{ github.event.release.tag_name }}" \
-              --trigger-ecr --ecr-endpoint $ENDPOINT
+          python scripts/build.py --debug \
+              --repo "ghcr.io/${{ github.repository }}" \
+              --tag develop \
+              --retag main stable "${{ github.event.release.tag_name }}" \
+              $ENDPOINT
 
-  release-ami:
-    needs: release-images
+  tag-ami-for-release:
+    needs: tag-images-for-release
     runs-on: ubuntu-latest
     if: github.event.release.target_commitish == 'main'
+    
     steps:
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Steup Environment
+        uses: ./.github/actions/setup
         with:
-          python-version: '3.12'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          clean_storage: false
+          registry_login: false
       
       - name: python dependencies
         run: |
@@ -157,6 +132,7 @@ jobs:
           ENDPOINT="${{ secrets.AMI_ENDPOINT }} ${{ secrets.AMI_ENDPOINT_PROD }}"
           python scripts/ami-builder.py --src develop --ssm-path stable \
               --endpoint $ENDPOINT
+          
           RELEASE="${{ github.event.release.tag_name }}"
           echo "++++ Copy develop AMI to release: $RELEASE ++++ "
           python scripts/ami-builder.py --src develop --ssm-path $RELEASE \

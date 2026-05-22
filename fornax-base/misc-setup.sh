@@ -34,6 +34,17 @@ export DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/
 # image version
 export FORNAX_SOFTWARE_VERSION=$(sed -n '/^##/ { s/^##[[:space:]]*//; p; q; }' $JUPYTER_DIR/changes.md)
 
+## Clean the home dir if needed
+# CLEAN_HOME=0
+if [[ "$CLEAN_HOME" == "1" ]]; then
+    echo "Cleaning home folder in /home/$NB_USER"
+    stamp=`date +%s%3N`
+    if [ -d "/home/$NB_USER/.jupyter" ]; then
+        echo "renaming /home/$NB_USER/.jupyter to ~/.jupyter-$stamp"
+        mv /home/$NB_USER/.jupyter /home/$NB_USER/.jupyter-$stamp
+    fi
+fi
+
 ## ----------------------------------------- ##
 ## run a kernel warmer in the background     ##
 # warmup ipykernel so it loads faster in the environments
