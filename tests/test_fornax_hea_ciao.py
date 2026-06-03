@@ -42,11 +42,13 @@ def test_check_packages():
 def test_version():
     subprocess.check_call(["ciaover"])
 
+
 def test_caldb():
     assert 'CALDB' in os.environ
     assert os.environ['CALDB'] != ''
     assert 'CALDBCONFIG' in os.environ
     assert 'CALDBALIAS' in os.environ
+
 
 def test_data_dir():
     """Check data directories"""
@@ -55,7 +57,8 @@ def test_data_dir():
     version = json.load(open(conda_meta[0]))['version']
     support_dir = os.environ['SUPPORT_DATA_DIR']
     assert os.path.exists(f'{support_dir}/ciao-{version}/spectral/modelData')
-    assert len(glob.glob(f'{support_dir}/ciao-{version}/spectral/modelData/*')) != 0
+    assert len(glob.glob(
+        f'{support_dir}/ciao-{version}/spectral/modelData/*')) != 0
 
     # check for symlinks
     assert os.path.exists(f'{env_root}/ciao/spectral/modelData')

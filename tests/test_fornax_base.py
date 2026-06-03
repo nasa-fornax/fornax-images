@@ -49,11 +49,12 @@ def test_dask_basic():
     import dask.distributed # noqa E402
     assert 'DASK_DISTRIBUTED__DASHBOARD__LINK' in os.environ
 
+
 def test_keepalive():
     # ensures jupyter_keepalive is installed
     jpy_env = f'{jupyter_root}/{jupyter_env}'
     result = subprocess.run(
-        [f'{jpy_env}/bin/python', "-c", f"import jupyter_keepalive"],
+        [f'{jpy_env}/bin/python', "-c", "import jupyter_keepalive"],
         capture_output=True,
         text=True
     )

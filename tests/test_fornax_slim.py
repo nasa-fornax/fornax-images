@@ -7,7 +7,6 @@ from common import CommonTests, change_dir  # noqa E402
 from common import env_root, jupyter_env, jupyter_root, notebook_dir  # noqa E402
 
 
-
 def test_python_path():
     CommonTests._test_python_path(jupyter_env, jupyter_root)
 
@@ -39,7 +38,8 @@ def test_notebooks_folder():
     assert os.path.exists(notebook_dir)
     assert os.path.exists(f'{notebook_dir}/fornax-demo-notebooks')
 
-def test_env_vars():
+
+def test_env_vars_in_slim():
     """ensure all variables defined in fornax-base and subsequent images
     are propagated to fornax-slim
     """
@@ -49,9 +49,9 @@ def test_env_vars():
     for image in images:
         _envs = _extract_env_vars(f'{wdir}/../{image}/Dockerfile')
         envs += _envs
-    
+
     slim_envs = _extract_env_vars(f'{wdir}/../fornax-slim/Dockerfile')
-    assert(set(envs) == set(slim_envs))
+    assert set(envs) == set(slim_envs)
 
     assert 'FORNAX_SOFTWARE_VERSION' in os.environ
 
@@ -61,7 +61,7 @@ def _extract_env_vars(dockerfile):
     env_vars = []
     with open(dockerfile, 'r') as fp:
         lines = fp.readlines()
-    
+
     # Join lines that end with backslash
     combined_lines = []
     current = ''

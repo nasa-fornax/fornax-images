@@ -13,7 +13,8 @@ default_kernel = 'python3'
 
 KERNELS = ['python3'] + [val['env'] for val in notebooks.values()]
 # also irsa kernels
-KERNELS += ['py-irsa-tutorials', 'py-spherex_sdt']
+KERNELS += ['py-irsa-tutorials', 'py-spherex_sdt', 'py-mast-tutorials']
+
 
 def test_python_path():
     CommonTests._test_python_path(default_kernel, env_root)
@@ -50,7 +51,7 @@ def test_check_packages(notebook):
 
 
 def test_code_server():
-    CommonTests.run_cmd(f'which code-server')
+    CommonTests.run_cmd('which code-server')
 
 
 def test_conda_base_env():
@@ -94,18 +95,21 @@ def test_imports(notebook):
             f'{env_root}/{env}/bin/python imports_{py_filename}'
         )
 
+
 @pytest.mark.parametrize("notebook", list(notebooks.keys()))
 def test_notebook_permissions(notebook):
     """Folders are writable; files are read-only"""
     nb_file = notebooks[notebook]['file']
     nb_path = os.path.dirname(nb_file)
-    
+
     assert not os.access(f'{notebook_dir}/{nb_file}', os.W_OK)
     assert os.access(f'{notebook_dir}/{nb_path}', os.W_OK)
+
 
 def test_notebook_kernels():
     """Kernel defnitions should exist"""
     CommonTests.test_kernels_exist(KERNELS)
+
 
 def test_julia():
     """Julia and its kernel defnitions should exist"""
@@ -116,8 +120,9 @@ def test_julia():
     version = glob.glob(f'{jpath}/environments/v*')[0].split('/')[-1][1:]
     CommonTests.test_kernels_exist([f'julia-{version}'])
 
+
 def test_r():
     """R and its kernel defnitions should exist"""
     assert os.path.exists(f'{env_root}/Renv')
     assert glob.glob(f'{env_root}/Renv/*') != 0
-    CommonTests.test_kernels_exist([f'ir'])
+    CommonTests.test_kernels_exist(['ir'])

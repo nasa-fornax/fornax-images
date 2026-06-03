@@ -34,11 +34,12 @@ def test_conda_env():
 
 
 def test_pysas_import():
-    import pysas
+    import pysas  # noqa E401
 
 
 def test_version():
     subprocess.check_call(["sas", "--version"])
+
 
 def test_data_dir():
     """Check data directories"""

@@ -14,12 +14,11 @@ def test_run_notebooks(notebook):
     if notebook in ['light_curve_collector']:
         pytest.skip(f'Skipping {notebook}')
     nb_file = notebooks[notebook]['file']
-    env = notebooks[notebook]['env']
     nb_path = os.path.dirname(nb_file)
     nb_filename = os.path.basename(nb_file)
-    py_filename = nb_filename.replace('md', 'py')
     assert os.path.exists(f'{notebook_dir}/{nb_file}')
     with change_dir(f'{notebook_dir}/{nb_path}'):
         CommonTests.run_cmd(
-            f'{jupyter_root}/{jupyter_env}/bin/jupytext --execute {nb_filename}'
+            (f'{jupyter_root}/{jupyter_env}/bin/jupytext'
+             f' --execute {nb_filename}')
         )
