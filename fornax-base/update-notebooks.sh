@@ -79,6 +79,7 @@ if [ -d mast_notebooks/mast_notebooks ]; then
     mv mast_notebooks/*.* mast_notebooks/mast_notebooks
     mv mast_notebooks mast_notebooks.off
     mv mast_notebooks.off/mast_notebooks mast-tutorials
+    mv mast-tutorials/requirements_mast_tutorials.txt mast-tutorials/requirements-mast-tutorials.txt 
     rm -r mast_notebooks.off
 fi
 

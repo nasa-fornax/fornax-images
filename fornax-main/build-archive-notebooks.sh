@@ -38,4 +38,18 @@ $JUPYTER_DIR/bin/jupytext --set-kernel py-spherex_sdt $nb
 # All notbeooks are using the heasoft environment for now.
 
 ## -------- END HEASARC notebooks -------- ##
+
+## -------- START MAST notebooks -------- ##
+
+# setup the kernel
+cd $NOTEBOOK_DIR/mast-tutorials
+setup-pip-env <<< yes
+
+# fix kernel names for mast
+for nb in `find . -name '*.ipynb'`; do
+    jq '.metadata.kernelspec = {"display_name": "py-mast-tutorials", "language": "python", "name": "py-mast-tutorials"}' $nb > temp.ipynb
+    mv temp.ipynb $nb
+done
+## -------- END MAST notebooks -------- ##
+
 rm -rf /tmp/*
