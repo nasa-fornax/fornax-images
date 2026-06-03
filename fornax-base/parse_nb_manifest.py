@@ -16,6 +16,10 @@ manifests = {
     'heasarc': {
         'folder': 'heasarc-tutorials',
         'manifest': 'fornax-manifest.yml',
+    },
+    'mast': {
+        'folder': 'mast-tutorials',
+        'manifest': 'notebook_metadata.yml',
     }
 }
 
@@ -88,6 +92,38 @@ class Parser:
                 path += f': {line.split(':')[1].strip()}'
                 new_lines.append(path)
         return Parser.std_parse(new_lines, 'heasarc')
+
+    def parse_mast(manifest):
+        """Parse MAST manifest
+        Differs from irsa in having subsection; TODO; merge the two.
+        """
+        dir_name = manifests['mast']['folder']
+        with open(manifest) as fp:
+            desc = yaml.load(fp, Loader=Loader)
+        nb_desc = {}
+        for nb in desc:
+            section = nb['section']
+            subsection = nb.get('subsection', None)
+            path = nb['file'].replace('notebooks/', '')
+            description = nb['description']
+            title = nb['title']
+            if section not in nb_desc:
+                nb_desc[section] = {}
+            if subsection not in nb_desc[section]:
+                nb_desc[section][subsection] = []
+            extra_space = '' if subsection is None else '  '
+            link = f'[{title}]({dir_name}/{path})'
+            nb_desc[section][subsection].append(
+                f'   {extra_space}- {link}: {description}')
+
+        md_desc = []
+        for section, sec_vals in nb_desc.items():
+            md_desc.append(f'- {section}: ')
+            for sub, sub_vals in sec_vals.items():
+                if sub is not None:
+                    md_desc.append(f'   - {sub}')
+                md_desc += sub_vals
+        return '\n'.join(md_desc)
 
 
 def main():

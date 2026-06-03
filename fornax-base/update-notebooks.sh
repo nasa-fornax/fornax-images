@@ -17,6 +17,8 @@ notebook_repos=(
     https://github.com/Caltech-IPAC/irsa-tutorials.git
     # heasarc
     https://github.com/heasarc/heasarc-tutorials.git
+    # mast
+    https://github.com/sedonaprice/mast_notebooks.git
 )
 
 # Branch to pull from, preferably a curated, deployed branch rather than the development default
@@ -27,6 +29,8 @@ deployed_branches=(
     deploy_to_fornax
     # heasarc
     production-notebooks
+    # mast
+    deploy_to_fornax
 )
 
 mkdir -p $NOTEBOOK_DIR
@@ -67,6 +71,15 @@ if [ -d irsa-tutorials/irsa-tutorials ]; then
     mv irsa-tutorials irsa-tutorials.off
     mv irsa-tutorials.off/irsa-tutorials .
     rm -r irsa-tutorials.off
+fi
+
+# fix names in mast-tutorials
+cd $NOTEBOOK_DIR
+if [ -d mast_notebooks/mast_notebooks ]; then
+    mv mast_notebooks/*.* mast_notebooks/mast_notebooks
+    mv mast_notebooks mast_notebooks.off
+    mv mast_notebooks.off/mast_notebooks mast-tutorials
+    rm -r mast_notebooks.off
 fi
 
 # remove extra files from heasarc tutorials
