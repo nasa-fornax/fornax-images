@@ -11,17 +11,19 @@ echo "  Setup pip-based python environment using uv, along with the notebook ker
 echo "  For help, see: $0 -h"
 echo
 
-# emvdir: where to install the new environment
-# if not given, default to ENV_DIR
-arg=$1
-if [ -z $arg ]; then
-    envdir=$ENV_DIR
+# Set defaults
+envdir=$ENV_DIR
+python=$ENV_DIR/base/bin/python$PYTHON_VERSION
 
-elif [[ "$arg" == "--user" ]]; then
-    envdir=$USER_ENV_DIR
-
-elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-    echo """
+# Loop through all arguments
+for arg in "$@"; do
+    if [[ "$arg" == "--user" ]]; then
+        envdir=$USER_ENV_DIR
+    elif [[ "$arg" == --python=* ]]; then
+        # Extract everything after the '=' sign
+        python="${arg#*=}"
+    elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
+        echo """
 
     USAGE:
     -----
@@ -29,18 +31,20 @@ elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
       1. Create a standard requirements text file named: requirements-{env_name}.txt.
     Where {env_name} is the name of your environment.
     
-      2. Call 'setup-pip-env [--user]' to create the environment and setup the kernel.
+      2. Call 'setup-pip-env [--user] [--python=VERSION]' to create the environment and setup the kernel.
     By default, the new environment will be created in \$ENV_DIR, which is reset with a new session.
     Pass --user to install in \$USER_ENV_DIR (default to ~/user-envs) that persists between sessions.
+    Pass --python=3.13 to specify a different Python version (defaults to \$PYTHON_VERSION).
     
     Activate with: source \$ENV_DIR/{env_name}/bin/activate 
         (or source \$USER_ENV_DIR/{env_name}/bin/activate if you passed --user)
 """
-    exit 0
-else
-    echo "Unknown argument $1"
-    exit 1
-fi
+        exit 0
+    else
+        echo "Unknown argument $arg"
+        exit 1
+    fi
+done
 
 # check if we have files
 shopt -s nullglob
@@ -74,7 +78,7 @@ for envfile in ${files[@]}; do
         exit 1
     fi
     # ensure we use the same python in jupyter so dask works
-    uv venv $VIRTUAL_ENV -p $ENV_DIR/base/bin/python$PYTHON_VERSION
+    uv venv $VIRTUAL_ENV --python=$python
     # add our useful packages
     uv pip install ipykernel pip
     # uv pip is strict and sometimes fail in resolving dependencies; fall back to pip install
