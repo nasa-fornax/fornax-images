@@ -1,14 +1,14 @@
 import sys
 import subprocess
 import os
-import glob
 from pathlib import Path
 import contextlib
 
 env_root = os.environ.get('ENV_DIR', '/opt/envs')
 jupyter_env = 'jupyter'
 jupyter_root = '/opt'
-notebook_dir = os.environ.get('NOTEBOOK_DIR', f"{os.environ['HOME']}/fornax-notebooks")
+notebook_dir = os.environ.get(
+    'NOTEBOOK_DIR', f"{os.environ['HOME']}/fornax-notebooks")
 
 notebooks = {
     'multiband_photometry': {
@@ -41,6 +41,7 @@ notebooks = {
         'env': 'py-ztf_ps1_crossmatch'
     }
 }
+
 
 class CommonTests:
 
@@ -89,7 +90,8 @@ class CommonTests:
 
     @staticmethod
     def _test_conda_env_file(env, ref_yml):
-        result = CommonTests.run_cmd(f'micromamba env export -p {env_root}/{env}')
+        result = CommonTests.run_cmd(
+            f'micromamba env export -p {env_root}/{env}')
         lines = []
         include = False
         for line in result.stdout.split('\n'):
@@ -105,12 +107,14 @@ class CommonTests:
         result = CommonTests.run_cmd(diff_cmd)
         assert result.stdout == ''
         assert result.stderr == ''
-    
+
     @staticmethod
     def test_kernels_exist(kernels):
         """Kernel defnitions should exist"""
         for kernel in kernels:
-            assert os.path.exists(f"{jupyter_root}/{jupyter_env}/share/jupyter/kernels/{kernel}")
+            print(f'checking kernel: {kernel}')
+            assert os.path.exists(
+                f"{jupyter_root}/{jupyter_env}/share/jupyter/kernels/{kernel}")
 
 
 @contextlib.contextmanager
