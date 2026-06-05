@@ -1,8 +1,8 @@
 # Latest Changes
 
-## 26.0605
+## 26.0608
 - Add MAST notebooks.
-- Updates Foranx notebooks to pull new fixes.
+- Updates Fornax notebooks to pull new fixes.
 
 ## 26.0520
 - Bug fixes:

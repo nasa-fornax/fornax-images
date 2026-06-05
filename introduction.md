@@ -54,6 +54,8 @@ and in [rendered format](https://heasarc.github.io/heasarc-tutorials/).
 This is a collection of Jupyter Notebooks, written in Python,
 that demonstrate methods of acccessing and analyzing data from the the
 [Mikulski Archive for Space Telescopes](https://archive.stsci.edu/).
+These notebooks are also available on [github](https://github.com/spacetelescope/mast_notebooks)
+and in [rendered format](https://spacetelescope.github.io/mast_notebooks/).
 
 <!-- MAST_NOTEBOOKS -->
 
