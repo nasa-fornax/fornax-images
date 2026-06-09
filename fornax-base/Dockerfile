@@ -35,7 +35,7 @@ USER root
 
 # Create folder and set premissions
 RUN \
- for folder in $ENV_DIR $CACHE_DIR $LOCK_DIR $NOTEBOOK_DIR; do \
+ for folder in $ENV_DIR $LOCK_DIR $NOTEBOOK_DIR; do \
    mkdir -p $folder; \
    fix-permissions $folder; \
  done
@@ -57,12 +57,25 @@ RUN SUPPORT_DATA_MOUNT=/shared-storage/support-data \
 RUN cat /usr/local/bin/_activate.sh >> /etc/bash.bashrc \
  && cat /usr/local/bin/_activate.sh  >> /usr/local/bin/before-notebook.d/10activate-env.sh \
  && echo "bash /usr/local/bin/link-notebooks.sh" > /usr/local/bin/before-notebook.d/20link-notebooks.sh \
- && rm -r /usr/local/bin/_activate.sh
+ && rm -r /usr/local/bin/_activate.sh /tmp/*
 
 
 # reset user and location
 WORKDIR ${HOME}
 USER $NB_USER
+
+# Add a base conda environment; include what we need in the scripts
+RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
+ && micromamba create -y -p $MAMBA_ROOT_PREFIX python=$PY_EXACT_VERSION \
+ && micromamba install -y -p $MAMBA_ROOT_PREFIX jq \
+ && micromamba clean -yaf \
+# we want our micromamba envs 1) in $ENV_DIR so they are portable,
+# but the same time 2) we want to be able to activate them with
+# micromamba activate env_name.
+# 1, requires them under $ENV_DIR
+# 2, requires them under MAMBA_ROOT_PREFIX/envs
+# the solution is make MAMBA_ROOT_PREFIX/envs a symlin to $ENV_DIR
+ && cd $MAMBA_ROOT_PREFIX && rm -rf envs && ln -s $ENV_DIR
 
 
 # For outside mount when using outside fornax
