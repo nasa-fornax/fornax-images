@@ -21,6 +21,8 @@ set -e
 ## Define some runtime environment variables ##
 # for custom user environments
 export USER_ENV_DIR="/home/$NB_USER/user-envs"
+# where uv installs custom python binaries
+export UV_PYTHON_INSTALL_DIR="/home/$NB_USER/user-envs/python"
 # allow micromamba to find $USER_ENV_DIR
 export CONDA_ENVS_PATH=$USER_ENV_DIR
 # for vscode

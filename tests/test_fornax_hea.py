@@ -14,6 +14,7 @@ notebooks = {}
 
 KERNELS = ['python3', 'heasoft', 'sas', 'ciao', 'fermi']
 
+
 def test_python_path():
     CommonTests._test_python_path(default_kernel, env_root)
 
@@ -85,9 +86,11 @@ def test_xmm_sas():
     print(result.stdout)
     print()
 
+
 def test_notebook_kernels():
     """Kernel defnitions should exist"""
     CommonTests.test_kernels_exist(KERNELS)
+
 
 def test_data_dir():
     """Check data directories"""

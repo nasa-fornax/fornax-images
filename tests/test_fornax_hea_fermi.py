@@ -37,6 +37,7 @@ def test_check_packages():
     import fermipy # noqa 401
     import gt_apps  # noqa 401
 
+
 def test_data_dir():
     """Check data directories"""
     conda_meta = glob.glob(f'{env_root}/fermi/conda-meta/fermitools-?.*.json')

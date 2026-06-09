@@ -51,9 +51,13 @@ and in [rendered format](https://heasarc.github.io/heasarc-tutorials/).
 ---
 
 ### MAST tutorials:
-[MAST]() tutorials are available on [github](https://github.com/spacetelescope/mast_notebooks)
-and in [rendered format](https://spacetelescope.github.io/mast_notebooks/intro.html). A subset of
-those notbeooks will be available here soon.
+This is a collection of Jupyter Notebooks, written in Python,
+that demonstrate methods of acccessing and analyzing data from the the
+[Mikulski Archive for Space Telescopes](https://archive.stsci.edu/).
+These notebooks are also available on [github](https://github.com/spacetelescope/mast_notebooks)
+and in [rendered format](https://spacetelescope.github.io/mast_notebooks/).
+
+<!-- MAST_NOTEBOOKS -->
 
 These notebooks and the subsets available on Fornax are updated continuously. If you have question
 or to report issues, please use the [Fornax community forum](https://discourse.fornax.sciencecloud.nasa.gov).

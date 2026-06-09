@@ -1,5 +1,9 @@
 # Latest Changes
 
+## 26.0608
+- Add MAST notebooks.
+- Updates Fornax notebooks to pull new fixes.
+
 ## 26.0520
 - Bug fixes:
   - Update fornax-labextension fix culling bug.

@@ -45,7 +45,7 @@ class Test_jupyter_base(unittest.TestCase):
             )
             out = proc.stdout + proc.stderr
             assert f'{jupyter_root}/{jupyter_env}/bin/jupyter' in out
-    
+
     def test_user_id_name(self):
         """Check the username/id/gid etc"""
         uid = os.getuid()
@@ -57,7 +57,6 @@ class Test_jupyter_base(unittest.TestCase):
         assert os.environ['NB_UID'] == f'{uid}'
         assert os.environ['NB_GID'] == f'{gid}'
         assert os.environ['NB_USER'] == username
-
 
 
 if __name__ == "__main__":

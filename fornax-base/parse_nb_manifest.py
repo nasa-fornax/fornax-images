@@ -16,15 +16,20 @@ manifests = {
     'heasarc': {
         'folder': 'heasarc-tutorials',
         'manifest': 'fornax-manifest.yml',
+    },
+    'mast': {
+        'folder': 'mast-tutorials',
+        'manifest': 'notebook_metadata.yml',
     }
 }
+
 
 class Parser:
 
     def dir2cat(dirname):
         """Dir name to category"""
         return re.sub('[_-]+', ' ', dirname).title()
-    
+
     def std_parse(lines, archive_name):
         """Parse lines of the form: path: title"""
         dir_name = manifests[archive_name]['folder']
@@ -39,8 +44,10 @@ class Parser:
             if cat not in nb_desc:
                 nb_desc[cat] = []
             nb_desc[cat].append(f'   - [{desc.strip()}]({dir_name}/{path})')
-        
-        md_desc = '\n'.join([f'- {cat}:\n' + ('\n'.join(vals)) for cat, vals in nb_desc.items()])
+
+        md_desc = '\n'.join([
+            f'- {cat}:\n' + ('\n'.join(vals)) for cat, vals in nb_desc.items()
+        ])
 
         return md_desc
 
@@ -49,7 +56,7 @@ class Parser:
         with open(manifest) as fp:
             lines = fp.readlines()
         return Parser.std_parse(lines, 'multi')
-    
+
     def parse_irsa(manifest):
         """Parse IRSA manifest"""
         dir_name = manifests['irsa']['folder']
@@ -63,12 +70,15 @@ class Parser:
             title = nb['title']
             if section not in nb_desc:
                 nb_desc[section] = []
-            nb_desc[section].append(f'   - [{title}]({dir_name}/{path}): {description}')
+            nb_desc[section].append(
+                f'   - [{title}]({dir_name}/{path}): {description}')
 
-        md_desc = '\n'.join([f'- {cat}:\n' + ('\n'.join(vals)) for cat, vals in nb_desc.items()])
+        md_desc = '\n'.join([
+            f'- {cat}:\n' +
+            ('\n'.join(vals)) for cat, vals in nb_desc.items()
+        ])
         return md_desc
 
-    
     def parse_heasarc(manifest):
         """Parse HEASARC manifest"""
         # first put the manifest in standard form
@@ -82,7 +92,39 @@ class Parser:
                 path += f': {line.split(':')[1].strip()}'
                 new_lines.append(path)
         return Parser.std_parse(new_lines, 'heasarc')
-        
+
+    def parse_mast(manifest):
+        """Parse MAST manifest
+        Differs from irsa in having subsection; TODO; merge the two.
+        """
+        dir_name = manifests['mast']['folder']
+        with open(manifest) as fp:
+            desc = yaml.load(fp, Loader=Loader)
+        nb_desc = {}
+        for nb in desc:
+            section = nb['section']
+            subsection = nb.get('subsection', None)
+            path = nb['file'].replace('notebooks/', '')
+            description = nb['description']
+            title = nb['title']
+            if section not in nb_desc:
+                nb_desc[section] = {}
+            if subsection not in nb_desc[section]:
+                nb_desc[section][subsection] = []
+            extra_space = '' if subsection is None else '  '
+            link = f'[{title}]({dir_name}/{path})'
+            nb_desc[section][subsection].append(
+                f'   {extra_space}- {link}: {description}')
+
+        md_desc = []
+        for section, sec_vals in nb_desc.items():
+            md_desc.append(f'- {section}: ')
+            for sub, sub_vals in sec_vals.items():
+                if sub is not None:
+                    md_desc.append(f'   - {sub}')
+                md_desc += sub_vals
+        return '\n'.join(md_desc)
+
 
 def main():
     """Parse manifest files in the archive repo"""
@@ -91,7 +133,6 @@ def main():
     with open(intro_file, 'r') as fp:
         intro_txt = ''.join(fp.readlines())
 
-    nb_desc = {}
     for archive_name, props in manifests.items():
         parser = getattr(Parser, f'parse_{archive_name}')
         folder = Path(props['folder'])
@@ -99,10 +140,12 @@ def main():
         md_desc = parser(manifest)
 
         # add the notebook description to intro_file
-        intro_txt = intro_txt.replace(f'<!-- {archive_name.upper()}_NOTEBOOKS -->', md_desc)
-    
+        intro_txt = intro_txt.replace(
+            f'<!-- {archive_name.upper()}_NOTEBOOKS -->', md_desc)
+
     with open(intro_file, 'w') as fp:
         fp.write(intro_txt)
+
 
 if __name__ == '__main__':
     main()

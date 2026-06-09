@@ -312,6 +312,9 @@ class Builder:
 
         for image in to_build:
 
+            # make a copy so each image has its own set
+            im_build_args = build_vars.copy()
+
             # add some defaults to build_args. For jupyter-base, the tags
             # are external and should be updated there
             if image != 'jupyter-base':
@@ -322,13 +325,13 @@ class Builder:
                 )
                 for key, val in mapping.items():
                     exists = any([
-                        arg.startswith(f'{key}=') for arg in build_vars])
+                        arg.startswith(f'{key}=') for arg in im_build_args])
                     if not exists:
-                        build_vars.append(f'{key}={val}')
+                        im_build_args.append(f'{key}={val}')
 
             # serialize the arguments
             cmd_args = ''
-            for arg in build_vars:
+            for arg in im_build_args:
                 if not arg.count("=") == 1:
                     raise ValueError(
                         f"build_args should be of the form 'name=value'. "

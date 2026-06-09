@@ -210,6 +210,35 @@ class TestBuilder(unittest.TestCase):
             f"--tag {DEFAULT_REPO}/fornax-slim:{time_tag}", called_args)
 
     @patch('build.Builder.run')
+    @patch('build.Builder.copy_common_files')
+    @patch('build.Builder.extract_kernel_files')
+    def test_build_version(self, mock_extract, mock_copy, mock_run):
+        """Test BUILD_VERSION is separate for each image."""
+        self.default_args.build = True
+        images = ['fornax-base', 'fornax-main']
+        self.default_args.images = images
+        self.default_args.build_vars = ['TEST_VAR=123']
+
+        builder = Builder(self.default_args)
+        time_tag = "20260512_1200"
+
+        builder.do_build(time_tag)
+
+        # Verify the generated docker build command
+        # You can inspect the arguments passed to 'run'
+        for idx in [0, 1]:
+            called_args = mock_run.call_args_list[idx][0][0]
+            im = images[idx]
+            self.assertIn("docker build", called_args)
+            self.assertIn("--build-arg TEST_VAR=123", called_args)
+            self.assertIn(f"--build-arg BUILD_VERSION={im}:{time_tag}",
+                          called_args)
+            self.assertIn(
+                f"--tag {DEFAULT_REPO}/{im}:test-tag", called_args)
+            self.assertIn(
+                f"--tag {DEFAULT_REPO}/{im}:{time_tag}", called_args)
+
+    @patch('build.Builder.run')
     def test_do_push(self, mock_run):
         """Test docker push command generation."""
         self.default_args.push = True
