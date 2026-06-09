@@ -1,6 +1,5 @@
 vim
 nano
-git
 less
 zip
 pandoc
