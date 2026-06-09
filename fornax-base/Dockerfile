@@ -12,7 +12,7 @@ ARG MAMBA_ROOT_PREFIX=$ENV_DIR/base
 
 # Environment variables
 ENV CACHE_DIR=/tmp/cache
-ENV DEFAULT_ENV=python3 \
+ENV DEFAULT_ENV=jupyter \
     MAMBA_ROOT_PREFIX=$MAMBA_ROOT_PREFIX \
     LOCK_DIR=$ENV_DIR/lock \
     XDG_CACHE_HOME=$CACHE_DIR \
@@ -67,7 +67,7 @@ USER $NB_USER
 # Add a base conda environment; include what we need in the scripts
 RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
  && micromamba create -y -p $MAMBA_ROOT_PREFIX python=$PY_EXACT_VERSION \
- && micromamba install -y -p $MAMBA_ROOT_PREFIX jq \
+ && micromamba install -y -p $MAMBA_ROOT_PREFIX jq git \
  && micromamba clean -yaf \
 # we want our micromamba envs 1) in $ENV_DIR so they are portable,
 # but the same time 2) we want to be able to activate them with
