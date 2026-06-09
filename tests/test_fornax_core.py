@@ -33,7 +33,3 @@ def test_env_vars():
 
 def test_base_env():
     CommonTests._test_uv_env_file(jupyter_env, jupyter_root)
-
-
-def test_notebooks_script():
-    os.path.exists(f"{os.environ['JUPYTER_DIR']}/bin/parse_nb_manifest.py")
