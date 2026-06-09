@@ -14,6 +14,7 @@ DEFAULT_REPO = "ghcr.io/nasa-fornax/fornax-images"
 IMAGE_ORDER = (
     'jupyter-base',
     'fornax-base',
+    'fornax-core',
     'fornax-main',
     'fornax-hea',
     'fornax-slim'

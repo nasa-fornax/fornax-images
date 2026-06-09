@@ -1,0 +1,14 @@
+vim
+nano
+git
+less
+zip
+pandoc
+jq
+awscli
+htop
+code-server
+compilers
+make
+pkg-config
+tectonic
