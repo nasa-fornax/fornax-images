@@ -35,7 +35,7 @@ USER root
 
 # Create folder and set premissions
 RUN \
- for folder in $CACHE_DIR $LOCK_DIR $NOTEBOOK_DIR; do \
+ for folder in $ENV_DIR $CACHE_DIR $LOCK_DIR $NOTEBOOK_DIR; do \
    mkdir -p $folder; \
    fix-permissions $folder; \
  done
@@ -95,10 +95,10 @@ ONBUILD RUN cd $HOME/build/ && \
 ONBUILD USER $NB_USER
 
 
-# setup uv environments
+# setup uv and conda environments #
 ONBUILD RUN cd build && bash /usr/local/bin/setup-pip-env <<< yes \
  && bash /usr/local/bin/setup-conda-env <<< yes
-# # ----------------------- #
+# ------------------------------- #
 
 # Any other build-* scripts; e.g. build tractor, heasoft etc #
 ONBUILD RUN cd build \
