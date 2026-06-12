@@ -14,9 +14,13 @@ DEFAULT_REPO = "ghcr.io/nasa-fornax/fornax-images"
 IMAGE_ORDER = (
     'jupyter-base',
     'fornax-base',
-    'fornax-core',
+    'env-core',
     'fornax-nb',
-    'fornax-archive-nb',
+    'archive-nb',
+    'env-heasoft',
+    'env-ciao',
+    'env-fermi',
+    'env-sas',
     'fornax-main',
     'fornax-hea',
     'fornax-slim'
@@ -248,7 +252,7 @@ class Builder:
             raise ValueError(f'image {destination} does not exists')
 
         # skip base images
-        if destination in ['fornax-jupyter']:
+        if destination not in ['fornax-main']:
             return
 
         for file in COMMON_FILES:
