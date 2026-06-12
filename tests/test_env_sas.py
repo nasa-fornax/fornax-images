@@ -9,7 +9,7 @@ from common import env_root, jupyter_env, jupyter_root, notebook_dir  # noqa E40
 
 default_kernel = 'sas'
 
-KERNELS = ['python3', 'sas']
+KERNELS = ['sas']
 
 
 def test_python_path():

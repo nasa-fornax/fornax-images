@@ -1,6 +1,5 @@
 import sys
 import os
-import subprocess
 import glob
 import json
 
@@ -8,9 +7,9 @@ sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
 from common import env_root, jupyter_env, jupyter_root, notebook_dir  # noqa E402
 
-default_kernel = 'heasoft'
+default_kernel = 'fermi'
 
-KERNELS = ['heasoft']
+KERNELS = ['fermi']
 
 
 def test_python_path():
@@ -33,23 +32,7 @@ def test_base_env():
 
 def test_conda_env():
     CommonTests._test_conda_env_file(
-        'heasoft', f'{env_root}/heasoft/heasoft-lock.yml')
-
-
-def test_check_packages():
-    import heasoftpy # noqa 401
-    import xspec  # noqa 401
-
-
-def test_fversion():
-    subprocess.check_call("fversion")
-
-
-def test_caldb():
-    assert 'CALDB' in os.environ
-    assert os.environ['CALDB'] != ''
-    assert 'CALDBCONFIG' in os.environ
-    assert 'CALDBALIAS' in os.environ
+        'fermi', f'{env_root}/fermi/fermi-lock.yml')
 
 
 def test_kernels():
@@ -57,19 +40,20 @@ def test_kernels():
     CommonTests.test_kernels_exist(KERNELS)
 
 
+def test_check_packages():
+    import fermipy # noqa 401
+    import gt_apps  # noqa 401
+
+
 def test_data_dir():
     """Check data directories"""
-    conda_meta = glob.glob(f'{env_root}/heasoft/conda-meta/heasoft-*.json')
+    conda_meta = glob.glob(f'{env_root}/fermi/conda-meta/fermitools-?.*.json')
     assert len(conda_meta) == 1
     version = json.load(open(conda_meta[0]))['version']
     support_dir = os.environ['SUPPORT_DATA_DIR']
-    assert os.path.exists(f'{support_dir}/heasoft-{version}/refdata')
-    assert len(glob.glob(f'{support_dir}/heasoft-{version}/refdata/*')) != 0
-    assert os.path.exists(f'{support_dir}/heasoft-{version}/spectral')
+    assert os.path.exists(f'{support_dir}/fermitools-{version}/refdata')
+    assert len(glob.glob(f'{support_dir}/fermitools-{version}/refdata/*')) != 0
 
     # check for symlinks
-    assert os.path.exists(f'{env_root}/heasoft/heasoft/refdata')
-    assert os.path.islink(f'{env_root}/heasoft/heasoft/refdata')
-
-    assert os.path.exists(f'{env_root}/heasoft/heasoft/spectral')
-    assert os.path.islink(f'{env_root}/heasoft/heasoft/spectral/modelData')
+    assert os.path.exists(f'{env_root}/fermi/share/fermitools/refdata')
+    assert os.path.islink(f'{env_root}/fermi/share/fermitools/refdata')
