@@ -59,6 +59,13 @@ RUN cat /usr/local/bin/_activate.sh >> /etc/bash.bashrc \
  && echo "bash /usr/local/bin/link-notebooks.sh" > /usr/local/bin/before-notebook.d/20link-notebooks.sh \
  && rm -r /usr/local/bin/_activate.sh /tmp/*
 
+# Do any apt system packages
+COPY apt.txt* /tmp/
+RUN cd /tmp/ && \
+  if test -f apt.txt; then \
+    xargs bash /usr/local/bin/apt-install.sh; \
+    rm apt.txt; \
+  fi 
 
 # reset user and location
 WORKDIR ${HOME}
@@ -95,15 +102,7 @@ ONBUILD RUN IFS=: read -r name ver <<< "$BUILD_VERSION" && echo "$ver" >> $LOCK_
 
 # Install any uv/conda environments and call build-* scripts
 ONBUILD RUN mkdir -p $HOME/build
-ONBUILD COPY --chown=$NB_UID:$NB_GID build-* requirements-* conda-* apt* $HOME/build/
-
-# Do any apt system packages
-ONBUILD USER root
-ONBUILD RUN cd $HOME/build/ && \
-    if test -f apt.txt; then \
-      xargs bash /usr/local/bin/apt-install.sh; \
-      rm apt.txt; \
-    fi 
+ONBUILD COPY --chown=$NB_UID:$NB_GID build-* requirements-* conda-* $HOME/build/
 
 ONBUILD USER $NB_USER
 
