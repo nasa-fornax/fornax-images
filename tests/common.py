@@ -1,6 +1,7 @@
 import sys
 import subprocess
 import os
+import pytest
 from pathlib import Path
 import contextlib
 
@@ -112,9 +113,10 @@ class CommonTests:
     def test_kernels_exist(kernels):
         """Kernel defnitions should exist"""
         for kernel in kernels:
-            print(f'checking kernel: {kernel}')
-            assert os.path.exists(
-                f"{jupyter_root}/{jupyter_env}/share/jupyter/kernels/{kernel}")
+            path = (f"{jupyter_root}/{jupyter_env}/share/jupyter/"
+                    f"kernels/{kernel}")
+            if not os.path.exists(path):
+                pytest.fail(f'Kernel={kernel} missing in {path}')
 
 
 @contextlib.contextmanager
