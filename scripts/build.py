@@ -21,6 +21,7 @@ IMAGE_ORDER = (
     'env-ciao',
     'env-fermi',
     'env-sas',
+    'fornax-jupyter',
     'fornax-main',
     'fornax-hea',
     'fornax-slim'

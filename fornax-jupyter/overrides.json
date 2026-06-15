@@ -1,0 +1,15 @@
+{
+  "@jupyterlab/docmanager-extension:plugin": {
+    "defaultViewers": {
+      "markdown": "Jupytext Notebook"
+    }
+  },
+  "@jupyterlab/notebook-extension:tracker": {
+    "autoStartDefaultKernel": true,
+    "recordTiming": true,
+    "windowingMode": "defer"
+  },
+  "dask-labextension:plugin": {
+    "autoStartClient": true
+  }
+}
