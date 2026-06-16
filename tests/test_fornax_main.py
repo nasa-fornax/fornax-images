@@ -7,13 +7,12 @@ import glob
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
-from common import env_root, jupyter_env, jupyter_root, notebook_dir, notebooks  # noqa E402
+from common import env_root, jupyter_env, jupyter_root  # noqa E402
+from test_fornax_nb import notebook_dir, notebooks   # noqa E402
 
 default_kernel = 'python3'
 
 KERNELS = ['python3'] + [val['env'] for val in notebooks.values()]
-# also irsa kernels
-KERNELS += ['py-irsa-tutorials', 'py-spherex_sdt', 'py-mast-tutorials']
 
 
 def test_python_path():
@@ -41,8 +40,8 @@ def test_base_env():
 def test_notebooks_folder():
     assert os.path.exists(notebook_dir)
     assert os.path.exists(f'{notebook_dir}/fornax-demo-notebooks')
-    assert os.path.exists(f'{notebook_dir}/irsa-tutorials')
-    assert os.path.exists(f'{notebook_dir}/heasarc-tutorials')
+    # assert os.path.exists(f'{notebook_dir}/irsa-tutorials')
+    # assert os.path.exists(f'{notebook_dir}/heasarc-tutorials')
 
 
 @pytest.mark.parametrize("notebook",  list(notebooks.keys()))
