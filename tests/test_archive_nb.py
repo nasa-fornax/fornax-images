@@ -39,6 +39,8 @@ def test_notebooks_folder():
 def test_check_packages():
     for env in ['py-irsa-tutorials', 'py-mast-tutorials']:
         CommonTests._test_uv_env_file(env, env_root)
-    CommonTests._test_conda_env_file('py-spherex_sdt', env_root)
+    senv = 'py-spherex_sdt'
+    CommonTests._test_conda_env_file(
+        senv, f'{env_root}/{senv}/{senv}-lock.yml')
 
 # TODO: add import tests for archive notebooks.
