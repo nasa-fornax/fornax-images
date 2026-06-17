@@ -13,7 +13,10 @@ if [ -f $env_dir/bin/activate ]; then
   source $env_dir/bin/activate
 elif [ -d $env_dir/conda-meta ]; then
   echo activating python in $env_dir
+  # for ciao, the activating fails for trivial errors; disable that before activation
+  if [ "$DEFAULT_ENV" == "ciao" ]; then set +e; fi
   micromamba activate $DEFAULT_ENV
+  if [ "$DEFAULT_ENV" == "ciao" ]; then set -e; fi
 else
   echo DEFAULT_ENV=$DEFAULT_ENV not found in $env_dir
 fi
