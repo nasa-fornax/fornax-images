@@ -2,6 +2,7 @@
 *-*/introduction.md
 *-*/changes.md
 tmp-*
+*-*/kernels
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

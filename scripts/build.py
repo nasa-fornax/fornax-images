@@ -23,7 +23,7 @@ IMAGE_ORDER = (
     'env-sas',
     'fornax-main',
     'fornax-hea',
-    'fornax-slim'
+    'fornax-jupyter'
 )
 # images that contains environments
 SOFTWARE_IMAGES = [
@@ -252,7 +252,7 @@ class Builder:
             raise ValueError(f'image {destination} does not exists')
 
         # skip base images
-        if destination not in ['fornax-slim']:
+        if destination not in ['fornax-jupyter']:
             return
 
         for file in COMMON_FILES:
@@ -261,11 +261,11 @@ class Builder:
                 shutil.copy(file, os.path.join(destination, file))
 
     def extract_kernel_files(self):
-        """Extract kernel files from the images to be used in fornax-slim
+        """Extract kernel files from the images to be used in fornax-jupyter
         """
         extra_args = self.extra_args or ''
 
-        kernels_dir = 'fornax-slim/kernels'
+        kernels_dir = 'fornax-jupyter/kernels'
         if os.path.exists(kernels_dir):
             shutil.rmtree(kernels_dir)
         self.run(f'mkdir -p {kernels_dir}', 100)
@@ -361,9 +361,9 @@ class Builder:
             build_cmd = (
                 f"docker build --platform=linux/amd64 {cmd_args} {image}")
 
-            # For fornax-slim, extract the kernel files from other images
+            # For fornax-jupyter, extract the kernel files from other images
             # first. This will create kernels/
-            if image == 'fornax-slim':
+            if image == 'fornax-jupyter':
                 self.extract_kernel_files()
                 # copy common files
                 self.copy_common_files(image)
@@ -371,7 +371,7 @@ class Builder:
             self.run(build_cmd, timeout=10000)
 
             # clean up kernels folder
-            if image == 'fornax-slim':
+            if image == 'fornax-jupyter':
                 self.print("Cleaning kernels folder")
                 self.run(f'rm -rf {image}/kernels', 1000)
 
@@ -428,8 +428,8 @@ class Builder:
 
     def do_ecr(self):
         """Notify ECR endpoint with new images/tags ..'"""
-        # Currently, only fornax-slim is in the ECR
-        ecr_images = ['fornax-slim']
+        # Currently, only fornax-jupyter is in the ECR
+        ecr_images = ['fornax-jupyter']
         if self.retag:
             images = ecr_images
         else:
