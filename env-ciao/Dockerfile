@@ -7,3 +7,4 @@ LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-imag
 LABEL org.opencontainers.image.description="Fornax Chandra CIAO Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
+ENV DEFAULT_ENV=ciao
