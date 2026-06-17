@@ -1,7 +1,7 @@
 ARG BASE_TAG=latest
 ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
-FROM ${REPOSITORY}/fornax-heasoft:${BASE_TAG} AS heasoft
+FROM ${REPOSITORY}/env-heasoft:${BASE_TAG} AS heasoft
 FROM ${REPOSITORY}/fornax-base:${BASE_TAG}
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
