@@ -18,10 +18,6 @@ jobs:
       contents: read
       packages: write
 
-    outputs:
-      build-images: ${{ steps.build-images.outputs.IMAGES_TO_BUILD }}
-      build-tag: ${{ steps.build-images.outputs.TAG }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -67,8 +63,8 @@ jobs:
       - name: "Run image tests"
         if: "!contains(github.event.head_commit.message, '[skip-tests]')"
         run: |
-          images=${{ needs.build-and-push-images.outputs.build-images }}
-          tag=${{ needs.build-and-push-images.outputs.build-tag }}
+          images=${{ steps.build-images.outputs.IMAGES_TO_BUILD }}
+          tag=${{ steps.build-images.outputs.TAG }}
           for image in $images; do
             echo "##### Testing ${image} #####"
             docker run -i --rm -v .:/opt/workspace/repo-code \
