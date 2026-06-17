@@ -474,7 +474,7 @@ class Builder:
                     except urllib.error.HTTPError as err:
                         # 404 means the repo does not exist, which is ok
                         if err.code == 404:
-                            self.out("Trigger returned status: 404")
+                            self.print("Trigger returned status: 404")
                         else:
                             # raise for any other error
                             raise
