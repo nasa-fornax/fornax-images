@@ -37,7 +37,7 @@ def test_notebooks_folder():
     assert os.path.exists(f'{notebook_dir}/heasarc-tutorials')
 
 
-@pytest.mark.parametrize("notebook",  KERNELS)
+@pytest.mark.parametrize("env",  KERNELS)
 def test_check_packages(env):
     CommonTests._test_uv_env_file(env, env_root)
 
