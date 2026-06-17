@@ -7,7 +7,7 @@ from common import env_root, jupyter_env, jupyter_root  # noqa E402
 from test_fornax_nb import notebook_dir  # noqa E402
 
 
-default_kernel = 'python3'
+default_kernel = 'jupyter'
 
 
 def test_python_path():
