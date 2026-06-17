@@ -32,10 +32,10 @@ ENV DEFAULT_ENV=heasoft
 
 # Copy from env-ciao #
 RUN --mount=type=bind,from=env_ciao,source=/opt/,target=/tmp/opt \
-    cp -r /tmp/opt/envs/ciao /opt/envs/ \
- && cp -r /tmp/opt/envs/lock/ciao-lock.yml /opt/envs/lock/ \
- && cp -r /tmp/opt/envs/lock/build-env-ciao /opt/envs/lock/ \
- && cp -r /tmp/opt/jupyter/share/jupyter/kernels/ciao /opt/jupyter/share/jupyter/kernels/
+    cp -a /tmp/opt/envs/ciao /opt/envs/ \
+ && cp -a /tmp/opt/envs/lock/ciao-lock.yml /opt/envs/lock/ \
+ && cp -a /tmp/opt/envs/lock/build-env-ciao /opt/envs/lock/ \
+ && cp -a /tmp/opt/jupyter/share/jupyter/kernels/ciao /opt/jupyter/share/jupyter/kernels/
 
 RUN --mount=type=bind,from=env_ciao,source=$SUPPORT_DATA_MOUNT/,target=/tmp/$SUPPORT_DATA_MOUNT \
     cp -a /tmp/$SUPPORT_DATA_MOUNT/ciao-* $SUPPORT_DATA_MOUNT/
@@ -43,10 +43,10 @@ RUN --mount=type=bind,from=env_ciao,source=$SUPPORT_DATA_MOUNT/,target=/tmp/$SUP
 
 # Copy from env-fermi #
 RUN --mount=type=bind,from=env_fermi,source=/opt/,target=/tmp/opt \
-    cp -r /tmp/opt/envs/fermi /opt/envs/ \
- && cp -r /tmp/opt/envs/lock/fermi-lock.yml /opt/envs/lock/ \
- && cp -r /tmp/opt/envs/lock/build-env-fermi /opt/envs/lock/ \
- && cp -r /tmp/opt/jupyter/share/jupyter/kernels/fermi /opt/jupyter/share/jupyter/kernels/
+    cp -a /tmp/opt/envs/fermi /opt/envs/ \
+ && cp -a /tmp/opt/envs/lock/fermi-lock.yml /opt/envs/lock/ \
+ && cp -a /tmp/opt/envs/lock/build-env-fermi /opt/envs/lock/ \
+ && cp -a /tmp/opt/jupyter/share/jupyter/kernels/fermi /opt/jupyter/share/jupyter/kernels/
 
 RUN --mount=type=bind,from=env_fermi,source=$SUPPORT_DATA_MOUNT/,target=/tmp/$SUPPORT_DATA_MOUNT \
     cp -a /tmp/$SUPPORT_DATA_MOUNT/fermitools-* $SUPPORT_DATA_MOUNT/
@@ -54,10 +54,10 @@ RUN --mount=type=bind,from=env_fermi,source=$SUPPORT_DATA_MOUNT/,target=/tmp/$SU
 
 # Copy from env-sas #
 RUN --mount=type=bind,from=env_sas,source=/opt/,target=/tmp/opt \
-    cp -r /tmp/opt/envs/sas /opt/envs/ \
- && cp -r /tmp/opt/envs/lock/sas-lock.yml /opt/envs/lock/ \
- && cp -r /tmp/opt/envs/lock/build-env-sas /opt/envs/lock/ \
- && cp -r /tmp/opt/jupyter/share/jupyter/kernels/sas /opt/jupyter/share/jupyter/kernels/ 
+    cp -a /tmp/opt/envs/sas /opt/envs/ \
+ && cp -a /tmp/opt/envs/lock/sas-lock.yml /opt/envs/lock/ \
+ && cp -a /tmp/opt/envs/lock/build-env-sas /opt/envs/lock/ \
+ && cp -a /tmp/opt/jupyter/share/jupyter/kernels/sas /opt/jupyter/share/jupyter/kernels/ 
 
 RUN --mount=type=bind,from=env_sas,source=$SUPPORT_DATA_MOUNT/,target=/tmp/$SUPPORT_DATA_MOUNT \
     cp -a /tmp/$SUPPORT_DATA_MOUNT/xmmsas-* $SUPPORT_DATA_MOUNT/
