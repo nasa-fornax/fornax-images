@@ -1,6 +1,5 @@
 import sys
 import os
-import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
@@ -12,7 +11,7 @@ notebook_dir = os.environ.get(
 default_kernel = 'jupyter'
 
 
-KERNELS = ['py-irsa-tutorials', 'py-spherex_sdt', 'py-mast-tutorials']
+KERNELS = ['py-irsa-tutorials', 'py-mast-tutorials', 'py-spherex_sdt']
 
 
 def test_env_vars():
@@ -37,8 +36,9 @@ def test_notebooks_folder():
     assert os.path.exists(f'{notebook_dir}/heasarc-tutorials')
 
 
-@pytest.mark.parametrize("env",  KERNELS)
-def test_check_packages(env):
-    CommonTests._test_uv_env_file(env, env_root)
+def test_check_packages():
+    for env in ['py-irsa-tutorials', 'py-mast-tutorials']:
+        CommonTests._test_uv_env_file(env, env_root)
+    CommonTests._test_conda_env_file('py-spherex_sdt', env_root)
 
 # TODO: add import tests for archive notebooks.
