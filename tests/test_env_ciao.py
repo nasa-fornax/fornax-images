@@ -6,7 +6,7 @@ import subprocess
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
-from common import env_root, jupyter_env, jupyter_root, notebook_dir  # noqa E402
+from common import env_root, jupyter_env, jupyter_root  # noqa E402
 
 default_kernel = 'ciao'
 
@@ -24,7 +24,7 @@ def test_which_python():
 def test_env_vars():
     # DEFAULT_ENV is jupyter because the container does not start
     # when set to ciao; something is not right in the ciao activation script
-    assert os.environ['DEFAULT_ENV'] == 'jupyter'
+    assert os.environ['DEFAULT_ENV'] == default_kernel
     assert os.environ['ENV_DIR'] == '/opt/envs'
     assert os.environ['ENV_DIR'] == env_root
 
