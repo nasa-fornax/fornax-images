@@ -21,16 +21,15 @@ IMAGE_ORDER = (
     'env-ciao',
     'env-fermi',
     'env-sas',
-    'fornax-jupyter',
     'fornax-main',
     'fornax-hea',
     'fornax-slim'
 )
-SOFTWARE_IMAGES = ('fornax-main', 'fornax-hea')
-COMMON_FILES = [
-    'introduction.md',
-    'changes.md'
+# images that contains environments
+SOFTWARE_IMAGES = [
+    im for im in IMAGE_ORDER if im.startswith('env-') or '-nb' in im
 ]
+COMMON_FILES = ['introduction.md', 'changes.md']
 
 
 class Builder:
@@ -253,7 +252,7 @@ class Builder:
             raise ValueError(f'image {destination} does not exists')
 
         # skip base images
-        if destination not in ['fornax-main']:
+        if destination not in ['fornax-slim']:
             return
 
         for file in COMMON_FILES:
@@ -362,20 +361,19 @@ class Builder:
             build_cmd = (
                 f"docker build --platform=linux/amd64 {cmd_args} {image}")
 
-            # before calling 'docker build', de-reference any symlinks
-            self.copy_common_files(image)
-
             # For fornax-slim, extract the kernel files from other images
             # first. This will create kernels/
             if image == 'fornax-slim':
                 self.extract_kernel_files()
+                # copy common files
+                self.copy_common_files(image)
 
             self.run(build_cmd, timeout=10000)
 
             # clean up kernels folder
             if image == 'fornax-slim':
                 self.print("Cleaning kernels folder")
-                self.run('rm -rf fornax-slim/kernels', 1000)
+                self.run(f'rm -rf {image}/kernels', 1000)
 
     def do_push(self, time_tag=None):
         """Push an image to registry with 'docker push ..'"""

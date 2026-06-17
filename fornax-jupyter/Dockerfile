@@ -1,10 +1,12 @@
 ARG BASE_TAG=latest
 ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
-FROM ${REPOSITORY}/fornax-base:${BASE_TAG} AS builder
+FROM ${REPOSITORY}/fornax-nb:${BASE_TAG} AS fornax_nb
+FROM ${REPOSITORY}/archive-nb:${BASE_TAG} AS archive_nb
+FROM ${REPOSITORY}/fornax-base:${BASE_TAG}
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
-LABEL org.opencontainers.image.description="Fornax Jupyter Image"
+LABEL org.opencontainers.image.description="Fornax Primary Jupyter Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
 
@@ -31,3 +33,53 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
  && fix-permissions $JUPYTER_DIR
+
+# From the images
+ARG JULIA_VERSION=1.8.0
+ENV JULIA_DEPOT_PATH=$ENV_DIR/julia-$JULIA_VERSION \
+    JULIA_PKGDIR=$ENV_DIR/julia-$JULIA_VERSION \
+    PATH=$ENV_DIR/julia-$JULIA_VERSION/bin:$PATH
+
+# Add the notebooks
+COPY --from=fornax_nb $NOTEBOOK_DIR $NOTEBOOK_DIR
+COPY --from=archive_nb $NOTEBOOK_DIR $NOTEBOOK_DIR
+
+# landing page; even an empty one
+COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md $NOTEBOOK_DIR/introduction.mdv
+COPY --chown=$NB_UID:$NB_GID --chmod=644 changes.md $NOTEBOOK_DIR/changes.mdv
+
+# # Update the intro page with notebooks by parsing the manifests
+COPY --chown=$NB_UID:$NB_GID parse_nb_manifest.py /tmp/
+RUN \
+  if [ -f /tmp/parse_nb_manifest.py ]; then \
+    echo "Parsing manifests of archive notebooks"; \
+    cd $NOTEBOOK_DIR; \
+    $JUPYTER_DIR/bin/python /tmp/parse_nb_manifest.py; \
+  fi \
+ && rm /tmp/parse_nb_manifest.py
+
+# copy kernel files from other images.
+# ./kernels is created by the the build script
+COPY --chown=$NB_UID:$NB_GID kernels /opt/jupyter/share/jupyter/kernels
+
+
+# add a build version
+ARG BUILD_VERSION=0
+RUN IFS=: read -r name ver <<< "$BUILD_VERSION" && echo "$ver" >> /opt/build-$name
+
+# Add ldap-related config; related to libnss-ldap
+USER root
+RUN \
+   sed -i 's/passwd:         files/passwd:         files ldap/g' /etc/nsswitch.conf \
+&& sed -i 's/group:          files/group:          files ldap/g' /etc/nsswitch.conf \
+&& cat <<'EOF' > /etc/ldap.conf
+base dc=fornax,dc=core              
+uri ldap://glauth.fornax.core:30389 
+ldap_version 3                      
+binddn cn=svcacct,dc=fornax,dc=core
+bindpw T3mp3rman3nt 
+pam_password clear
+EOF
+
+USER ${NB_UID}
+WORKDIR $HOME
