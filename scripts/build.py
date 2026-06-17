@@ -400,9 +400,9 @@ class Builder:
     def do_retag(self):
         """Release images by retagging them ..'"""
         images = self.images
-        # if images is not gives, do all fornax-* images
+        # if images is not given, do all images
         if images in (None, [], ''):
-            images = [im for im in IMAGE_ORDER if im.startswith('fornax')]
+            images = [im for im in IMAGE_ORDER]
         to_retag = [im for im in IMAGE_ORDER if im in images]
 
         for image in to_retag:
