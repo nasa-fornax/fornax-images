@@ -62,6 +62,8 @@ RUN \
 # ./kernels is created by the the build script
 COPY --chown=$NB_UID:$NB_GID kernels /opt/jupyter/share/jupyter/kernels
 
+# copy other setup scripts
+COPY misc-setup.sh /usr/local/bin/before-notebook.d/
 
 # add a build version
 ARG BUILD_VERSION=0

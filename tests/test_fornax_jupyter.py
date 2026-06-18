@@ -28,9 +28,13 @@ def test_env_vars():
     assert os.environ['ENV_DIR'] == env_root
     for var in [
         'DEFAULT_ENV', 'JUPYTER_DIR', 'MAMBA_ROOT_PREFIX', 'NOTEBOOK_DIR',
-        'SUPPORT_DATA_DIR', 'ENV_DIR', 'FIREFLY_URL',
+        'SUPPORT_DATA_DIR', 'ENV_DIR',
         'NB_USER', 'NB_UID', 'NB_GID',
         'PYTHON_VERSION', 'CACHE_DIR',
+        # from misc-setup.sh
+        'USER_ENV_DIR', 'UV_PYTHON_INSTALL_DIR', 'CONDA_ENVS_PATH',
+        'CODE_EXECUTABLE', 'CODE_EXTENSIONSDIR', 'FIREFLY_URL',
+        'DASK_DISTRIBUTED__DASHBOARD__LINK', 'FORNAX_SOFTWARE_VERSION'
     ]:
         assert var in os.environ
     assert os.environ['CODE_EXECUTABLE'] == 'code-server'
