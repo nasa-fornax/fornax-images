@@ -5,7 +5,7 @@ FROM ${REPOSITORY}/env-heasoft:${BASE_TAG} AS env_heasoft
 FROM ${REPOSITORY}/env-ciao:${BASE_TAG} AS env_ciao
 FROM ${REPOSITORY}/env-fermi:${BASE_TAG} AS env_fermi
 FROM ${REPOSITORY}/env-sas:${BASE_TAG} AS env_sas
-FROM ${REPOSITORY}/fornax-jupyter:${BASE_TAG}
+FROM ${REPOSITORY}/fornax-base:${BASE_TAG}
 
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images

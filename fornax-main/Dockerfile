@@ -4,7 +4,7 @@ ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 FROM ${REPOSITORY}/env-core:${BASE_TAG} AS env_core
 FROM ${REPOSITORY}/fornax-nb:${BASE_TAG} AS fornax_nb
 FROM ${REPOSITORY}/archive-nb:${BASE_TAG} AS archive_nb
-FROM ${REPOSITORY}/fornax-jupyter:${BASE_TAG}
+FROM ${REPOSITORY}/fornax-base:${BASE_TAG}
 
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
