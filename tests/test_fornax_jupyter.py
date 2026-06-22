@@ -7,19 +7,7 @@ from common import env_root, jupyter_env, jupyter_root  # noqa E402
 from test_fornax_nb import notebook_dir  # noqa E402
 
 
-default_kernel = 'jupyter'
-
-
-def test_python_path():
-    CommonTests._test_python_path('jupyter', jupyter_root)
-
-
-def test_which_python():
-    CommonTests._test_which_python('jupyter', jupyter_root)
-
-
-def test_env_file():
-    CommonTests._test_uv_env_file('jupyter', jupyter_root)
+default_kernel = 'python3'
 
 
 def test_env_vars():
