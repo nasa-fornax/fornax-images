@@ -83,5 +83,6 @@ bindpw T3mp3rman3nt
 pam_password clear
 EOF
 
+ENV DEFAULT_ENV=python3
 USER ${NB_UID}
 WORKDIR $HOME

@@ -270,7 +270,12 @@ class Builder:
             shutil.rmtree(kernels_dir)
         self.run(f'mkdir -p {kernels_dir}', 100)
 
-        for image in SOFTWARE_IMAGES:
+        images = SOFTWARE_IMAGES
+        # ensure env-core is last because it has python3 and base
+        images.remove('env-core')
+        images.append('env-core')
+
+        for image in images:
 
             full_tag = self.get_full_tag(image, self.tag)
 
