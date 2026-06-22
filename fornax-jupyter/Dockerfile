@@ -19,7 +19,8 @@ RUN mkdir -p $JUPYTER_DIR/share/jupyter/lab/settings/ \
 COPY --chown=$NB_UID:$NB_GID overrides.json $JUPYTER_DIR/share/jupyter/lab/settings/
 # Copy our jupyter server config file
 COPY jupyter_server_config.py /tmp/
-RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py
+RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py \
+ && rm /tmp/jupyter_server_config.py
 USER $NB_USER
 
 
@@ -34,7 +35,7 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
  && (timeout 20s start-notebook.py || true) \
  && fix-permissions $JUPYTER_DIR \
- && rm /tmp/jupyter-deps.txt /tmp/jupyter_server_config.py
+ && rm /tmp/jupyter-deps.txt
 
 # From the images
 ARG JULIA_VERSION=1.8.0
