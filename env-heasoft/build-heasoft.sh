@@ -11,7 +11,7 @@ if [ -z $SUPPORT_DATA_DIR ]; then
 fi
 
 # get current dir
-script_dir=$(pwd)
+script_dir=/usr/local/bin
 
 # install heasoft; do it in a script instead of yml file so
 # we get more control over the spectral data files
@@ -54,8 +54,8 @@ bash /usr/local/bin/setup-conda-env <<< yes
 HEA_VERSION=$(micromamba list heasoft -p $ENV_DIR/heasoft --json | jq -r '.[0].version')
 
 # (re)move data files;
-bash $script_dir/build-map-data.sh $ENV_DIR/heasoft/heasoft/refdata heasoft-$HEA_VERSION
-bash $script_dir/build-map-data.sh $ENV_DIR/heasoft/heasoft/spectral/modelData heasoft-$HEA_VERSION/spectral
+bash $script_dir/map-data.sh $ENV_DIR/heasoft/heasoft/refdata heasoft-$HEA_VERSION
+bash $script_dir/map-data.sh $ENV_DIR/heasoft/heasoft/spectral/modelData heasoft-$HEA_VERSION/spectral
 
 # Tweak Xspec settings for a no-X11 environment
 # add xspec model data from the data location

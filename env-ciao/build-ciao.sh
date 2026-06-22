@@ -11,7 +11,7 @@ if [ -z $SUPPORT_DATA_DIR ]; then
 fi
 
 # get current dir
-script_dir=$(pwd)
+script_dir=/usr/local/bin
 
 # install ciao; do it in a script instead of yml file so
 # get more control over the spectral data files
@@ -53,8 +53,8 @@ CIAO_VERSION=$(micromamba list ciao -p $ENV_DIR/ciao --json | jq -r '.[0].versio
 CALDB_VERSION=4.12.3
 
 # (re)move data files;
-bash $script_dir/build-map-data.sh $ENV_DIR/ciao/spectral/modelData ciao-${CIAO_VERSION}/spectral
-bash $script_dir/build-map-data.sh $ENV_DIR/ciao/CALDB ciao-caldb-${CALDB_VERSION}
+bash $script_dir/map-data.sh $ENV_DIR/ciao/spectral/modelData ciao-${CIAO_VERSION}/spectral
+bash $script_dir/map-data.sh $ENV_DIR/ciao/CALDB ciao-caldb-${CALDB_VERSION}
 
 # Remove these files - we don't need to include them in the image at all
 rm -rf $ENV_DIR/ciao/test

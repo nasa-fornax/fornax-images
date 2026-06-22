@@ -11,7 +11,7 @@ if [ -z $SUPPORT_DATA_DIR ]; then
 fi
 
 # get current dir
-script_dir=$(pwd)
+script_dir=/usr/local/bin
 
 # install Fermitools
 WORKDIR=/tmp/fermi
@@ -45,7 +45,7 @@ bash /usr/local/bin/setup-conda-env  <<< yes
 FERMITOOLS_VERSION=$(micromamba list fermitools -p $ENV_DIR/fermi --json | jq -r '.[0].version')
 
 # (re)move data files;
-bash $script_dir/build-map-data.sh $ENV_DIR/fermi/share/fermitools/refdata fermitools-${FERMITOOLS_VERSION}
+bash $script_dir/map-data.sh $ENV_DIR/fermi/share/fermitools/refdata fermitools-${FERMITOOLS_VERSION}
 
 # clean
 cd $HOME

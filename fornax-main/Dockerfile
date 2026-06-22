@@ -1,30 +1,50 @@
-# ONBUILD instructions in base-image/Dockerfile are used to
-# perform certain actions based on the presence of specific
-# files (such as conda-linux-64.lock, start) in this repo.
-# Refer to the base-image/Dockerfile for documentation.
 ARG BASE_TAG=latest
 ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
+FROM ${REPOSITORY}/env-core:${BASE_TAG} AS env_core
+FROM ${REPOSITORY}/fornax-nb:${BASE_TAG} AS fornax_nb
+FROM ${REPOSITORY}/archive-nb:${BASE_TAG} AS archive_nb
 FROM ${REPOSITORY}/fornax-base:${BASE_TAG}
 
+
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
-LABEL org.opencontainers.image.description="Fornax Main Astronomy Image"
+LABEL org.opencontainers.image.description="Fornax Main Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
-# setup julia
+# Copy from env-core #
+RUN --mount=type=bind,from=env_core,source=/opt/,target=/tmp/opt \
+    cp -a /tmp/opt/envs/Renv /opt/envs/Renv \
+ && cp -a /tmp/opt/envs/julia-* /opt/envs/ \
+ && cp -a /tmp/opt/envs/python3 /opt/envs/ \
+ && cp -a /tmp/opt/envs/base /opt/envs/ \
+ && cp -a /tmp/opt/envs/lock/requirements-python3.txt /opt/envs/lock/ \
+ && cp -a /tmp/opt/envs/lock/build-env-core /opt/envs/lock/ \
+ && cp -a /tmp/opt/envs/lock/julia /opt/envs/lock/ \
+ && cp -a /tmp/opt/jupyter/share/jupyter/kernels/* /opt/jupyter/share/jupyter/kernels/
+
 ARG JULIA_VERSION=1.8.0
 ENV JULIA_DEPOT_PATH=$ENV_DIR/julia-$JULIA_VERSION \
     JULIA_PKGDIR=$ENV_DIR/julia-$JULIA_VERSION \
     PATH=$ENV_DIR/julia-$JULIA_VERSION/bin:$PATH
-RUN mkdir -p $ENV_DIR && cd $ENV_DIR \
- && JULIA_DIR=julia-${JULIA_VERSION} \
- && curl -SsLO https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%.*}/${JULIA_DIR}-linux-x86_64.tar.gz \
- && tar -xf ${JULIA_DIR}-linux-x86_64.tar.gz && rm ${JULIA_DIR}-linux-x86_64.tar.gz \
- && julia -e 'import Pkg; Pkg.update(); Pkg.add(["FITSIO", "DataFrames", "Plots", "AstroLib", "AstroImages"]);' \
- && julia -e 'import Pkg; Pkg.update(); Pkg.add(["IJulia"]); using IJulia;Pkg.precompile();' \
- && mv ~/.local/share/jupyter/kernels/julia-* $JUPYTER_DIR/share/jupyter/kernels \
- && mkdir -p ${JULIA_DIR}/config \
- && mkdir -p $LOCK_DIR/julia && cp $JULIA_PKGDIR/environments/*/*toml $LOCK_DIR/julia \
- && cat <<'JRC' > ${JULIA_DIR}/config/juliarc.jl && fix-permissions $ENV_DIR/${JULIA_DIR}
-push!(Libdl.DL_LOAD_PATH, joinpath(ENV["MAMBA_ROOT_PREFIX"], "lib"))
-JRC
+
+ENV DEFAULT_ENV=python3
+# ------------------- #
+
+# Copy from fornax-nb #
+RUN --mount=type=bind,from=fornax_nb,source=/opt/,target=/tmp/opt \
+    cp -a /tmp/opt/envs/py-* /opt/envs/ \
+ && cp -a /tmp/opt/notebooks/* /opt/notebooks/ \
+ && cp -a /tmp/opt/envs/lock/requirements-py-* /opt/envs/lock/ \
+ && cp -a /tmp/opt/envs/lock/build-fornax-nb /opt/envs/lock/ \
+ && cp -a /tmp//opt/jupyter/share/jupyter/kernels/py-* /opt/jupyter/share/jupyter/kernels/
+# ------------------- #
+
+# Copy from archive-nb #
+RUN --mount=type=bind,from=archive_nb,source=/opt/,target=/tmp/opt \
+    cp -a /tmp/opt/envs/py-* /opt/envs/ \
+ && cp -a /tmp/opt/notebooks/* /opt/notebooks/ \
+ && cp -a /tmp/opt/envs/lock/requirements-py-* /opt/envs/lock/ \
+ && cp -a /tmp/opt/envs/lock/py-spherex_sdt-lock.yml /opt/envs/lock/ \
+ && cp -a /tmp/opt/envs/lock/build-archive-nb /opt/envs/lock/ \
+ && cp -a /tmp//opt/jupyter/share/jupyter/kernels/py-* /opt/jupyter/share/jupyter/kernels/
+# ------------------- #

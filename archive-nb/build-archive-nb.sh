@@ -9,6 +9,11 @@ if test -z $NOTEBOOK_DIR; then
     return 0
 fi
 
+# First clone them
+bash /usr/local/bin/clone-notebooks.sh irsa
+bash /usr/local/bin/clone-notebooks.sh mast
+bash /usr/local/bin/clone-notebooks.sh heasarc
+
 ## -------- START IRSA notebooks -------- ##
 
 # setup the kernel

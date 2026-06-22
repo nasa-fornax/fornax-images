@@ -18,10 +18,6 @@ jobs:
       contents: read
       packages: write
 
-    outputs:
-      build-images: ${{ steps.build-images.outputs.IMAGES_TO_BUILD }}
-      build-tag: ${{ steps.build-images.outputs.TAG }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -63,14 +59,16 @@ jobs:
               --push \
               $ENDPOINT \
               $IMAGES_TO_BUILD
+      
+      - name: "Run image tests"
+        if: "!contains(github.event.head_commit.message, '[skip-tests]')"
+        run: |
+          images="${{ steps.build-images.outputs.IMAGES_TO_BUILD }}"
+          tag=${{ steps.build-images.outputs.TAG }}
+          for image in $images; do
+            echo "##### Testing ${image} #####"
+            docker run -i --rm -v .:/opt/workspace/repo-code \
+              "ghcr.io/${{ github.repository }}/$image:$tag" \
+              bash -c "pytest -s -v /opt/workspace/repo-code/tests/test_${image//-/_}.py"
+          done
   
-  test-images:
-    needs: build-and-push-images
-    uses: ./.github/workflows/run-tests.yml
-    secrets: inherit
-    if: "!contains(github.event.head_commit.message, '[skip-tests]')"
-    with:
-      # pass the images that were built for testing
-      images: ${{ needs.build-and-push-images.outputs.build-images }}
-      tag: ${{ needs.build-and-push-images.outputs.build-tag }}
-              

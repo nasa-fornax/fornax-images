@@ -184,7 +184,7 @@ class TestBuilder(unittest.TestCase):
     def test_do_build(self, mock_extract, mock_copy, mock_run):
         """Test docker build command generation."""
         self.default_args.build = True
-        self.default_args.images = ['fornax-slim']
+        self.default_args.images = ['fornax-jupyter']
         self.default_args.build_vars = ['TEST_VAR=123']
         self.default_args.extra_args = ['--network=host']
 
@@ -194,7 +194,7 @@ class TestBuilder(unittest.TestCase):
         builder.do_build(time_tag)
 
         # Verify common files were copied and kernels were extracted
-        mock_copy.assert_called_with('fornax-slim')
+        mock_copy.assert_called_with('fornax-jupyter')
         mock_extract.assert_called_once()
 
         # Verify the generated docker build command
@@ -205,9 +205,9 @@ class TestBuilder(unittest.TestCase):
         self.assertIn("--build-arg TEST_VAR=123", called_args)
         self.assertIn("--network=host", called_args)
         self.assertIn(
-            f"--tag {DEFAULT_REPO}/fornax-slim:test-tag", called_args)
+            f"--tag {DEFAULT_REPO}/fornax-jupyter:test-tag", called_args)
         self.assertIn(
-            f"--tag {DEFAULT_REPO}/fornax-slim:{time_tag}", called_args)
+            f"--tag {DEFAULT_REPO}/fornax-jupyter:{time_tag}", called_args)
 
     @patch('build.Builder.run')
     @patch('build.Builder.copy_common_files')
@@ -288,11 +288,11 @@ class TestBuilder(unittest.TestCase):
         builder = Builder(self.default_args)
 
         builder.do_retag()
-        # we expect 12 calls: (1 pull, and 1-tag, 1-push) for each image
-        self.assertEqual(mock_run.call_count, (len(IMAGE_ORDER) - 1)*3)
+        # expect 3 x nimages: (1 pull, and 1-tag, 1-push) for each image
+        self.assertEqual(mock_run.call_count, (len(IMAGE_ORDER))*3)
 
         expected_calls = []
-        for im in [_im for _im in IMAGE_ORDER if _im.startswith('fornax-')]:
+        for im in [_im for _im in IMAGE_ORDER]:
             expected_calls += [
                 call(f'docker pull ghcr.io/nasa-fornax/fornax-images/{im}:test-tag', timeout=3000),  # noqa E501
                 call(f'docker tag ghcr.io/nasa-fornax/fornax-images/{im}:test-tag ghcr.io/nasa-fornax/fornax-images/{im}:main', timeout=1000),  # noqa E501
@@ -304,7 +304,7 @@ class TestBuilder(unittest.TestCase):
     def test_do_ecr(self, mock_urlopen):
         """Test triggering ECR endpoint."""
         self.default_args.ecr = ['https://fake.endpoint.com']
-        self.default_args.images = ['fornax-slim']
+        self.default_args.images = ['fornax-jupyter']
         builder = Builder(self.default_args)
 
         # Setup mock response
@@ -320,7 +320,7 @@ class TestBuilder(unittest.TestCase):
         called_request = mock_urlopen.call_args[0][0]
         self.assertEqual(
             called_request.full_url,
-            f"{self.default_args.ecr[0]}?image=fornax-slim&tag=test-tag"
+            f"{self.default_args.ecr[0]}?image=fornax-jupyter&tag=test-tag"
         )
 
     @patch('build.urllib.request.urlopen')
@@ -339,10 +339,10 @@ class TestBuilder(unittest.TestCase):
         builder = Builder(self.default_args)
         builder.run_with_args()
         # 12 calls from retag: (1 pull, and 1-tag, 1-push) for each image
-        self.assertEqual(mock_run.call_count, 12)
+        self.assertEqual(mock_run.call_count, 3 * len(IMAGE_ORDER))
 
         expected_calls = []
-        for im in [_im for _im in IMAGE_ORDER if _im.startswith('fornax-')]:
+        for im in [_im for _im in IMAGE_ORDER]:
             expected_calls += [
                 call(f'docker pull ghcr.io/nasa-fornax/fornax-images/{im}:test-tag', timeout=3000),  # noqa E501
                 call(f'docker tag ghcr.io/nasa-fornax/fornax-images/{im}:test-tag ghcr.io/nasa-fornax/fornax-images/{im}:main', timeout=1000),  # noqa E501
@@ -357,10 +357,10 @@ class TestBuilder(unittest.TestCase):
         called_request = mock_urlopen.call_args_list[0][0][0]
         self.assertEqual(
             called_request.full_url,
-            f"{self.default_args.ecr[0]}?image=fornax-slim&tag=test-tag"
+            f"{self.default_args.ecr[0]}?image=fornax-jupyter&tag=test-tag"
         )
         called_request = mock_urlopen.call_args_list[1][0][0]
         self.assertEqual(
             called_request.full_url,
-            f"{self.default_args.ecr[0]}?image=fornax-slim&tag=main"
+            f"{self.default_args.ecr[0]}?image=fornax-jupyter&tag=main"
         )

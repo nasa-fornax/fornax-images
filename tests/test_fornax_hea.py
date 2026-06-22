@@ -1,18 +1,14 @@
 import sys
 import os
-import subprocess
-import glob
-import json
+import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
-from common import env_root, jupyter_env, jupyter_root, notebook_dir  # noqa E402
+from common import env_root, jupyter_env, jupyter_root  # noqa E402
 
 default_kernel = 'heasoft'
 
-notebooks = {}
-
-KERNELS = ['python3', 'heasoft', 'sas', 'ciao', 'fermi']
+KERNELS = ['heasoft', 'sas', 'ciao', 'fermi']
 
 
 def test_python_path():
@@ -33,78 +29,30 @@ def test_base_env():
     CommonTests._test_uv_env_file(jupyter_env, jupyter_root)
 
 
-def test_conda_env():
+@pytest.mark.parametrize("env",  KERNELS)
+def test_conda_env(env):
     CommonTests._test_conda_env_file(
-        'heasoft', f'{env_root}/heasoft/heasoft-lock.yml')
+        env, f'{env_root}/{env}/{env}-lock.yml')
 
 
-def test_check_packages():
-    import heasoftpy # noqa 401
-    import xspec  # noqa 401
+@pytest.mark.parametrize("env",  KERNELS)
+def test_lock_and_files(env):
+    if not os.path.exists(f'{env_root}/lock/{env}-lock.yml'):
+        pytest.fail(f'No lock file for {env}')
+    if not os.path.exists(f'{env_root}/lock/build-env-{env}'):
+        pytest.fail(f'No build file for {env}')
 
 
-def test_fversion():
-    subprocess.check_call("fversion")
-
-
-def test_caldb():
-    assert 'CALDB' in os.environ
-    assert os.environ['CALDB'] != ''
-    assert 'CALDBCONFIG' in os.environ
-    assert 'CALDBALIAS' in os.environ
-
-
-# TODO: add a test for running test_fversion inside a notebook
-
-
-def test_ciao():
-    """Tests for ciao; call separately"""
+@pytest.mark.parametrize("env",  KERNELS)
+def test_envs(env):
+    """Tests individual environments"""
     script_dir = os.path.dirname(__file__)
-    result = CommonTests.run_cmd(('micromamba run -n ciao pytest -v -s '
-                                  f'{script_dir}/test_fornax_hea_ciao.py'))
+    envs = os.environ.copy()
+    envs['DEFAULT_ENV'] = env
+    res = CommonTests.run_cmd(
+        (f'micromamba run -p {env_root}/{env} pytest -v -s '
+         f'{script_dir}/test_env_{env}.py'), env=envs
+    )
     print()
-    print(result.stdout)
+    print(res.stdout)
     print()
-
-
-def test_fermi():
-    """Tests for fermi; call separately"""
-    script_dir = os.path.dirname(__file__)
-    result = CommonTests.run_cmd(('micromamba run -n fermi pytest -v -s '
-                                  f'{script_dir}/test_fornax_hea_fermi.py'))
-    print()
-    print(result.stdout)
-    print()
-
-
-def test_xmm_sas():
-    """Tests for XMM SAS; call separately"""
-    script_dir = os.path.dirname(__file__)
-    result = CommonTests.run_cmd(('micromamba run -n sas pytest -v -s '
-                                  f'{script_dir}/test_fornax_hea_sas.py'))
-    print()
-    print(result.stdout)
-    print()
-
-
-def test_notebook_kernels():
-    """Kernel defnitions should exist"""
-    CommonTests.test_kernels_exist(KERNELS)
-
-
-def test_data_dir():
-    """Check data directories"""
-    conda_meta = glob.glob(f'{env_root}/heasoft/conda-meta/heasoft-*.json')
-    assert len(conda_meta) == 1
-    version = json.load(open(conda_meta[0]))['version']
-    support_dir = os.environ['SUPPORT_DATA_DIR']
-    assert os.path.exists(f'{support_dir}/heasoft-{version}/refdata')
-    assert len(glob.glob(f'{support_dir}/heasoft-{version}/refdata/*')) != 0
-    assert os.path.exists(f'{support_dir}/heasoft-{version}/spectral')
-
-    # check for symlinks
-    assert os.path.exists(f'{env_root}/heasoft/heasoft/refdata')
-    assert os.path.islink(f'{env_root}/heasoft/heasoft/refdata')
-
-    assert os.path.exists(f'{env_root}/heasoft/heasoft/spectral')
-    assert os.path.islink(f'{env_root}/heasoft/heasoft/spectral/modelData')

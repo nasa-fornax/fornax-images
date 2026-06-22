@@ -2,6 +2,7 @@
 *-*/introduction.md
 *-*/changes.md
 tmp-*
+*-*/kernels
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -137,3 +138,4 @@ dmypy.json
 lock_files/
 .DS_Store
 .idea
+*.off
