@@ -32,7 +32,9 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  # update lock file and make a copy in LOCK_DIR
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
- && fix-permissions $JUPYTER_DIR
+ && (timeout 20s start-notebook.py || true) \
+ && fix-permissions $JUPYTER_DIR \
+ && rm /tmp/jupyter-deps.txt /tmp/jupyter_server_config.py
 
 # From the images
 ARG JULIA_VERSION=1.8.0
