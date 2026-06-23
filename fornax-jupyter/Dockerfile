@@ -86,6 +86,11 @@ bindpw T3mp3rman3nt
 pam_password clear
 EOF
 
+# Add OOM watcher script
+COPY oom_watch.py /usr/local/bin/oom_watch
+RUN chmod +x /usr/local/bin/oom_watch \
+ && printf '#!/bin/bash\nnohup /usr/local/bin/oom_watch > /tmp/oom_watch.log 2>&1 &' > /usr/local/bin/before-notebook.d/start-oom-watchdog.sh
+
 ENV DEFAULT_ENV=python3
 USER ${NB_UID}
 WORKDIR $HOME
