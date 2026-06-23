@@ -34,7 +34,7 @@ export FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
 export DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/{port}/status"
 
 # image version
-export FORNAX_SOFTWARE_VERSION=$(sed -n '/^##/ { s/^##[[:space:]]*//; p; q; }' $JUPYTER_DIR/changes.md)
+export FORNAX_SOFTWARE_VERSION=$(sed -n '/^##/ { s/^##[[:space:]]*//; p; q; }' $NOTEBOOK_DIR/changes.mdv)
 
 ## Clean the home dir if needed
 # CLEAN_HOME=0
