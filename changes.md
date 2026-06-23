@@ -1,5 +1,9 @@
 # Latest Changes
 
+## 26.0625
+- Build infrastructure refactor to separate the environments.
+- Add A script to watch for and stop out-of-memory processes.
+
 ## 26.0608
 - Add MAST notebooks.
 - Updates Fornax notebooks to pull new fixes.
