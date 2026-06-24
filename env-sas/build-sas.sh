@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-# exit on failure; error on undefiend vars; print commands
+# exit on failure; error on undefined vars; print commands
 set -eux
 set -o pipefail
 

@@ -1,5 +1,9 @@
 #!/usr/bin/bash
 
+# exit on failure; error on undefined vars; print commands
+set -eux
+set -o pipefail
+
 # Build script to setup a conda environment for eROSITA's eSASS toolkit
 
 ########### Validation and setup of directories ###########
@@ -13,8 +17,7 @@ fi
 WORKDIR=/tmp/esass
 mkdir -p $WORKDIR
 # Deletes any existing contents of the working directory
-rm -rf $WORKDIR/*
-#> /dev/null 2>&1
+rm -rf $WORKDIR/* > /dev/null 2>&1
 
 # Make sure to setup a support file directory for some makefiles we want to copy in
 mkdir -p $WORKDIR/support_files
@@ -29,7 +32,7 @@ cd $WORKDIR
 
 
 ############# Definition of software versions #############
-esass_version=1.0.1
+esass_version=1.0.2
 py_version=$PYTHON_VERSION
 ###########################################################
 
@@ -74,6 +77,16 @@ dependencies:
   - python=$py_version
   - pytest
   - fftw
+  - pip
+  - pip:
+    - pytest
+    - astroquery
+    - astropy
+    - s3fs
+    - boto3
+    - xmmpysas
+    - https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer.tar.gz
+    - xga
 EOF
 
 # Use the yml to create the eSASS env
