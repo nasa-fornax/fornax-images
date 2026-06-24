@@ -20,6 +20,7 @@ IMAGE_ORDER = (
     'env-ciao',
     'env-fermi',
     'env-sas',
+    'env-esass',
     'env-assets',
     'fornax-main',
     'fornax-hea',
