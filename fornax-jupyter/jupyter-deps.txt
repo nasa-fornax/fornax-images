@@ -7,6 +7,7 @@ jupyter-vscode-proxy
 dask-labextension
 jupyter-firefly-extensions
 jdaviz
+jupyter-collaboration
 https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer.tar.gz
 https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer_labextension.tar.gz
 https://heasarc.gsfc.nasa.gov/azoghbi/pip/xspec_extension.tar.gz

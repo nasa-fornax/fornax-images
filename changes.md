@@ -2,7 +2,8 @@
 
 ## 26.0625
 - Build infrastructure refactor to separate the environments.
-- Add A script to watch for and stop out-of-memory processes.
+- Add a script to watch for and stop out-of-memory processes.
+- Add Jupyter collaboration extension.
 
 ## 26.0608
 - Add MAST notebooks.
