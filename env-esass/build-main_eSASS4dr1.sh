@@ -90,7 +90,7 @@ dependencies:
 EOF
 
 # Use the yml to create the eSASS env
-bash /usr/local/bin/conda-env-install.sh
+bash /usr/local/bin/setup-conda-env <<< yes
 
 # Updating the lock file and moving it to the lock file directory
 micromamba env -n $ENV_NAME export > $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
