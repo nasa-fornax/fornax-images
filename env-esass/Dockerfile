@@ -8,6 +8,6 @@ LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-imag
 LABEL org.opencontainers.image.description="Fornax eROSITA eSASS Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
-ENV DEFAULT_ENV=esass
+ENV DEFAULT_ENV=esassdr1
 
 COPY --from=heasoft /opt/envs/heasoft /opt/envs/heasoft
