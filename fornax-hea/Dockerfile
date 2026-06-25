@@ -5,6 +5,7 @@ FROM ${REPOSITORY}/env-heasoft:${BASE_TAG} AS env_heasoft
 FROM ${REPOSITORY}/env-ciao:${BASE_TAG} AS env_ciao
 FROM ${REPOSITORY}/env-fermi:${BASE_TAG} AS env_fermi
 FROM ${REPOSITORY}/env-sas:${BASE_TAG} AS env_sas
+FROM ${REPOSITORY}/env-esass:${BASE_TAG} AS env_esass
 FROM ${REPOSITORY}/fornax-base:${BASE_TAG}
 
 
@@ -61,4 +62,13 @@ RUN --mount=type=bind,from=env_sas,source=/opt/,target=/tmp/opt \
 
 RUN --mount=type=bind,from=env_sas,source=$SUPPORT_DATA_MOUNT/,target=/tmp/$SUPPORT_DATA_MOUNT \
     cp -a /tmp/$SUPPORT_DATA_MOUNT/xmmsas-* $SUPPORT_DATA_MOUNT/
+# ------------------- #
+
+# Copy from env-esass #
+RUN --mount=type=bind,from=env_esass,source=/opt/,target=/tmp/opt \
+    cp -a /tmp/opt/envs/esassdr1 /opt/envs/ \
+ && cp -a /tmp/opt/envs/lock/esassdr1-lock.yml /opt/envs/lock/ \
+ && cp -a /tmp/opt/envs/lock/build-env-esass /opt/envs/lock/ \
+ && cp -a /tmp/opt/jupyter/share/jupyter/kernels/esassdr1 /opt/jupyter/share/jupyter/kernels/
+
 # ------------------- #
