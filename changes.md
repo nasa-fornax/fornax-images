@@ -4,6 +4,8 @@
 - Build infrastructure refactor to separate the environments.
 - Add a script to watch for and stop out-of-memory processes.
 - Add Jupyter collaboration extension.
+- Bug fixes:
+  - Fix 'Open in a New Browser Tab'.
 
 ## 26.0608
 - Add MAST notebooks.
