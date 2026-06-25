@@ -10,7 +10,8 @@ COPY --chown=$NB_UID:$NB_GID --from=heasoft /opt/envs/heasoft /opt/envs/heasoft
 RUN mkdir -p $HOME/build
 COPY --chown=$NB_UID:$NB_GID install-* requirements-* conda-* $HOME/build/
 
-RUN cd build \
+
+RUN cd build && echo "Found script install-main_eSASS4dr1.sh ..." \ \
  && chmod +x install-main_eSASS4dr1.sh \
  && ./install-main_eSASS4dr1.sh
 
