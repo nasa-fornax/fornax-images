@@ -35,7 +35,7 @@ def test_conda_env():
     # CommonTests._test_conda_env_file(
     #     'heasoft', f'{env_root}/heasoft/heasoft-lock.yml')
     CommonTests._test_conda_env_file(
-        'esassdr1', f'{env_root}/esass/esass-lock.yml')
+        'esassdr1', f'{env_root}/esassdr1/esassdr1-lock.yml')
 
 
 def test_kernels():
