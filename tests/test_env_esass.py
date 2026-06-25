@@ -31,9 +31,9 @@ def test_base_env():
 
 
 def test_conda_env():
-    # esass needs heasoft
-    # CommonTests._test_conda_env_file(
-    #     'heasoft', f'{env_root}/heasoft/heasoft-lock.yml')
+    # eSASS needs heasoft, so we check the lock file
+    CommonTests._test_conda_env_file(
+        'heasoft', f'{env_root}/heasoft/heasoft-lock.yml')
     CommonTests._test_conda_env_file(
         'esassdr1', f'{env_root}/esassdr1/esassdr1-lock.yml')
 
