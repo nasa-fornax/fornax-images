@@ -7,9 +7,9 @@ sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
 from common import env_root, jupyter_env, jupyter_root  # noqa E402
 
-default_kernel = 'esass'
+default_kernel = 'esassdr1'
 
-KERNELS = ['esass']
+KERNELS = ['esassdr1']
 
 
 def test_python_path():
@@ -35,7 +35,7 @@ def test_conda_env():
     CommonTests._test_conda_env_file(
         'heasoft', f'{env_root}/heasoft/heasoft-lock.yml')
     CommonTests._test_conda_env_file(
-        'esass', f'{env_root}/esass/esass-lock.yml')
+        'esassdr1', f'{env_root}/esass/esass-lock.yml')
 
 
 def test_kernels():
