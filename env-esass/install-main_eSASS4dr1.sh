@@ -104,13 +104,13 @@ cp $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml $LOCK_DIR
 #micromamba install -y -n heasoft $conda_extra
 ###########################################################
 
-############ Create HEASoft-build environment #############
-# Clone the heasoft environment to a temporary build environment
-micromamba create -n heasoft-build --clone heasoft
+############ Create HEASoft environment clone #############
+# Clone the heasoft environment to a temporary backup environment
+micromamba create -n heasoft-orig --clone heasoft
 
-# Install the extra build dependencies into the build environment
+# Install the extra build dependencies into the heasoft environment
 export conda_extra="gcc gfortran gxx binutils automake fftw libtool make"
-micromamba install -y -n heasoft-build $conda_extra
+micromamba install -y -n heasoft $conda_extra
 ###########################################################
 
 
@@ -119,14 +119,14 @@ micromamba install -y -n heasoft-build $conda_extra
 eval "$(micromamba shell hook --shell bash)"
 # Explicitly activate the heasoft environment - was having issues with
 #  the scripts in activate.d not running when just using micromamba run -n heasoft
-micromamba activate heasoft-build
+micromamba activate heasoft
 ###########################################################
 
 
 ############## Build HEALPix v3.50 for eSASS ##############
 # FIRST WE MUST TRICK eSASS' HEALPIX INTO ACCEPTING A SHARED CFITSIO LIBRARY
-if [ ! -L /opt/envs/heasoft-build/heasoft/lib/libcfitsio.a ]; then
-  ln -s /opt/envs/heasoft-build/heasoft/lib/libcfitsio.so /opt/envs/heasoft/heasoft/lib/libcfitsio.a
+if [ ! -L /opt/envs/heasoft/heasoft/lib/libcfitsio.a ]; then
+  ln -s /opt/envs/heasoft/heasoft/lib/libcfitsio.so /opt/envs/heasoft/heasoft/lib/libcfitsio.a
 fi
 
 # The HEALPix source (and eventual build) lives in this directory
@@ -149,10 +149,10 @@ make
 ################### Setup to build eSASS ##################
 cd $WORKDIR/$esass_dir_name/eSASS/autoconf
 
-export CC=$ENV_DIR/heasoft-build/bin/gcc
-export CXX=$ENV_DIR/heasoft-build/bin/g++
-export FC=$ENV_DIR/heasoft-build/bin/gfortran
-export F77=$ENV_DIR/heasoft-build/bin/gfortran
+export CC=$ENV_DIR/heasoft/bin/gcc
+export CXX=$ENV_DIR/heasoft/bin/g++
+export FC=$ENV_DIR/heasoft/bin/gfortran
+export F77=$ENV_DIR/heasoft/bin/gfortran
 ###########################################################
 
 
@@ -232,10 +232,11 @@ EOF
 cd $HOME
 rm -rf $WORKDIR
 
-# Remove the extra conda libraries we installed
-#micromamba remove -y -n heasoft $conda_extra
+# Restore the HEASoft environment to what it was
 micromamba deactivate
-micromamba env remove -n heasoft-build -y
+micromamba env remove -n heasoft -y
+micromamba create -n heasoft --clone heasoft-orig
+micromamba env remove -n heasoft-orig -y
 
 # Unset the environment variables used by the eSASS build
 unset CC
