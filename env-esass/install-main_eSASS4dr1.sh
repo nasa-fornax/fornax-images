@@ -105,7 +105,16 @@ micromamba install -y -n heasoft $conda_extra
 ###########################################################
 
 
-############### Build HEALPix v3.50 for eSASS ##############
+############### Activate HEASoft environment ##############
+# Initialize micromamba
+eval "$(micromamba shell hook --shell bash)"
+# Explicitly activate the heasoft environment - was having issues with
+#  the scripts in activate.d not running when just using micromamba run -n heasoft
+micromamba activate heasoft
+###########################################################
+
+
+############## Build HEALPix v3.50 for eSASS ##############
 # FIRST WE MUST TRICK eSASS' HEALPIX INTO ACCEPTING A SHARED CFITSIO LIBRARY
 if [ ! -L /opt/envs/heasoft/heasoft/lib/libcfitsio.a ]; then
   ln -s /opt/envs/heasoft/heasoft/lib/libcfitsio.so /opt/envs/heasoft/heasoft/lib/libcfitsio.a
@@ -124,7 +133,8 @@ mkdir -p build
 
 mv $WORKDIR/support_files/healpix.pc $healpix_dir/lib/
 
-micromamba run -n heasoft make
+#micromamba run -n heasoft make
+make
 ###########################################################
 
 
@@ -139,14 +149,24 @@ export F77=$ENV_DIR/heasoft/bin/gfortran
 
 
 ################# Build eSASS from source #################
-micromamba run -n heasoft aclocal
-micromamba run -n heasoft autoreconf -fi -v
-micromamba run -n heasoft ./configure --with-caldb=$eSASS_CALDB --with-healpix=$healpix_dir \
+#micromamba run -n heasoft aclocal
+#micromamba run -n heasoft autoreconf -fi -v
+#micromamba run -n heasoft ./configure --with-caldb=$eSASS_CALDB --with-healpix=$healpix_dir \
+#                                      --with-headas=$HEADAS --with-gsl=compile --with-lapack=system
+#
+#micromamba run -n heasoft make
+#micromamba run -n heasoft make install
+#micromamba run -n heasoft make clean
+
+
+aclocal
+autoreconf -fi -v
+./configure --with-caldb=$eSASS_CALDB --with-healpix=$healpix_dir \
                                       --with-headas=$HEADAS --with-gsl=compile --with-lapack=system
 
-micromamba run -n heasoft make
-micromamba run -n heasoft make install
-micromamba run -n heasoft make clean
+make
+make install
+make clean
 ###########################################################
 
 
@@ -215,7 +235,7 @@ cd $HOME
 rm -rf $WORKDIR
 
 # Remove the extra conda libraries we installed
-micromamba remove -y -n heasoft $conda_extra
+#micromamba remove -y -n heasoft $conda_extra
 # Unset the environment variables used by the eSASS build
 unset CC
 unset CXX
