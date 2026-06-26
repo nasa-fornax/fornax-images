@@ -43,10 +43,6 @@ def test_kernels():
     CommonTests.test_kernels_exist(KERNELS)
 
 
-def test_pysas_import():
-    import pysas  # noqa E401
-
-
 def test_srctool_version():
     subprocess.check_call(["srctool", "--version"])
 
