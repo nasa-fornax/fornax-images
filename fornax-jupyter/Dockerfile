@@ -52,7 +52,7 @@ COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md $NOTEBOOK_DIR/introduct
 COPY --chown=$NB_UID:$NB_GID --chmod=644 changes.md $NOTEBOOK_DIR/changes.mdv
 
 # # Update the intro page with notebooks by parsing the manifests
-COPY --chown=$NB_UID:$NB_GID parse_nb_manifest.py /tmp/
+COPY --chown=$NB_UID:$NB_GID scripts/parse_nb_manifest.py /tmp/
 RUN \
   if [ -f /tmp/parse_nb_manifest.py ]; then \
     echo "Parsing manifests of archive notebooks"; \
@@ -66,7 +66,7 @@ RUN \
 COPY --chown=$NB_UID:$NB_GID kernels /opt/jupyter/share/jupyter/kernels
 
 # copy other setup scripts
-COPY misc-setup.sh /usr/local/bin/before-notebook.d/
+COPY scripts/misc-setup.sh /usr/local/bin/before-notebook.d/
 
 # add a build version
 ARG BUILD_VERSION=0
@@ -87,9 +87,13 @@ pam_password clear
 EOF
 
 # Add OOM watcher script
-COPY oom_watch.py /usr/local/bin/oom_watch
+COPY scripts/oom_watch.py /usr/local/bin/oom_watch
 RUN chmod +x /usr/local/bin/oom_watch \
  && printf '#!/bin/bash\nnohup /usr/local/bin/oom_watch > /tmp/oom_watch.log 2>&1 &' > /usr/local/bin/before-notebook.d/start-oom-watchdog.sh
+
+# Add misc build script
+COPY scripts/misc-build.sh .
+RUN bash misc-build.sh && rm misc-build.sh
 
 ENV DEFAULT_ENV=python3
 USER ${NB_UID}
