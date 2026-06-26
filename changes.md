@@ -3,9 +3,9 @@
 ## 26.0625
 - Build infrastructure refactor to separate the environments.
 - Add a script to watch for and stop out-of-memory processes.
-- Add Jupyter collaboration extension.
 - Bug fixes:
   - Fix 'Open in a New Browser Tab'.
+- Launcher style enhancements (fornax_labextension==0.1.21).
 
 ## 26.0608
 - Add MAST notebooks.
