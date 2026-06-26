@@ -84,7 +84,6 @@ dependencies:
     - astropy
     - s3fs
     - boto3
-    - xmmpysas
     - https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer.tar.gz
     - xga
 EOF
@@ -95,20 +94,17 @@ bash /usr/local/bin/setup-conda-env <<< yes
 # Updating the lock file and moving it to the lock file directory
 micromamba env -n $ENV_NAME export > $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
 cp $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml $LOCK_DIR
+###########################################################
 
+############ Create HEASoft environment clone #############
+# Copy the heasoft environment to a temporary backup environment
+cp -a $ENV_DIR/heasoft $ENV_DIR/heasoft_backup
+
+# Install the extra build dependencies into the heasoft environment
 # THOUGH WE'VE CREATED AN ENVIRONMENT FOR eSASS WE AREN'T GOING TO USE IT YET - instead we'll keep using the
 #  heasoft environment, because it is easier to complete the build there then get the esassdr1 environment
 #  set up to do it
 # These dependencies are needed to build eSASS, and are temporarily installed in the HEASoft environment
-#export conda_extra="gcc gfortran gxx binutils automake fftw libtool make"
-#micromamba install -y -n heasoft $conda_extra
-###########################################################
-
-############ Create HEASoft environment clone #############
-# Clone the heasoft environment to a temporary backup environment
-micromamba create -n heasoft-orig --clone heasoft
-
-# Install the extra build dependencies into the heasoft environment
 export conda_extra="gcc gfortran gxx binutils automake fftw libtool make"
 micromamba install -y -n heasoft $conda_extra
 ###########################################################
@@ -234,9 +230,10 @@ rm -rf $WORKDIR
 
 # Restore the HEASoft environment to what it was
 micromamba deactivate
-micromamba env remove -n heasoft -y
-micromamba create -n heasoft --clone heasoft-orig
-micromamba env remove -n heasoft-orig -y
+# Remove the modified HEASoft environment
+rm -rf $ENV_DIR/heasoft
+# Then restore the backup of the environment to its original location
+mv $ENV_DIR/heasoft_backup $ENV_DIR/heasoft
 
 # Unset the environment variables used by the eSASS build
 unset CC
