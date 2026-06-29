@@ -9,8 +9,6 @@ PROTECTED = [
     'jupyter', 'jupyterhub-singleuser', 'start-singleuser.py', 'oom_watch',
     'node'
 ]
-NOTIFICATION_FILE = (Path(os.environ.get("HOME", "/home/jovyan")) /
-                     "_PROCESS_KILLED_DUE_TO_MEMORY.txt")
 # Do not kill processes using less than this amount of memory
 MIN_KILL_MB = 1024
 
@@ -90,7 +88,11 @@ def watchdog():
                    f"crash.\nTime: {time.ctime()}\nProcess: "
                    f"{cmd}\nMemory: ~{mem_mb} MB")
             try:
-                NOTIFICATION_FILE.write_text(msg)
+                # write to a notification file
+                notification_file = (Path(os.environ.get("HOME", "/tmp")) /
+                                     "_PROCESS_STOPPED_DUE_TO_MEMORY.txt")
+                notification_file.write_text(msg)
+                notification_file.chmod(0o666)
             except Exception:
                 pass
 
