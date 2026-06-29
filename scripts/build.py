@@ -14,15 +14,22 @@ DEFAULT_REPO = "ghcr.io/nasa-fornax/fornax-images"
 IMAGE_ORDER = (
     'jupyter-base',
     'fornax-base',
+    'env-core',
+    'fornax-nb',
+    'archive-nb',
+    'env-heasoft',
+    'env-ciao',
+    'env-fermi',
+    'env-sas',
     'fornax-main',
     'fornax-hea',
-    'fornax-slim'
+    'fornax-jupyter'
 )
-SOFTWARE_IMAGES = ('fornax-main', 'fornax-hea')
-COMMON_FILES = [
-    'introduction.md',
-    'changes.md'
+# images that contains environments
+SOFTWARE_IMAGES = [
+    im for im in IMAGE_ORDER if im.startswith('env-') or '-nb' in im
 ]
+COMMON_FILES = ['introduction.md', 'changes.md']
 
 
 class Builder:
@@ -245,7 +252,7 @@ class Builder:
             raise ValueError(f'image {destination} does not exists')
 
         # skip base images
-        if destination in ['fornax-jupyter']:
+        if destination not in ['fornax-jupyter']:
             return
 
         for file in COMMON_FILES:
@@ -254,16 +261,21 @@ class Builder:
                 shutil.copy(file, os.path.join(destination, file))
 
     def extract_kernel_files(self):
-        """Extract kernel files from the images to be used in fornax-slim
+        """Extract kernel files from the images to be used in fornax-jupyter
         """
         extra_args = self.extra_args or ''
 
-        kernels_dir = 'fornax-slim/kernels'
+        kernels_dir = 'fornax-jupyter/kernels'
         if os.path.exists(kernels_dir):
             shutil.rmtree(kernels_dir)
         self.run(f'mkdir -p {kernels_dir}', 100)
 
-        for image in SOFTWARE_IMAGES:
+        images = SOFTWARE_IMAGES
+        # ensure env-core is last because it has python3 and base
+        images.remove('env-core')
+        images.append('env-core')
+
+        for image in images:
 
             full_tag = self.get_full_tag(image, self.tag)
 
@@ -354,20 +366,19 @@ class Builder:
             build_cmd = (
                 f"docker build --platform=linux/amd64 {cmd_args} {image}")
 
-            # before calling 'docker build', de-reference any symlinks
-            self.copy_common_files(image)
-
-            # For fornax-slim, extract the kernel files from other images
+            # For fornax-jupyter, extract the kernel files from other images
             # first. This will create kernels/
-            if image == 'fornax-slim':
+            if image == 'fornax-jupyter':
                 self.extract_kernel_files()
+                # copy common files
+                self.copy_common_files(image)
 
             self.run(build_cmd, timeout=10000)
 
             # clean up kernels folder
-            if image == 'fornax-slim':
+            if image == 'fornax-jupyter':
                 self.print("Cleaning kernels folder")
-                self.run('rm -rf fornax-slim/kernels', 1000)
+                self.run(f'rm -rf {image}/kernels', 1000)
 
     def do_push(self, time_tag=None):
         """Push an image to registry with 'docker push ..'"""
@@ -394,9 +405,9 @@ class Builder:
     def do_retag(self):
         """Release images by retagging them ..'"""
         images = self.images
-        # if images is not gives, do all fornax-* images
+        # if images is not given, do all images
         if images in (None, [], ''):
-            images = [im for im in IMAGE_ORDER if im.startswith('fornax')]
+            images = [im for im in IMAGE_ORDER]
         to_retag = [im for im in IMAGE_ORDER if im in images]
 
         for image in to_retag:
@@ -422,8 +433,8 @@ class Builder:
 
     def do_ecr(self):
         """Notify ECR endpoint with new images/tags ..'"""
-        # Currently, only fornax-slim is in the ECR
-        ecr_images = ['fornax-slim']
+        # Currently, only fornax-jupyter is in the ECR
+        ecr_images = ['fornax-jupyter']
         if self.retag:
             images = ecr_images
         else:
@@ -468,7 +479,7 @@ class Builder:
                     except urllib.error.HTTPError as err:
                         # 404 means the repo does not exist, which is ok
                         if err.code == 404:
-                            self.out("Trigger returned status: 404")
+                            self.print("Trigger returned status: 404")
                         else:
                             # raise for any other error
                             raise

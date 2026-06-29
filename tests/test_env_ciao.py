@@ -1,16 +1,16 @@
 import sys
 import os
-import subprocess
 import glob
 import json
+import subprocess
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
-from common import env_root, jupyter_env, jupyter_root, notebook_dir  # noqa E402
+from common import env_root, jupyter_env, jupyter_root  # noqa E402
 
 default_kernel = 'ciao'
 
-notebooks = {}
+KERNELS = ['ciao']
 
 
 def test_python_path():
@@ -22,6 +22,10 @@ def test_which_python():
 
 
 def test_env_vars():
+    # DEFAULT_ENV is jupyter because the container does not start
+    # when set to ciao; something is not right in the ciao activation script
+    assert os.environ['DEFAULT_ENV'] == default_kernel
+    assert os.environ['ENV_DIR'] == '/opt/envs'
     assert os.environ['ENV_DIR'] == env_root
 
 
@@ -32,6 +36,11 @@ def test_base_env():
 def test_conda_env():
     CommonTests._test_conda_env_file(
         'ciao', f'{env_root}/ciao/ciao-lock.yml')
+
+
+def test_kernels():
+    """Kernel defnitions should exist"""
+    CommonTests.test_kernels_exist(KERNELS)
 
 
 def test_check_packages():

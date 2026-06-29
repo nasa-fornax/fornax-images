@@ -1,10 +1,13 @@
 #!/bin/bash
-# Create environments for the notebooks to run in
+# Create environments for the fornax demo notebooks to run in
 # Download the notebook repo and use the requirement files
 
 # exit on failure; print commands
 set -ex
 set -o pipefail
+
+# First clone them
+bash /usr/local/bin/clone-notebooks.sh fornax
 
 resolve_references() {
     local file="$1"

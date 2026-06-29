@@ -1,5 +1,12 @@
 # Latest Changes
 
+## 26.0630
+- Build infrastructure refactor to separate the environments.
+- Add an experiment script to watch for and stop out-of-memory processes.
+- Bug fixes:
+  - Fix 'Open in a New Browser Tab'.
+- Launcher style enhancements (fornax_labextension==0.1.21).
+
 ## 26.0608
 - Add MAST notebooks.
 - Updates Fornax notebooks to pull new fixes.

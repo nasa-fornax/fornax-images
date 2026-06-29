@@ -17,7 +17,7 @@ if [ -z $SUPPORT_DATA_DIR ]; then
 fi
 
 # get current dir
-script_dir=$(pwd)
+script_dir=/usr/local/bin
 
 # Sets up the working directory where SAS will assembled
 WORKDIR=/tmp/sas
@@ -194,7 +194,7 @@ EOF
 
 
 ################### (Re)Move data files ###################
-bash $script_dir/build-map-data.sh $ENV_DIR/$ENV_NAME/${sas_install_dir}/lib/data xmmsas-${sas_version}/
+bash $script_dir/map-data.sh $ENV_DIR/$ENV_NAME/${sas_install_dir}/lib/data xmmsas-${sas_version}/
 
 # We also remove the documentation source and build, once again to save space (don't bother symlinking this one,
 #  the documentation are very easily found online).

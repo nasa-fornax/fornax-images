@@ -1,30 +1,52 @@
 import sys
 import os
+import pytest
 import ast
 import re
-import pytest
-import glob
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
 from common import env_root, jupyter_env, jupyter_root  # noqa E402
-from test_fornax_nb import notebook_dir, notebooks   # noqa E402
 
-default_kernel = 'python3'
+notebook_dir = os.environ.get(
+    'NOTEBOOK_DIR', f"{os.environ['HOME']}/fornax-notebooks")
 
-KERNELS = ['python3'] + [val['env'] for val in notebooks.values()]
+notebooks = {
+    'multiband_photometry': {
+        'file': ('fornax-demo-notebooks/forced_photometry/'
+                 'multiband_photometry.md'),
+        'env': 'py-multiband_photometry'
+    },
+    'light_curve_classifier': {
+        'file': 'fornax-demo-notebooks/light_curves/light_curve_classifier.md',
+        'env': 'py-light_curve_classifier'
+    },
+    'light_curve_collector': {
+        'file': 'fornax-demo-notebooks/light_curves/light_curve_collector.md',
+        'env': 'py-light_curve_collector'
+    },
+    'scale_up': {
+        'file': 'fornax-demo-notebooks/light_curves/scale_up.md',
+        'env': 'py-scale_up'
+    },
+    'ml_agnzoo': {
+        'file': 'fornax-demo-notebooks/light_curves/ML_AGNzoo.md',
+        'env': 'py-ml_agnzoo'
+    },
+    'spectra_collector': {
+        'file': 'fornax-demo-notebooks/spectroscopy/spectra_collector.md',
+        'env': 'py-spectra_collector'
+    },
+    'ztf_ps1_crossmatch': {
+        'file': 'fornax-demo-notebooks/crossmatch/ztf_ps1_crossmatch.md',
+        'env': 'py-ztf_ps1_crossmatch'
+    }
+}
 
 
-def test_python_path():
-    CommonTests._test_python_path(default_kernel, env_root)
+default_kernel = 'jupyter'
 
-
-def test_which_python():
-    CommonTests._test_which_python(default_kernel, env_root)
-
-
-def test_env_file():
-    CommonTests._test_uv_env_file(default_kernel, env_root)
+KERNELS = [val['env'] for val in notebooks.values()]
 
 
 def test_env_vars():
@@ -37,25 +59,19 @@ def test_base_env():
     CommonTests._test_uv_env_file(jupyter_env, jupyter_root)
 
 
+def test_kernels():
+    """Kernel defnitions should exist"""
+    CommonTests.test_kernels_exist(KERNELS)
+
+
 def test_notebooks_folder():
     assert os.path.exists(notebook_dir)
     assert os.path.exists(f'{notebook_dir}/fornax-demo-notebooks')
-    # assert os.path.exists(f'{notebook_dir}/irsa-tutorials')
-    # assert os.path.exists(f'{notebook_dir}/heasarc-tutorials')
 
 
 @pytest.mark.parametrize("notebook",  list(notebooks.keys()))
 def test_check_packages(notebook):
     CommonTests._test_uv_env_file(notebooks[notebook]['env'], env_root)
-
-
-def test_code_server():
-    CommonTests.run_cmd('which code-server')
-
-
-def test_conda_base_env():
-    CommonTests._test_conda_env_file(
-        'base', f'{env_root}/base/base-lock.yml')
 
 
 @pytest.mark.parametrize("notebook", list(notebooks.keys()))
@@ -105,23 +121,18 @@ def test_notebook_permissions(notebook):
     assert os.access(f'{notebook_dir}/{nb_path}', os.W_OK)
 
 
-def test_notebook_kernels():
-    """Kernel defnitions should exist"""
-    CommonTests.test_kernels_exist(KERNELS)
-
-
-def test_julia():
-    """Julia and its kernel defnitions should exist"""
-    assert 'JULIA_DEPOT_PATH' in os.environ
-    jpath = os.environ['JULIA_DEPOT_PATH']
-    assert os.path.exists(jpath)
-    assert glob.glob(f'{jpath}/*') != 0
-    version = glob.glob(f'{jpath}/environments/v*')[0].split('/')[-1][1:]
-    CommonTests.test_kernels_exist([f'julia-{version}'])
-
-
-def test_r():
-    """R and its kernel defnitions should exist"""
-    assert os.path.exists(f'{env_root}/Renv')
-    assert glob.glob(f'{env_root}/Renv/*') != 0
-    CommonTests.test_kernels_exist(['ir'])
+@pytest.mark.parametrize("notebook",  list(notebooks.keys()))
+def test_run_notebooks(notebook):
+    """Do a full run of the notebook"""
+    # skip the nootebook that needs large RAM for now.
+    if notebook in ['light_curve_collector']:
+        pytest.skip(f'Skipping {notebook}')
+    nb_file = notebooks[notebook]['file']
+    nb_path = os.path.dirname(nb_file)
+    nb_filename = os.path.basename(nb_file)
+    assert os.path.exists(f'{notebook_dir}/{nb_file}')
+    with change_dir(f'{notebook_dir}/{nb_path}'):
+        CommonTests.run_cmd(
+            (f'{jupyter_root}/{jupyter_env}/bin/jupytext'
+             f' --execute {nb_filename}')
+        )

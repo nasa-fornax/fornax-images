@@ -5,11 +5,11 @@ import glob
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests, change_dir  # noqa E402
-from common import env_root, jupyter_env, jupyter_root, notebook_dir  # noqa E402
+from common import env_root, jupyter_env, jupyter_root  # noqa E402
 
 default_kernel = 'sas'
 
-notebooks = {}
+KERNELS = ['sas']
 
 
 def test_python_path():
@@ -21,6 +21,8 @@ def test_which_python():
 
 
 def test_env_vars():
+    assert os.environ['DEFAULT_ENV'] == default_kernel
+    assert os.environ['ENV_DIR'] == '/opt/envs'
     assert os.environ['ENV_DIR'] == env_root
 
 
@@ -29,8 +31,16 @@ def test_base_env():
 
 
 def test_conda_env():
+    # sas needs heasoft
+    CommonTests._test_conda_env_file(
+        'heasoft', f'{env_root}/heasoft/heasoft-lock.yml')
     CommonTests._test_conda_env_file(
         'sas', f'{env_root}/sas/sas-lock.yml')
+
+
+def test_kernels():
+    """Kernel defnitions should exist"""
+    CommonTests.test_kernels_exist(KERNELS)
 
 
 def test_pysas_import():
@@ -54,15 +64,3 @@ def test_data_dir():
     # check for symlinks
     assert os.path.exists(f'{env_root}/sas/{dirname}/lib/data')
     assert os.path.islink(f'{env_root}/sas/{dirname}/lib/data')
-
-
-# def test_ccf():
-#     # Runs the SAS cifbuild routine, but set to generate a master index file (MIF). Users never need to do
-#     #  this, but it means we don't have to point cifbuild at a particular XMM observation, and it will raise
-#     #  a warning if it can't find any CCFs
-#     output = subprocess.run(["cifbuild", "masterindex=yes"], stderr=subprocess.PIPE)
-#     output = output.stderr.decode('utf-8')
-#     # Check if the stderr has any entries in it - it shouldn't if all went well
-#     assert len(output) == 0
-#     # If we're here, we need to clean up the output file from the cifbuild call
-#     os.remove('ccf.cif')
