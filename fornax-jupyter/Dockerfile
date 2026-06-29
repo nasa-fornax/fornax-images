@@ -89,7 +89,7 @@ EOF
 # Add OOM watcher script
 COPY scripts/oom_watch.py /usr/local/bin/oom_watch
 RUN chmod +x /usr/local/bin/oom_watch \
- && printf '#!/bin/bash\nnohup /usr/local/bin/oom_watch > /tmp/oom_watch.log 2>&1 &' > /usr/local/bin/before-notebook.d/start-oom-watchdog.sh
+ && printf '#!/bin/bash\nnohup /usr/local/bin/oom_watch &' > /usr/local/bin/before-notebook.d/start-oom-watch.sh
 
 # Add misc build script
 COPY scripts/misc-build.sh .
