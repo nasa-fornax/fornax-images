@@ -89,7 +89,7 @@ EOF
 # Add OOM watcher script
 COPY scripts/oom_watch.py /usr/local/bin/oom_watch
 RUN chmod +x /usr/local/bin/oom_watch \
- && printf '#!/bin/bash\nnohup /usr/local/bin/oom_watch &' > /usr/local/bin/before-notebook.d/start-oom-watch.sh
+ && printf '#!/bin/bash\n/usr/local/bin/oom_watch --delay > /tmp/oom-watch.log 2>&1 & disown' > /usr/local/bin/before-notebook.d/start-oom-watch.sh
 
 ENV DEFAULT_ENV=python3
 USER ${NB_UID}
