@@ -1,6 +1,7 @@
 #!/opt/jupyter/bin/python
 import time
 import os
+import sys
 import signal
 from pathlib import Path
 
@@ -106,4 +107,10 @@ def watchdog():
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        # if --delay is passed, wait for 3min before starting
+        if sys.argv[1] == '--delay':
+            time.sleep(3 * 60)
+
+    # start the watcher
     watchdog()

@@ -53,7 +53,7 @@ fi
 script=/tmp/kernel-warmer.sh
 cat <<EOF > $script
 set +ex
-sleep 40
+sleep 180
 echo "Starting kernel warmer ..."
 cd $ENV_DIR
 for env in python3 heasoft \$(ls -d py-*) ciao fermi; do
@@ -71,6 +71,6 @@ rm -- $script
 EOF
 # run it in the background if we are inside JH
 if [ -n "${JUPYTERHUB_USER+x}" ]; then
-    bash $script & disown
+    sudo -u $JUPYTERHUB_USER bash $script & disown
 fi
 ## ----------------------------------------- ##
