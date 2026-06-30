@@ -71,6 +71,6 @@ rm -- $script
 EOF
 # run it in the background if we are inside JH
 if [ -n "${JUPYTERHUB_USER+x}" ]; then
-    bash $script & disown
+    sudo -u $JUPYTERHUB_USER nohup bash $script &
 fi
 ## ----------------------------------------- ##
