@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Cateogry in the JL Launcher
 CATEGORY=Tools
 
 ## -------------------------------------------------------- ##
@@ -31,14 +32,14 @@ fi
 ## ------------------------------ ##
 
 ## Rebuild jupyter lab cache ##
-# we need node
-curl -sSOL https://nodejs.org/dist/v24.18.0/node-v24.18.0-linux-x64.tar.xz
-tar -xf node-*.tar.xz
-nodedir=`ls -d $PWD/node-*x64/`
-export PATH=$nodedir/bin:$PATH
-jupyter lab clean
-jupyter lab build
+## we need node
+# curl -sSOL https://nodejs.org/dist/v24.18.0/node-v24.18.0-linux-x64.tar.xz
+# tar -xf node-*.tar.xz
+# nodedir=`ls -d $PWD/node-*x64/`
+# export PATH=$nodedir/bin:$PATH
+# jupyter lab clean
+# jupyter lab build
+# rm -rf $nodedir node-*xz
 (timeout 20s start-notebook.py || true)
-rm -rf $nodedir
 ## ------------------------- ##
 
