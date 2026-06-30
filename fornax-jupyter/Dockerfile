@@ -24,8 +24,8 @@ RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py \
 USER $NB_USER
 
 
-# add packages to jupyter environment; mainly labextensions
-COPY --chown=$NB_UID:$NB_GID jupyter-deps.txt /tmp/
+# add packages to jupyter environment; mainly labextensions & misc-build
+COPY --chown=$NB_UID:$NB_GID jupyter-deps.txt scripts/misc-build.sh /tmp/
 RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && uv pip install --no-cache -r /tmp/jupyter-deps.txt \
  && rm -rf jupyter-deps.txt \
@@ -33,9 +33,11 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  # update lock file and make a copy in LOCK_DIR
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
+ && bash /tmp/misc-build.sh \
+ && jupyter lab clean && jupyter lab build \
  && (timeout 20s start-notebook.py || true) \
  && fix-permissions $JUPYTER_DIR /tmp/cache \
- && rm /tmp/jupyter-deps.txt
+ && rm /tmp/jupyter-deps.txt /tmp/misc-build.sh
 
 # From the images
 ARG JULIA_VERSION=1.8.0
@@ -90,10 +92,6 @@ EOF
 COPY scripts/oom_watch.py /usr/local/bin/oom_watch
 RUN chmod +x /usr/local/bin/oom_watch \
  && printf '#!/bin/bash\nnohup /usr/local/bin/oom_watch &' > /usr/local/bin/before-notebook.d/start-oom-watch.sh
-
-# Add misc build script
-COPY scripts/misc-build.sh .
-RUN bash misc-build.sh && rm misc-build.sh
 
 ENV DEFAULT_ENV=python3
 USER ${NB_UID}
