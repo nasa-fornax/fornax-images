@@ -34,8 +34,6 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
  && bash /tmp/misc-build.sh \
- && jupyter lab clean && jupyter lab build \
- && (timeout 20s start-notebook.py || true) \
  && fix-permissions $JUPYTER_DIR /tmp/cache \
  && rm /tmp/jupyter-deps.txt /tmp/misc-build.sh
 
