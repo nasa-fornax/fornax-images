@@ -12,4 +12,5 @@ https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer_labextension.tar.gz
 https://heasarc.gsfc.nasa.gov/azoghbi/pip/xspec_extension.tar.gz
 https://heasarc.gsfc.nasa.gov/azoghbi/pip/fornax_labextension.tar.gz
 pip
+jupyter_bokeh
 # notebook-intelligence
