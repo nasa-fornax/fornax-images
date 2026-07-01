@@ -1,5 +1,8 @@
 # Latest Changes
 
+## dev
+- Add Fermi GBM environment.
+
 ## 26.0630
 - Build infrastructure refactor to separate the environments.
 - Add an experiment script to watch for and stop out-of-memory processes.

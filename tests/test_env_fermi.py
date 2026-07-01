@@ -9,7 +9,7 @@ from common import env_root, jupyter_env, jupyter_root  # noqa E402
 
 default_kernel = 'fermi'
 
-KERNELS = ['fermi']
+KERNELS = ['fermi', 'fermi-gbm']
 
 
 def test_python_path():
@@ -33,6 +33,10 @@ def test_base_env():
 def test_conda_env():
     CommonTests._test_conda_env_file(
         'fermi', f'{env_root}/fermi/fermi-lock.yml')
+
+
+def test_uv_env():
+    CommonTests._test_uv_env_file('fermi-gbm', env_root)
 
 
 def test_kernels():
