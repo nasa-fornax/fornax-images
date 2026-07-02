@@ -2,6 +2,7 @@
 
 ## dev
 - Add Fermi GBM environment.
+- Security updates
 
 ## 26.0630
 - Build infrastructure refactor to separate the environments.
