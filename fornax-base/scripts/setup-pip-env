@@ -19,6 +19,8 @@ python=$ENV_DIR/base/bin/python$PYTHON_VERSION
 for arg in "$@"; do
     if [[ "$arg" == "--user" ]]; then
         envdir=$USER_ENV_DIR
+        # ensure python persists with the environment
+        export UV_MANAGED_PYTHON=1
     elif [[ "$arg" == --python=* ]]; then
         # Extract everything after the '=' sign
         python="${arg#*=}"
