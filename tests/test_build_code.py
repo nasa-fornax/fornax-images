@@ -180,8 +180,7 @@ class TestBuilder(unittest.TestCase):
 
     @patch('build.Builder.run')
     @patch('build.Builder.copy_common_files')
-    @patch('build.Builder.extract_kernel_files')
-    def test_do_build(self, mock_extract, mock_copy, mock_run):
+    def test_do_build(self, mock_copy, mock_run):
         """Test docker build command generation."""
         self.default_args.build = True
         self.default_args.images = ['fornax-jupyter']
@@ -195,7 +194,6 @@ class TestBuilder(unittest.TestCase):
 
         # Verify common files were copied and kernels were extracted
         mock_copy.assert_called_with('fornax-jupyter')
-        mock_extract.assert_called_once()
 
         # Verify the generated docker build command
         # You can inspect the arguments passed to 'run'
@@ -211,8 +209,7 @@ class TestBuilder(unittest.TestCase):
 
     @patch('build.Builder.run')
     @patch('build.Builder.copy_common_files')
-    @patch('build.Builder.extract_kernel_files')
-    def test_build_version(self, mock_extract, mock_copy, mock_run):
+    def test_build_version(self, mock_copy, mock_run):
         """Test BUILD_VERSION is separate for each image."""
         self.default_args.build = True
         images = ['fornax-base', 'fornax-main']
