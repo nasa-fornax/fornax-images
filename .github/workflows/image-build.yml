@@ -1,21 +1,16 @@
 name: Image Build
-run-name: "Image Build: ${{ inputs.images }} (Parallel: ${{ inputs.parallel }})"
+run-name: "Image Build: ${{ inputs.images }}"
 
 on:
   workflow_dispatch:
     inputs:
       images:
-        description: 'Images to build of the form: image-1 image-2'
+        description: "Images to build. Use quotes to run in serial (e.g., image-1 'image-2 image-3')"
         required: true
         type: string
-      parallel:
-        description: 'Run builds in parallel?'
-        required: false
-        type: boolean
-        default: true
 
 jobs:
-  # 1. Preparation job formats the matrix dynamically
+  # 1. Preparation job uses Python's shlex to parse quoted strings correctly
   prepare:
     runs-on: ubuntu-latest
     outputs:
@@ -32,27 +27,25 @@ jobs:
 
       - name: Parse images into JSON array
         id: set-matrix
+        env:
+          # Pass the input as an environment variable to prevent bash from eating the quotes
+          RAW_INPUT: ${{ inputs.images }}
         run: |
-          if [ "${{ inputs.parallel }}" = "true" ]; then
-            # Split into array of elements: ["image-1", "image-2"] -> Matrix spawns N jobs
-            JSON_ARRAY=$(python -c 'import sys, json; print(json.dumps(sys.argv[1].split()))' "${{ inputs.images }}")
-          else
-            # Keep as a single-element array: ["image-1 image-2"] -> Matrix spawns 1 job
-            JSON_ARRAY=$(python -c 'import sys, json; print(json.dumps([sys.argv[1]]))' "${{ inputs.images }}")
-          fi
+          # Use os.environ to read the exact string, keeping all single and double quotes fully intact
+          JSON_ARRAY=$(python -c 'import os, json, shlex; print(json.dumps(shlex.split(os.environ["RAW_INPUT"])))')
           
           echo "Parsed matrix: $JSON_ARRAY"
           echo "matrix=$JSON_ARRAY" >> $GITHUB_OUTPUT
 
-  # 2. Build job handles both parallel and sequential dynamically
+  # 2. Build job handles both individual and grouped images
   build-and-push-images:
     needs: prepare
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # 'image_set' will either be a single image (parallel mode) or all images (sequential mode)
-        image_set: ${{ fromJson(needs.prepare.outputs.matrix) }}
+        # matrix.image_group will be either a single image or a space-separated string of images
+        image_group: ${{ fromJson(needs.prepare.outputs.matrix) }}
 
     permissions:
       contents: read
@@ -68,12 +61,11 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Build and push images
-        id: build-images
+        id: build-image
         run: |
-          IMAGES_TO_BUILD="${{ matrix.image_set }}"
+          IMAGES_TO_BUILD="${{ matrix.image_group }}"
           TAG="${{ github.head_ref || github.ref_name }}" 
-          echo "IMAGES_TO_BUILD: $IMAGES_TO_BUILD"
-          echo "TAG: $TAG"
+          echo "Building: $IMAGES_TO_BUILD with tag $TAG"
 
           if [[ "$TAG" == "main" || "$TAG" == "develop" ]]; then
             ENDPOINT="--ecr ${{ secrets.ECR_ENDPOINT }} --ecr ${{ secrets.ECR_ENDPOINT_PROD }}"
@@ -81,7 +73,8 @@ jobs:
             ENDPOINT="--ecr ${{ secrets.ECR_ENDPOINT }}"
           fi
 
-          # run the build
+          # Leave $IMAGES_TO_BUILD unquoted here so bash splits the group 
+          # into separate arguments for your python script.
           python scripts/build.py --debug \
               --repo "ghcr.io/${{ github.repository }}" \
               --tag $TAG \
@@ -93,10 +86,11 @@ jobs:
       - name: "Run image tests"
         if: "!contains(github.event.head_commit.message, '[skip-tests]')"
         run: |
-          images="${{ matrix.image_set }}"
+          images="${{ matrix.image_group }}"
           tag="${{ github.head_ref || github.ref_name }}"
           
-          # The loop runs once in parallel mode, or loops over all items in sequential mode
+          # If matrix.image_group has spaces (e.g. "image-2 image-3"), bash iterates over each.
+          # If it doesn't (e.g. "image-1"), it just loops once.
           for image in $images; do
             test_file="tests/test_${image//-/_}.py"
             
