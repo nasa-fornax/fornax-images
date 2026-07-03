@@ -5,6 +5,7 @@ jupyterlab-git
 jupyterlab-myst
 jupyter-vscode-proxy
 dask-labextension
+dask-gateway
 jupyter-firefly-extensions
 jdaviz
 https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer.tar.gz
