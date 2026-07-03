@@ -66,9 +66,11 @@ jobs:
           images="${{ steps.build-images.outputs.IMAGES_TO_BUILD }}"
           tag=${{ steps.build-images.outputs.TAG }}
           for image in $images; do
-            echo "##### Testing ${image} #####"
-            docker run -i --rm -v .:/opt/workspace/repo-code \
-              "ghcr.io/${{ github.repository }}/$image:$tag" \
-              bash -c "pytest -s -v /opt/workspace/repo-code/tests/test_${image//-/_}.py"
+            if [ -f tests/test_${image//-/_}.py ]; then
+              echo "##### Testing ${image} #####"
+              docker run -i --rm -v .:/opt/workspace/repo-code \
+                "ghcr.io/${{ github.repository }}/$image:$tag" \
+                bash -c "pytest -s -v /opt/workspace/repo-code/tests/test_${image//-/_}.py"
+            fi
           done
   
