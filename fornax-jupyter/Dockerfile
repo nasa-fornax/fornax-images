@@ -35,6 +35,8 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
  && bash /tmp/misc-build.sh \
  && fix-permissions $JUPYTER_DIR /tmp/cache \
+ && find $JUPYTER_DIR -name "yarn.lock" -delete \
+ && find $JUPYTER_DIR -name "package-lock.json" -delete \
  && rm /tmp/jupyter-deps.txt /tmp/misc-build.sh
 
 # From the images
