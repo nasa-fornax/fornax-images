@@ -1,5 +1,5 @@
 name: Image Build
-run-name: "Image Build: ${{ inputs.images }}"
+run-name: "Image Build: ${{ inputs.images }} (Parallel: ${{ inputs.parallel }})"
 
 on:
   workflow_dispatch:
@@ -8,12 +8,52 @@ on:
         description: 'Images to build of the form: image-1 image-2'
         required: true
         type: string
+      parallel:
+        description: 'Run builds in parallel?'
+        required: false
+        type: boolean
+        default: true
 
 jobs:
-  build-and-push-images:
+  # 1. Preparation job formats the matrix dynamically
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
-    # Sets the permissions granted to the `GITHUB_TOKEN`
+      - name: Check links in the intro page
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: "introduction.md"
+          fail: false
+
+      - name: Parse images into JSON array
+        id: set-matrix
+        run: |
+          if [ "${{ inputs.parallel }}" = "true" ]; then
+            # Split into array of elements: ["image-1", "image-2"] -> Matrix spawns N jobs
+            JSON_ARRAY=$(python -c 'import sys, json; print(json.dumps(sys.argv[1].split()))' "${{ inputs.images }}")
+          else
+            # Keep as a single-element array: ["image-1 image-2"] -> Matrix spawns 1 job
+            JSON_ARRAY=$(python -c 'import sys, json; print(json.dumps([sys.argv[1]]))' "${{ inputs.images }}")
+          fi
+          
+          echo "Parsed matrix: $JSON_ARRAY"
+          echo "matrix=$JSON_ARRAY" >> $GITHUB_OUTPUT
+
+  # 2. Build job handles both parallel and sequential dynamically
+  build-and-push-images:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 'image_set' will either be a single image (parallel mode) or all images (sequential mode)
+        image_set: ${{ fromJson(needs.prepare.outputs.matrix) }}
+
     permissions:
       contents: read
       packages: write
@@ -26,24 +66,14 @@ jobs:
         uses: ./.github/actions/setup
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check links in the intro page
-        uses: lycheeverse/lychee-action@v1
-        with:
-          args: "introduction.md"
-          fail: false
       
       - name: Build and push images
         id: build-images
         run: |
-          IMAGES_TO_BUILD="${{ inputs.images }}"
+          IMAGES_TO_BUILD="${{ matrix.image_set }}"
           TAG="${{ github.head_ref || github.ref_name }}" 
           echo "IMAGES_TO_BUILD: $IMAGES_TO_BUILD"
           echo "TAG: $TAG"
-
-          # write variables so can be used elsewhere
-          echo "IMAGES_TO_BUILD=$IMAGES_TO_BUILD" >> $GITHUB_OUTPUT
-          echo "TAG=$TAG" >> $GITHUB_OUTPUT
 
           if [[ "$TAG" == "main" || "$TAG" == "develop" ]]; then
             ENDPOINT="--ecr ${{ secrets.ECR_ENDPOINT }} --ecr ${{ secrets.ECR_ENDPOINT_PROD }}"
@@ -63,14 +93,19 @@ jobs:
       - name: "Run image tests"
         if: "!contains(github.event.head_commit.message, '[skip-tests]')"
         run: |
-          images="${{ steps.build-images.outputs.IMAGES_TO_BUILD }}"
-          tag=${{ steps.build-images.outputs.TAG }}
+          images="${{ matrix.image_set }}"
+          tag="${{ github.head_ref || github.ref_name }}"
+          
+          # The loop runs once in parallel mode, or loops over all items in sequential mode
           for image in $images; do
-            if [ -f tests/test_${image//-/_}.py ]; then
+            test_file="tests/test_${image//-/_}.py"
+            
+            if [ -f "$test_file" ]; then
               echo "##### Testing ${image} #####"
               docker run -i --rm -v .:/opt/workspace/repo-code \
                 "ghcr.io/${{ github.repository }}/$image:$tag" \
-                bash -c "pytest -s -v /opt/workspace/repo-code/tests/test_${image//-/_}.py"
+                bash -c "pytest -s -v /opt/workspace/repo-code/$test_file"
+            else
+              echo "##### No tests found for ${image} (expected $test_file) #####"
             fi
           done
-  
