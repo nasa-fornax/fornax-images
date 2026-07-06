@@ -16,6 +16,7 @@ FROM scratch
 
 ENV NOTEBOOK_DIR=/opt/notebooks
 ENV KERNEL_DIR=/opt/jupyter/share/jupyter/kernels
+ENV LOCK_DIR=/opt/envs/lock
 
 # Add the notebooks
 COPY --from=fornax_nb $NOTEBOOK_DIR $NOTEBOOK_DIR
@@ -30,3 +31,12 @@ COPY --from=fornax_nb $KERNEL_DIR /kernels/
 COPY --from=archive_nb $KERNEL_DIR /kernels/
 # keep env_core last because it has base
 COPY --from=env_core $KERNEL_DIR /kernels/
+
+# Locks
+COPY --from=env_heasoft $LOCK_DIR /locks/
+COPY --from=env_ciao $LOCK_DIR /locks/
+COPY --from=env_sas $LOCK_DIR /locks/
+COPY --from=env_fermi $LOCK_DIR /locks/
+COPY --from=fornax_nb $LOCK_DIR /locks/
+COPY --from=archive_nb $LOCK_DIR /locks/
+COPY --from=env_core $LOCK_DIR /locks/
