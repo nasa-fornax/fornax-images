@@ -50,8 +50,8 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.image }}-environment-locks
-          path: ./${{ matrix.image }}-environment-locks.zip
+          name: environment-locks
+          path: ./environment-locks.zip
       
       - name: Upload lock files to the release
         uses: softprops/action-gh-release@v3
