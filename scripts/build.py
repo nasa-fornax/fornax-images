@@ -309,14 +309,11 @@ class Builder:
             image tag, e.g. develop, stable etc.
         """
         for image in self.images:
-            # if 'env-assets' in image:
-            #     print('Skipping env-assets ...')
-            #     continue
+            if image != 'env-assets':
+                print(f'Only env-assets has locks; skipping {image}')
+                continue
             full_tag = self.get_full_tag(image, self.tag)
 
-            lock_dir = f'{image}_locks'
-            self.print(f' :: Exporting locks for {full_tag} to ./{lock_dir}')
-            self.run(f'mkdir -p {lock_dir}', 100)
             cmd = (f'docker create {full_tag} /bin/true')
             res = self.run(cmd, 1000)
             id = res.stdout.split('\n')[-2].strip()

@@ -156,7 +156,7 @@ class TestBuilder(unittest.TestCase):
     def test_do_export_locks(self, mock_run):
         """Test docker build command generation."""
         self.default_args.export_locks = True
-        self.default_args.images = ['fornax-1', 'fornax-2']
+        self.default_args.images = ['env-assets', 'fornax-2']
 
         id = 'id-1234'
         mock_run.return_value.stdout = f'{id}\n'
@@ -165,21 +165,14 @@ class TestBuilder(unittest.TestCase):
 
         builder.do_export_locks()
 
-        # call run twice, create a folder, create container and export
-        self.assertEqual(mock_run.call_count, 6)
+        # call run twice, create container and export for env-assets
+        self.assertEqual(mock_run.call_count, 2)
 
         def full_tag(image):
             return f'{DEFAULT_REPO}/{image}:{self.default_args.tag}'
 
-        def lock_dir(image):
-            return f'{image}_locks'
-
         expected_calls = [
-            call(f"mkdir -p {lock_dir('fornax-1')}", 100),
-            call(f"docker create {full_tag('fornax-1')} /bin/true", 1000),
-            call(f"docker cp {id}:/locks locks", 1000),
-            call(f"mkdir -p {lock_dir('fornax-2')}", 100),
-            call(f"docker create {full_tag('fornax-2')} /bin/true", 1000),
+            call(f"docker create {full_tag('env-assets')} /bin/true", 1000),
             call(f"docker cp {id}:/locks locks", 1000),
         ]
         mock_run.assert_has_calls(expected_calls, any_order=False)
