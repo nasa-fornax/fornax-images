@@ -21,13 +21,15 @@ IMAGE_ORDER = (
     'env-ciao',
     'env-fermi',
     'env-sas',
+    'env-assets',
     'fornax-main',
     'fornax-hea',
     'fornax-jupyter'
 )
 # images that contains environments
 SOFTWARE_IMAGES = [
-    im for im in IMAGE_ORDER if im.startswith('env-') or '-nb' in im
+    im for im in IMAGE_ORDER if (
+        im.startswith('env-') or '-nb' in im and im != 'env-assets')
 ]
 COMMON_FILES = ['introduction.md', 'changes.md']
 
@@ -369,7 +371,9 @@ class Builder:
             # For fornax-jupyter, extract the kernel files from other images
             # first. This will create kernels/
             if image == 'fornax-jupyter':
-                self.extract_kernel_files()
+                # comment out extract_kernel_files; this is now done
+                # with env-assets
+                # self.extract_kernel_files()
                 # copy common files
                 self.copy_common_files(image)
 

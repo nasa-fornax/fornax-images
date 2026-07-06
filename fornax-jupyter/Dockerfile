@@ -1,8 +1,7 @@
 ARG BASE_TAG=latest
 ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
-FROM ${REPOSITORY}/fornax-nb:${BASE_TAG} AS fornax_nb
-FROM ${REPOSITORY}/archive-nb:${BASE_TAG} AS archive_nb
+FROM ${REPOSITORY}/env-assets:${BASE_TAG} AS assets
 FROM ${REPOSITORY}/fornax-base:${BASE_TAG}
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
@@ -35,6 +34,8 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
  && bash /tmp/misc-build.sh \
  && fix-permissions $JUPYTER_DIR /tmp/cache \
+ && find $JUPYTER_DIR -name "yarn.lock" -delete \
+ && find $JUPYTER_DIR -name "package-lock.json" -delete \
  && rm /tmp/jupyter-deps.txt /tmp/misc-build.sh
 
 # From the images
@@ -44,8 +45,7 @@ ENV JULIA_DEPOT_PATH=$ENV_DIR/julia-$JULIA_VERSION \
     PATH=$ENV_DIR/julia-$JULIA_VERSION/bin:$PATH
 
 # Add the notebooks
-COPY --from=fornax_nb $NOTEBOOK_DIR $NOTEBOOK_DIR
-COPY --from=archive_nb $NOTEBOOK_DIR $NOTEBOOK_DIR
+COPY --from=assets $NOTEBOOK_DIR $NOTEBOOK_DIR
 
 # landing page; even an empty one
 COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md $NOTEBOOK_DIR/introduction.mdv
@@ -63,7 +63,8 @@ RUN \
 
 # copy kernel files from other images.
 # ./kernels is created by the the build script
-COPY --chown=$NB_UID:$NB_GID kernels /opt/jupyter/share/jupyter/kernels
+# COPY --chown=$NB_UID:$NB_GID kernels /opt/jupyter/share/jupyter/kernels
+COPY --chown=$NB_UID:$NB_GID --from=assets /kernels /opt/jupyter/share/jupyter/kernels
 
 # copy other setup scripts
 COPY scripts/misc-setup.sh /usr/local/bin/before-notebook.d/
