@@ -308,7 +308,7 @@ class Builder:
             image tag, e.g. develop, stable etc.
         """
         for image in self.images:
-            if image == 'env-assets':
+            if 'env-assets' in image:
                 print('Skipping env-assets ...')
                 continue
             full_tag = self.get_full_tag(image, self.tag)
