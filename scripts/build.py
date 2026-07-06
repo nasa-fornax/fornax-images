@@ -91,6 +91,7 @@ class Builder:
                 shell=True,
                 check=True,
                 text=True,
+                capture_output=True,
                 timeout=timeout,
                 **runargs,
             )
@@ -153,7 +154,7 @@ class Builder:
         if need_tag and self.tag is None:
             # get defaut tag from branch name
             out = self.run(
-                'git branch --show-current', 100, capture_output=True)
+                'git branch --show-current', 100)
             if out is not None:
                 self.tag = out.stdout.strip()
             else:
@@ -308,18 +309,19 @@ class Builder:
             image tag, e.g. develop, stable etc.
         """
         for image in self.images:
-            if 'env-assets' in image:
-                print('Skipping env-assets ...')
-                continue
+            # if 'env-assets' in image:
+            #     print('Skipping env-assets ...')
+            #     continue
             full_tag = self.get_full_tag(image, self.tag)
 
             lock_dir = f'{image}_locks'
             self.print(f' :: Exporting locks for {full_tag} to ./{lock_dir}')
             self.run(f'mkdir -p {lock_dir}', 100)
-            cmd = (f'docker run --entrypoint="" --rm -v $PWD/{lock_dir}:/host '
-                   f'--user `id -u` '
-                   f"{full_tag} bash -c 'cp -r $LOCK_DIR/* /host/'")
-            self.run(cmd, 1000)
+            cmd = (f'docker create {full_tag} /bin/true')
+            res = self.run(cmd, 1000)
+            id = res.stdout.split('\n')[-2].strip()
+            cmd = (f'docker cp {id}:/locks locks')
+            res = self.run(cmd, 1000)
 
     def do_build(self, time_tag):
         """Build an image by calling 'docker build ..'"""

@@ -47,6 +47,7 @@ class TestBuilder(unittest.TestCase):
             shell=True,
             check=True,
             text=True,
+            capture_output=True,
             timeout=10
         )
 
@@ -96,7 +97,7 @@ class TestBuilder(unittest.TestCase):
 
         # Assert git branch was checked and tag was updated
         mock_run.assert_called_once_with(
-            'git branch --show-current', 100, capture_output=True)
+            'git branch --show-current', 100)
         self.assertEqual(builder.tag, 'main-branch')
 
     def test_check_input_retag(self):
@@ -157,12 +158,15 @@ class TestBuilder(unittest.TestCase):
         self.default_args.export_locks = True
         self.default_args.images = ['fornax-1', 'fornax-2']
 
+        id = 'id-1234'
+        mock_run.return_value.stdout = f'{id}\n'
+
         builder = Builder(self.default_args)
 
         builder.do_export_locks()
 
-        # call run twice, create a folder and export
-        self.assertEqual(mock_run.call_count, 4)
+        # call run twice, create a folder, create container and export
+        self.assertEqual(mock_run.call_count, 6)
 
         def full_tag(image):
             return f'{DEFAULT_REPO}/{image}:{self.default_args.tag}'
@@ -172,9 +176,11 @@ class TestBuilder(unittest.TestCase):
 
         expected_calls = [
             call(f"mkdir -p {lock_dir('fornax-1')}", 100),
-            call(f"docker run --entrypoint=\"\" --rm -v $PWD/{lock_dir('fornax-1')}:/host --user `id -u` {full_tag('fornax-1')} bash -c 'cp -r $LOCK_DIR/* /host/'", 1000),  # noqa E501
+            call(f"docker create {full_tag('fornax-1')} /bin/true", 1000),
+            call(f"docker cp {id}:/locks locks", 1000),
             call(f"mkdir -p {lock_dir('fornax-2')}", 100),
-            call(f"docker run --entrypoint=\"\" --rm -v $PWD/{lock_dir('fornax-2')}:/host --user `id -u` {full_tag('fornax-2')} bash -c 'cp -r $LOCK_DIR/* /host/'", 1000),  # noqa E501
+            call(f"docker create {full_tag('fornax-2')} /bin/true", 1000),
+            call(f"docker cp {id}:/locks locks", 1000),
         ]
         mock_run.assert_has_calls(expected_calls, any_order=False)
 
