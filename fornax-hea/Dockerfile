@@ -43,10 +43,10 @@ RUN --mount=type=bind,from=env_ciao,source=$SUPPORT_DATA_MOUNT/,target=/tmp/$SUP
 
 # Copy from env-fermi #
 RUN --mount=type=bind,from=env_fermi,source=/opt/,target=/tmp/opt \
-    cp -a /tmp/opt/envs/fermi /opt/envs/ \
- && cp -a /tmp/opt/envs/lock/fermi-lock.yml /opt/envs/lock/ \
+    cp -a /tmp/opt/envs/fermi-* /opt/envs/ \
+ && cp -a /tmp/opt/envs/lock/*fermi* /opt/envs/lock/ \
  && cp -a /tmp/opt/envs/lock/build-env-fermi /opt/envs/lock/ \
- && cp -a /tmp/opt/jupyter/share/jupyter/kernels/fermi /opt/jupyter/share/jupyter/kernels/
+ && cp -ar /tmp/opt/jupyter/share/jupyter/kernels/*fermi* /opt/jupyter/share/jupyter/kernels/
 
 RUN --mount=type=bind,from=env_fermi,source=$SUPPORT_DATA_MOUNT/,target=/tmp/$SUPPORT_DATA_MOUNT \
     cp -a /tmp/$SUPPORT_DATA_MOUNT/fermitools-* $SUPPORT_DATA_MOUNT/
