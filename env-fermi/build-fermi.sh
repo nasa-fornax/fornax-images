@@ -22,13 +22,15 @@ rm -rf * > /dev/null 2>&1
 
 # TODO IF UPDATING, CHECK WHETHER 'gammapy' HAS A RELEASE VERSION HIGHER THAN 2.1, IF
 #  YES THEN YOU CAN PROBABLY REMOVE THE REGION<0.12 RESTRICTION.
+# TODO Python=3.11 is driven by fermitools, once it has non-dev conda releases
+#  built for versions later than 3.11 this should be replaced by 'python=$PYTHON_VERSION'
 cat <<EOF > conda-fermi.yml
 name: fermi
 channels:
   - fermi
   - conda-forge
 dependencies:
-  - python=$PYTHON_VERSION
+  - python=3.11
   - regions<0.12
   - fermitools
   - fermipy
