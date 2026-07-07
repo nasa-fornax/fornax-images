@@ -57,7 +57,6 @@ RUN apt-get update --yes && apt-get upgrade --yes \
 COPY --chmod=0555 scripts/start* scripts/fix-permissions scripts/run-hooks.sh /usr/local/bin/
 COPY --chown=$NB_UID:$NB_GID scripts/docker_healthcheck.py scripts/jupyter_server_config.py /etc/jupyter/
 RUN cd /usr/local/bin/ \
- && fix-permissions /etc/jupyter/ /opt/ \
  && mkdir -p start-notebook.d before-notebook.d
 
 # Configure container entrypoint, port, cmd and healthcheck
@@ -115,8 +114,7 @@ RUN uv venv $JUPYTER_DIR \
  && jupyter lab clean \
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
  && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.js.map' \) -delete \
- && cd $HOME && rm -rf .* * \
- && fix-permissions $JUPYTER_DIR
+ && cd $HOME && rm -rf .* *
 
 
 WORKDIR $HOME
