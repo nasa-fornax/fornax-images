@@ -87,7 +87,7 @@ def watchdog():
             # Notify user and kill
             msg = ("SYSTEM ALERT: Process terminated to prevent server "
                    f"crash.\nTime: {time.ctime()}\nProcess: "
-                   f"{cmd}\nMemory: ~{mem_mb} MB")
+                   f"{cmd}\nMemory: ~{mem_mb} MB\n")
             try:
                 # write to a notification file
                 user = os.environ.get('JUPYTERHUB_USER', 'jovyan')
