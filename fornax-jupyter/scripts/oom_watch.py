@@ -90,8 +90,8 @@ def watchdog():
                    f"{cmd}\nMemory: ~{mem_mb} MB")
             try:
                 # write to a notification file
-                notification_file = (Path(os.environ.get("HOME", "/tmp")) /
-                                     "_PROCESS_STOPPED_DUE_TO_MEMORY.txt")
+                user = os.environ.get('JUPYTERHUB_USER', 'jovyan')
+                notification_file = Path(f'/home/{user}/_MEMORY_WATCH.txt')
                 notification_file.write_text(msg)
                 notification_file.chmod(0o666)
             except Exception:
