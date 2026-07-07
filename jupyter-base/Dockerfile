@@ -114,7 +114,7 @@ RUN uv venv $JUPYTER_DIR \
  && uv clean \
  && jupyter lab clean \
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
- && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete \
+ && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.js.map' \) -delete \
  && cd $HOME && rm -rf .* * \
  && fix-permissions $JUPYTER_DIR
 
