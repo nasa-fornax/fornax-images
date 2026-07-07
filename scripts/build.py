@@ -8,7 +8,7 @@ import time
 import argparse
 import subprocess
 from datetime import datetime
-
+from subprocess import CalledProcessError
 
 DEFAULT_REPO = "ghcr.io/nasa-fornax/fornax-images"
 IMAGE_ORDER = (
@@ -86,15 +86,25 @@ class Builder:
         self.print(command, logging.INFO)
         result = None
         if not self.dryrun:
-            result = subprocess.run(
-                command,
-                shell=True,
-                check=True,
-                text=True,
-                capture_output=True,
-                timeout=timeout,
-                **runargs,
-            )
+            try:
+                result = subprocess.run(
+                    command,
+                    shell=True,
+                    check=True,
+                    text=True,
+                    capture_output=True,
+                    timeout=timeout,
+                    **runargs,
+                )
+            # Catch the error that will be raised if there is a non-zero exit code
+            # Only because the errors raised are completely unhelpful in actually
+            #  tracking the problem down.
+            except CalledProcessError as proc_err:
+                print(f"Error Code: {proc_err.returncode}")
+                print(f"Stderr: {proc_err.stderr}")
+                # Re-raise the error
+                raise
+
         return result
 
     def setup_logger(self):
