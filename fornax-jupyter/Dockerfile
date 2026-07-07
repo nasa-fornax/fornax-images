@@ -13,8 +13,7 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 USER root
 RUN mkdir -p $JUPYTER_DIR/share/jupyter/lab/settings/ \
  # Disable the announcement extension
- && jupyter labextension disable "@jupyterlab/apputils-extension:announcements" \
- && fix-permissions $JUPYTER_DIR
+ && jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
 COPY --chown=$NB_UID:$NB_GID overrides.json $JUPYTER_DIR/share/jupyter/lab/settings/
 # Copy our jupyter server config file
 COPY jupyter_server_config.py /tmp/
