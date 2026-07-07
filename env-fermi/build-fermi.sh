@@ -28,9 +28,9 @@ channels:
   - fermi
   - conda-forge
 dependencies:
-  - python=3.11
+  - python=$PYTHON_VERSION
   - regions<0.12
-  - fermitools=2.4
+  - fermitools
   - fermipy
   - pip
   - pip:
