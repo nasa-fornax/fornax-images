@@ -41,6 +41,11 @@ class TestBuilder(unittest.TestCase):
         builder = Builder(self.default_args)
         builder.run("docker --version", timeout=10)
 
+        # Tell the mock to pretend the process exited successfully (0)
+        mock_subprocess_popen.return_value.returncode = 0
+        # Provide an empty list so the `for line in process.stdout:` loop doesn't fail
+        mock_subprocess_popen.return_value.stdout = []
+
         # Verify subprocess.Popen was called with the right arguments
         mock_subprocess_popen.assert_called_once_with(
             "docker --version",
