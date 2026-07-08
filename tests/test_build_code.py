@@ -47,7 +47,6 @@ class TestBuilder(unittest.TestCase):
             shell=True,
             check=True,
             text=True,
-            capture_output=True,
             timeout=10
         )
 
@@ -97,7 +96,7 @@ class TestBuilder(unittest.TestCase):
 
         # Assert git branch was checked and tag was updated
         mock_run.assert_called_once_with(
-            'git branch --show-current', 100)
+            'git branch --show-current', 100, capture_output=True)
         self.assertEqual(builder.tag, 'main-branch')
 
     def test_check_input_retag(self):
@@ -172,7 +171,8 @@ class TestBuilder(unittest.TestCase):
             return f'{DEFAULT_REPO}/{image}:{self.default_args.tag}'
 
         expected_calls = [
-            call(f"docker create {full_tag('env-assets')} /bin/true", 1000),
+            call(f"docker create {full_tag('env-assets')} /bin/true",
+                 1000, capture_output=True),
             call(f"docker cp {id}:/locks locks", 1000),
         ]
         mock_run.assert_has_calls(expected_calls, any_order=False)

@@ -8,7 +8,6 @@ import time
 import argparse
 import subprocess
 from datetime import datetime
-from subprocess import CalledProcessError
 
 DEFAULT_REPO = "ghcr.io/nasa-fornax/fornax-images"
 IMAGE_ORDER = (
@@ -86,24 +85,14 @@ class Builder:
         self.print(command, logging.INFO)
         result = None
         if not self.dryrun:
-            try:
-                result = subprocess.run(
-                    command,
-                    shell=True,
-                    check=True,
-                    text=True,
-                    capture_output=True,
-                    timeout=timeout,
-                    **runargs,
-                )
-            # Catch the error that will be raised if there is a non-zero exit code
-            # Only because the errors raised are completely unhelpful in actually
-            #  tracking the problem down.
-            except CalledProcessError as proc_err:
-                print(f"Error Code: {proc_err.returncode}")
-                print(f"Stderr: {proc_err.stderr}")
-                # Re-raise the error
-                raise
+            result = subprocess.run(
+                command,
+                shell=True,
+                check=True,
+                text=True,
+                timeout=timeout,
+                **runargs,
+            )
 
         return result
 
@@ -164,7 +153,7 @@ class Builder:
         if need_tag and self.tag is None:
             # get defaut tag from branch name
             out = self.run(
-                'git branch --show-current', 100)
+                'git branch --show-current', 100, capture_output=True)
             if out is not None:
                 self.tag = out.stdout.strip()
             else:
@@ -325,7 +314,7 @@ class Builder:
             full_tag = self.get_full_tag(image, self.tag)
 
             cmd = (f'docker create {full_tag} /bin/true')
-            res = self.run(cmd, 1000)
+            res = self.run(cmd, 1000, capture_output=True)
             id = res.stdout.split('\n')[-2].strip()
             cmd = (f'docker cp {id}:/locks locks')
             res = self.run(cmd, 1000)
