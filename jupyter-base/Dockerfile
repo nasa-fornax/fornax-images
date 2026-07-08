@@ -23,6 +23,22 @@ ARG ENV_DIR=/opt/envs
 # Set docker shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# Install OS dependencies. Keep this to a minimum.
+# We add system python to be used later by uv.
+USER root
+COPY apt.txt /tmp/
+RUN apt-get update --yes && apt-get upgrade --yes \
+ # install requested packages
+ && xargs -a /tmp/apt.txt apt-get install -y --no-install-recommends \
+ # add python
+ && apt-get install -y --no-install-recommends python$PYTHON_VERSION\
+ # clean to remove any cache files
+ && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/apt.txt \
+ && rm /etc/localtime && ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime \
+ && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+ && echo "C.UTF-8 UTF-8" >> /etc/locale.gen \
+ && locale-gen
+
 # Define environment variables
 ENV JUPYTER_DIR=$JUPYTER_DIR \
     ENV_DIR=$ENV_DIR \
@@ -35,23 +51,7 @@ ENV JUPYTER_DIR=$JUPYTER_DIR \
     LANGUAGE=C.UTF-8 \
     PYTHON_VERSION=${PYTHON_VERSION} \
     PATH=${JUPYTER_DIR}/bin:${PATH} \
-    UV_PYTHON_INSTALL_DIR=/opt/python \
-    DEBIAN_FRONTEND=noninteractive \
     HOME=/home/${NB_USER}
-
-# Install OS dependencies. Keep this to a minimum.
-# We add system python to be used later by uv.
-USER root
-COPY apt.txt /tmp/
-RUN apt-get update --yes && apt-get upgrade --yes \
- # install requested packages
- && xargs -a /tmp/apt.txt apt-get install -y --no-install-recommends \
- # clean to remove any cache files
- && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/apt.txt \
- && ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime \
- && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
- && echo "C.UTF-8 UTF-8" >> /etc/locale.gen \
- && locale-gen
 
 # Copy scripts from the jupyter stack repo
 COPY --chmod=0555 scripts/start* scripts/fix-permissions scripts/run-hooks.sh /usr/local/bin/
@@ -93,8 +93,6 @@ RUN cd /tmp/ \
  && mv $HOME/.local/bin/uv* /usr/local/bin/ \
  && rm -rf $HOME/.local/bin \
  && sed -i '/\.local\/bin/d' $HOME/.bashrc \
- # add the main python interpreter
- && uv python install $PYTHON_VERSION \
  # micromamba
  && curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
  && mv bin/micromamba /usr/local/bin/ \
@@ -108,13 +106,13 @@ RUN cd /tmp/ \
 
 ## -- install jupyter -- ##
 USER ${NB_UID}
-RUN uv venv $JUPYTER_DIR \
+RUN uv venv $JUPYTER_DIR --no-managed-python -p /usr/bin/python$PYTHON_VERSION \
  && export VIRTUAL_ENV=$JUPYTER_DIR \
  && uv pip install "jupyterlab==4.*" "jupyterhub==5.*" "jupytext" pytest \
  && uv clean \
  && jupyter lab clean \
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
- && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.js.map' \) -delete \
+ && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete \
  && cd $HOME && rm -rf .* * \
  && fix-permissions $JUPYTER_DIR
 

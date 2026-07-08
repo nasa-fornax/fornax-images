@@ -47,7 +47,6 @@ class TestBuilder(unittest.TestCase):
             shell=True,
             check=True,
             text=True,
-            capture_output=True,
             timeout=10
         )
 
@@ -97,7 +96,7 @@ class TestBuilder(unittest.TestCase):
 
         # Assert git branch was checked and tag was updated
         mock_run.assert_called_once_with(
-            'git branch --show-current', 100)
+            'git branch --show-current', 100, capture_output=True)
         self.assertEqual(builder.tag, 'main-branch')
 
     def test_check_input_retag(self):
@@ -156,30 +155,33 @@ class TestBuilder(unittest.TestCase):
     def test_do_export_locks(self, mock_run):
         """Test docker build command generation."""
         self.default_args.export_locks = True
-        self.default_args.images = ['env-assets', 'fornax-2']
-
-        id = 'id-1234'
-        mock_run.return_value.stdout = f'{id}\n'
+        self.default_args.images = ['fornax-1', 'fornax-2']
 
         builder = Builder(self.default_args)
 
         builder.do_export_locks()
 
-        # call run twice, create container and export for env-assets
-        self.assertEqual(mock_run.call_count, 2)
+        # call run twice, create a folder and export
+        self.assertEqual(mock_run.call_count, 4)
 
         def full_tag(image):
             return f'{DEFAULT_REPO}/{image}:{self.default_args.tag}'
 
+        def lock_dir(image):
+            return f'{image}_locks'
+
         expected_calls = [
-            call(f"docker create {full_tag('env-assets')} /bin/true", 1000),
-            call(f"docker cp {id}:/locks locks", 1000),
+            call(f"mkdir -p {lock_dir('fornax-1')}", 100),
+            call(f"docker run --entrypoint=\"\" --rm -v $PWD/{lock_dir('fornax-1')}:/host --user `id -u` {full_tag('fornax-1')} bash -c 'cp -r $LOCK_DIR/* /host/'", 1000),  # noqa E501
+            call(f"mkdir -p {lock_dir('fornax-2')}", 100),
+            call(f"docker run --entrypoint=\"\" --rm -v $PWD/{lock_dir('fornax-2')}:/host --user `id -u` {full_tag('fornax-2')} bash -c 'cp -r $LOCK_DIR/* /host/'", 1000),  # noqa E501
         ]
         mock_run.assert_has_calls(expected_calls, any_order=False)
 
     @patch('build.Builder.run')
     @patch('build.Builder.copy_common_files')
-    def test_do_build(self, mock_copy, mock_run):
+    @patch('build.Builder.extract_kernel_files')
+    def test_do_build(self, mock_extract, mock_copy, mock_run):
         """Test docker build command generation."""
         self.default_args.build = True
         self.default_args.images = ['fornax-jupyter']
@@ -193,6 +195,7 @@ class TestBuilder(unittest.TestCase):
 
         # Verify common files were copied and kernels were extracted
         mock_copy.assert_called_with('fornax-jupyter')
+        mock_extract.assert_called_once()
 
         # Verify the generated docker build command
         # You can inspect the arguments passed to 'run'
@@ -208,7 +211,8 @@ class TestBuilder(unittest.TestCase):
 
     @patch('build.Builder.run')
     @patch('build.Builder.copy_common_files')
-    def test_build_version(self, mock_copy, mock_run):
+    @patch('build.Builder.extract_kernel_files')
+    def test_build_version(self, mock_extract, mock_copy, mock_run):
         """Test BUILD_VERSION is separate for each image."""
         self.default_args.build = True
         images = ['fornax-base', 'fornax-main']

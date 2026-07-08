@@ -8,7 +8,7 @@ import time
 import argparse
 import subprocess
 from datetime import datetime
-from subprocess import CalledProcessError
+
 
 DEFAULT_REPO = "ghcr.io/nasa-fornax/fornax-images"
 IMAGE_ORDER = (
@@ -21,15 +21,14 @@ IMAGE_ORDER = (
     'env-ciao',
     'env-fermi',
     'env-sas',
-    'env-assets',
+    'env-esass',
     'fornax-main',
     'fornax-hea',
     'fornax-jupyter'
 )
 # images that contains environments
 SOFTWARE_IMAGES = [
-    im for im in IMAGE_ORDER if (
-        im.startswith('env-') or '-nb' in im and im != 'env-assets')
+    im for im in IMAGE_ORDER if im.startswith('env-') or '-nb' in im
 ]
 COMMON_FILES = ['introduction.md', 'changes.md']
 
@@ -86,25 +85,14 @@ class Builder:
         self.print(command, logging.INFO)
         result = None
         if not self.dryrun:
-            try:
-                result = subprocess.run(
-                    command,
-                    shell=True,
-                    check=True,
-                    text=True,
-                    capture_output=True,
-                    timeout=timeout,
-                    **runargs,
-                )
-            # Catch the error that will be raised if there is a non-zero exit code
-            # Only because the errors raised are completely unhelpful in actually
-            #  tracking the problem down.
-            except CalledProcessError as proc_err:
-                print(f"Error Code: {proc_err.returncode}")
-                print(f"Stderr: {proc_err.stderr}")
-                # Re-raise the error
-                raise
-
+            result = subprocess.run(
+                command,
+                shell=True,
+                check=True,
+                text=True,
+                timeout=timeout,
+                **runargs,
+            )
         return result
 
     def setup_logger(self):
@@ -164,7 +152,7 @@ class Builder:
         if need_tag and self.tag is None:
             # get defaut tag from branch name
             out = self.run(
-                'git branch --show-current', 100)
+                'git branch --show-current', 100, capture_output=True)
             if out is not None:
                 self.tag = out.stdout.strip()
             else:
@@ -319,16 +307,15 @@ class Builder:
             image tag, e.g. develop, stable etc.
         """
         for image in self.images:
-            if image != 'env-assets':
-                print(f'Only env-assets has locks; skipping {image}')
-                continue
             full_tag = self.get_full_tag(image, self.tag)
 
-            cmd = (f'docker create {full_tag} /bin/true')
-            res = self.run(cmd, 1000)
-            id = res.stdout.split('\n')[-2].strip()
-            cmd = (f'docker cp {id}:/locks locks')
-            res = self.run(cmd, 1000)
+            lock_dir = f'{image}_locks'
+            self.print(f' :: Exporting locks for {full_tag} to ./{lock_dir}')
+            self.run(f'mkdir -p {lock_dir}', 100)
+            cmd = (f'docker run --entrypoint="" --rm -v $PWD/{lock_dir}:/host '
+                   f'--user `id -u` '
+                   f"{full_tag} bash -c 'cp -r $LOCK_DIR/* /host/'")
+            self.run(cmd, 1000)
 
     def do_build(self, time_tag):
         """Build an image by calling 'docker build ..'"""
@@ -383,9 +370,7 @@ class Builder:
             # For fornax-jupyter, extract the kernel files from other images
             # first. This will create kernels/
             if image == 'fornax-jupyter':
-                # comment out extract_kernel_files; this is now done
-                # with env-assets
-                # self.extract_kernel_files()
+                self.extract_kernel_files()
                 # copy common files
                 self.copy_common_files(image)
 

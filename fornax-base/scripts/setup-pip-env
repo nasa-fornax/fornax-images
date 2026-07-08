@@ -19,8 +19,6 @@ python=$ENV_DIR/base/bin/python$PYTHON_VERSION
 for arg in "$@"; do
     if [[ "$arg" == "--user" ]]; then
         envdir=$USER_ENV_DIR
-        # ensure python persists with the environment
-        export UV_MANAGED_PYTHON=1
     elif [[ "$arg" == --python=* ]]; then
         # Extract everything after the '=' sign
         python="${arg#*=}"
@@ -108,7 +106,7 @@ for envfile in ${files[@]}; do
         | .env.VIRTUAL_ENV = \"$VIRTUAL_ENV\"" $KERNEL_JSON > /tmp/tmp.$$.json
     mv /tmp/tmp.$$.json $KERNEL_JSON
     # clean up
-    find $VIRTUAL_ENV -follow -type f \( -name '*.a' -o -name '*.js.map' \) -delete
+    find $VIRTUAL_ENV -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete
 done
 
 # clean

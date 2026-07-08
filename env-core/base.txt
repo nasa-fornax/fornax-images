@@ -10,4 +10,3 @@ compilers
 make
 pkg-config
 tectonic
-rsync

@@ -26,8 +26,7 @@ RUN cd /tmp/ && bash /usr/local/bin/setup-pip-env <<< yes \
  # fix the display name of DEFAULT_ENV
  && $ENV_DIR/$DEFAULT_ENV/bin/python -m ipykernel install --name $DEFAULT_ENV \
     --prefix $JUPYTER_DIR --display-name "$DEFAULT_ENV" \
- && rm -rf requirements-$DEFAULT_ENV.txt \
- && fix-permissions $ENV_DIR/$DEFAULT_ENV
+ && rm -rf requirements-$DEFAULT_ENV.txt
 ## ------------------- ##
 
 
