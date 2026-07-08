@@ -93,8 +93,6 @@ RUN cd /tmp/ \
  && mv $HOME/.local/bin/uv* /usr/local/bin/ \
  && rm -rf $HOME/.local/bin \
  && sed -i '/\.local\/bin/d' $HOME/.bashrc \
- # add the main python interpreter
- && uv python install $PYTHON_VERSION \
  # micromamba
  && curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
  && mv bin/micromamba /usr/local/bin/ \
@@ -108,7 +106,10 @@ RUN cd /tmp/ \
 
 ## -- install jupyter -- ##
 USER ${NB_UID}
-RUN uv venv $JUPYTER_DIR \
+RUN \
+ # add the main python interpreter
+ uv python install $PYTHON_VERSION \
+ && uv venv $JUPYTER_DIR \
  && export VIRTUAL_ENV=$JUPYTER_DIR \
  && uv pip install "jupyterlab==4.*" "jupyterhub==5.*" "jupytext" pytest \
  && uv clean \

@@ -10,16 +10,15 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 
 
 # Copy our jupyter settings overrides
-USER root
+USER $NB_USER
 RUN mkdir -p $JUPYTER_DIR/share/jupyter/lab/settings/ \
  # Disable the announcement extension
  && jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
 COPY --chown=$NB_UID:$NB_GID overrides.json $JUPYTER_DIR/share/jupyter/lab/settings/
 # Copy our jupyter server config file
-COPY jupyter_server_config.py /tmp/
+COPY --chown=$NB_UID:$NB_GID jupyter_server_config.py /tmp/
 RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py \
  && rm /tmp/jupyter_server_config.py
-USER $NB_USER
 
 
 # add packages to jupyter environment; mainly labextensions & misc-build
@@ -33,8 +32,7 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
  && bash /tmp/misc-build.sh \
  && fix-permissions $JUPYTER_DIR /tmp/cache \
- && find $JUPYTER_DIR -name "yarn.lock" -delete \
- && find $JUPYTER_DIR -name "package-lock.json" -delete \
+ && find $JUPYTER_DIR \( -name "yarn.lock" -o -name "package-lock.json" \) -delete \
  && rm /tmp/jupyter-deps.txt /tmp/misc-build.sh
 
 # From the images
