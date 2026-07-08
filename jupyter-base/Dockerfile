@@ -57,6 +57,7 @@ RUN apt-get update --yes && apt-get upgrade --yes \
 COPY --chmod=0555 scripts/start* scripts/fix-permissions scripts/run-hooks.sh /usr/local/bin/
 COPY --chown=$NB_UID:$NB_GID scripts/docker_healthcheck.py scripts/jupyter_server_config.py /etc/jupyter/
 RUN cd /usr/local/bin/ \
+ && mkdir -p /etc/jupyter /opt/ && fix-permissions /etc/jupyter/ /opt/ \
  && mkdir -p start-notebook.d before-notebook.d
 
 # Configure container entrypoint, port, cmd and healthcheck
