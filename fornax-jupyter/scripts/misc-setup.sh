@@ -33,8 +33,8 @@ export FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
 # for dask
 export DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/{port}/status"
 # Tell dask-labextension to use GatewayCluster
-# export DASK_LABEXTENSION__FACTORY__MODULE="dask_gateway"
-# export DASK_LABEXTENSION__FACTORY__CLASS="GatewayCluster"
+export DASK_LABEXTENSION__FACTORY__MODULE="dask_gateway"
+export DASK_LABEXTENSION__FACTORY__CLASS="GatewayCluster"
 
 # image version
 export FORNAX_SOFTWARE_VERSION=$(sed -n '/^##/ { s/^##[[:space:]]*//; p; q; }' $NOTEBOOK_DIR/changes.mdv)
