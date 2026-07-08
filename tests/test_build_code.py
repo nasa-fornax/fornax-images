@@ -35,17 +35,19 @@ class TestBuilder(unittest.TestCase):
         self.assertEqual(builder.tag, 'test-tag')
         self.assertFalse(builder.dryrun)
 
-    @patch('build.subprocess.Popen')
-    def test_run(self, mock_subprocess_popen):
+    @patch('build.subprocess.run')
+    def test_run(self, mock_subprocess_run):
         """Test the run method."""
         builder = Builder(self.default_args)
         builder.run("docker --version", timeout=10)
 
-        # Verify subprocess.Popen was called with the right arguments
-        mock_subprocess_popen.assert_called_once_with(
+        # Verify subprocess.run was called with the right arguments
+        mock_subprocess_run.assert_called_once_with(
             "docker --version",
             shell=True,
+            check=True,
             text=True,
+            capture_output=True,
             timeout=10
         )
 
