@@ -1,4 +1,5 @@
 bzip2
+tzdata
 ca-certificates
 locales
 netbase

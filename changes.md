@@ -1,8 +1,15 @@
 # Latest Changes
 
-## 26.0625
+## 26.0703
+- Add Fermi GBM environment.
+- Security updates
+
+## 26.0630
 - Build infrastructure refactor to separate the environments.
-- Add A script to watch for and stop out-of-memory processes.
+- Add an experiment script to watch for and stop out-of-memory processes.
+- Bug fixes:
+  - Fix 'Open in a New Browser Tab'.
+- Launcher style enhancements (fornax_labextension==0.1.21).
 
 ## 26.0608
 - Add MAST notebooks.

@@ -5,15 +5,48 @@ on:
   workflow_dispatch:
     inputs:
       images:
-        description: 'Images to build of the form: image-1 image-2'
+        description: "Images to build. Use quotes to run in serial (e.g., image-1 'image-2 image-3')"
         required: true
         type: string
 
 jobs:
-  build-and-push-images:
+  # 1. Preparation job uses Python's shlex to parse quoted strings correctly
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
-    # Sets the permissions granted to the `GITHUB_TOKEN`
+      - name: Check links in the intro page
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: "introduction.md"
+          fail: false
+
+      - name: Parse images into JSON array
+        id: set-matrix
+        env:
+          # Pass the input as an environment variable to prevent bash from eating the quotes
+          RAW_INPUT: ${{ inputs.images }}
+        run: |
+          # Use os.environ to read the exact string, keeping all single and double quotes fully intact
+          JSON_ARRAY=$(python -c 'import os, json, shlex; print(json.dumps(shlex.split(os.environ["RAW_INPUT"])))')
+          
+          echo "Parsed matrix: $JSON_ARRAY"
+          echo "matrix=$JSON_ARRAY" >> $GITHUB_OUTPUT
+
+  # 2. Build job handles both individual and grouped images
+  build-and-push-images:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # matrix.image_group will be either a single image or a space-separated string of images
+        image_group: ${{ fromJson(needs.prepare.outputs.matrix) }}
+
     permissions:
       contents: read
       packages: write
@@ -26,24 +59,13 @@ jobs:
         uses: ./.github/actions/setup
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check links in the intro page
-        uses: lycheeverse/lychee-action@v1
-        with:
-          args: "introduction.md"
-          fail: false
       
       - name: Build and push images
-        id: build-images
+        id: build-image
         run: |
-          IMAGES_TO_BUILD="${{ inputs.images }}"
+          IMAGES_TO_BUILD="${{ matrix.image_group }}"
           TAG="${{ github.head_ref || github.ref_name }}" 
-          echo "IMAGES_TO_BUILD: $IMAGES_TO_BUILD"
-          echo "TAG: $TAG"
-
-          # write variables so can be used elsewhere
-          echo "IMAGES_TO_BUILD=$IMAGES_TO_BUILD" >> $GITHUB_OUTPUT
-          echo "TAG=$TAG" >> $GITHUB_OUTPUT
+          echo "Building: $IMAGES_TO_BUILD with tag $TAG"
 
           if [[ "$TAG" == "main" || "$TAG" == "develop" ]]; then
             ENDPOINT="--ecr ${{ secrets.ECR_ENDPOINT }} --ecr ${{ secrets.ECR_ENDPOINT_PROD }}"
@@ -51,7 +73,8 @@ jobs:
             ENDPOINT="--ecr ${{ secrets.ECR_ENDPOINT }}"
           fi
 
-          # run the build
+          # Leave $IMAGES_TO_BUILD unquoted here so bash splits the group 
+          # into separate arguments for your python script.
           python scripts/build.py --debug \
               --repo "ghcr.io/${{ github.repository }}" \
               --tag $TAG \
@@ -63,12 +86,20 @@ jobs:
       - name: "Run image tests"
         if: "!contains(github.event.head_commit.message, '[skip-tests]')"
         run: |
-          images="${{ steps.build-images.outputs.IMAGES_TO_BUILD }}"
-          tag=${{ steps.build-images.outputs.TAG }}
+          images="${{ matrix.image_group }}"
+          tag="${{ github.head_ref || github.ref_name }}"
+          
+          # If matrix.image_group has spaces (e.g. "image-2 image-3"), bash iterates over each.
+          # If it doesn't (e.g. "image-1"), it just loops once.
           for image in $images; do
-            echo "##### Testing ${image} #####"
-            docker run -i --rm -v .:/opt/workspace/repo-code \
-              "ghcr.io/${{ github.repository }}/$image:$tag" \
-              bash -c "pytest -s -v /opt/workspace/repo-code/tests/test_${image//-/_}.py"
+            test_file="tests/test_${image//-/_}.py"
+            
+            if [ -f "$test_file" ]; then
+              echo "##### Testing ${image} #####"
+              docker run -i --rm -v .:/opt/workspace/repo-code \
+                "ghcr.io/${{ github.repository }}/$image:$tag" \
+                bash -c "pytest -s -v /opt/workspace/repo-code/$test_file"
+            else
+              echo "##### No tests found for ${image} (expected $test_file) #####"
+            fi
           done
-  

@@ -6,13 +6,16 @@ on:
 
 jobs:
 
-  prep-release:
+  # Export the locks from env-assets       
+  export-locks:
     runs-on: ubuntu-latest
     
-    outputs:
-      images: ${{ steps.image-list.outputs.IMAGE_LIST }}
+    permissions:
+      contents: write  # to upload locks
+      packages: read
 
     steps:
+
       - name: Check the release is from main
         run: |
           if [ "${{ github.event.release.target_commitish }}" != "main" ]; then
@@ -21,7 +24,7 @@ jobs:
             exit 1
           fi
           echo "✅ Branch check passed."
-      
+
       - name: Checkout repository
         uses: actions/checkout@v6
       
@@ -30,39 +33,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           clean_storage: false
-          registry_login: false
-      
-      - name: List images with kernels
-        id: image-list
-        run: |
-          images=$(python scripts/build.py --kernel-images)
-          IMAGES_JSON=$(jq -R -c 'split(" ")' <<< "$images")
-          echo "Image List: ${IMAGES_JSON}"
-          echo "IMAGE_LIST=${IMAGES_JSON}" >> $GITHUB_OUTPUT
-
-  # Run lock export in parallel        
-  export-locks:
-    needs: prep-release
-    runs-on: ubuntu-latest
-    
-    permissions:
-      contents: write  # to upload locks
-      packages: read
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        image: ${{ fromJson(needs.prep-release.outputs.images) }}
-
-    steps:
-
-      - name: Checkout repository
-        uses: actions/checkout@v6
-      
-      - name: Setup Environment
-        uses: ./.github/actions/setup
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Export the locks
         run: |
@@ -70,23 +40,23 @@ jobs:
               --repo "ghcr.io/${{ github.repository }}" \
               --tag develop \
               --export-locks \
-              "${{ matrix.image }}"
+              "env-assets"
             
           # pack lock files into a zip file
-          if [ -d ${{ matrix.image }}_locks ]; then
-            zip -r "${{ matrix.image }}-environment-locks.zip" "${{ matrix.image }}_locks"
+          if [ -d locks ]; then
+            zip -r "environment-locks.zip" "locks"
           fi
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.image }}-environment-locks
-          path: ./${{ matrix.image }}-environment-locks.zip
+          name: environment-locks
+          path: ./environment-locks.zip
       
       - name: Upload lock files to the release
         uses: softprops/action-gh-release@v3
         with:
-          files: ./${{ matrix.image }}-environment-locks.zip
+          files: ./environment-locks.zip
 
   
   tag-images-for-release:

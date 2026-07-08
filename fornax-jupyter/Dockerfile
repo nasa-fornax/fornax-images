@@ -1,8 +1,7 @@
 ARG BASE_TAG=latest
 ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
-FROM ${REPOSITORY}/fornax-nb:${BASE_TAG} AS fornax_nb
-FROM ${REPOSITORY}/archive-nb:${BASE_TAG} AS archive_nb
+FROM ${REPOSITORY}/env-assets:${BASE_TAG} AS assets
 FROM ${REPOSITORY}/fornax-base:${BASE_TAG}
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
@@ -24,8 +23,8 @@ RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py \
 USER $NB_USER
 
 
-# add packages to jupyter environment; mainly labextensions
-COPY --chown=$NB_UID:$NB_GID jupyter-deps.txt /tmp/
+# add packages to jupyter environment; mainly labextensions & misc-build
+COPY --chown=$NB_UID:$NB_GID jupyter-deps.txt scripts/misc-build.sh /tmp/
 RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && uv pip install --no-cache -r /tmp/jupyter-deps.txt \
  && rm -rf jupyter-deps.txt \
@@ -33,9 +32,11 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  # update lock file and make a copy in LOCK_DIR
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
- && (timeout 20s start-notebook.py || true) \
+ && bash /tmp/misc-build.sh \
  && fix-permissions $JUPYTER_DIR /tmp/cache \
- && rm /tmp/jupyter-deps.txt
+ && find $JUPYTER_DIR -name "yarn.lock" -delete \
+ && find $JUPYTER_DIR -name "package-lock.json" -delete \
+ && rm /tmp/jupyter-deps.txt /tmp/misc-build.sh
 
 # From the images
 ARG JULIA_VERSION=1.8.0
@@ -44,15 +45,14 @@ ENV JULIA_DEPOT_PATH=$ENV_DIR/julia-$JULIA_VERSION \
     PATH=$ENV_DIR/julia-$JULIA_VERSION/bin:$PATH
 
 # Add the notebooks
-COPY --from=fornax_nb $NOTEBOOK_DIR $NOTEBOOK_DIR
-COPY --from=archive_nb $NOTEBOOK_DIR $NOTEBOOK_DIR
+COPY --from=assets $NOTEBOOK_DIR $NOTEBOOK_DIR
 
 # landing page; even an empty one
 COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md $NOTEBOOK_DIR/introduction.mdv
 COPY --chown=$NB_UID:$NB_GID --chmod=644 changes.md $NOTEBOOK_DIR/changes.mdv
 
 # # Update the intro page with notebooks by parsing the manifests
-COPY --chown=$NB_UID:$NB_GID parse_nb_manifest.py /tmp/
+COPY --chown=$NB_UID:$NB_GID scripts/parse_nb_manifest.py /tmp/
 RUN \
   if [ -f /tmp/parse_nb_manifest.py ]; then \
     echo "Parsing manifests of archive notebooks"; \
@@ -63,10 +63,11 @@ RUN \
 
 # copy kernel files from other images.
 # ./kernels is created by the the build script
-COPY --chown=$NB_UID:$NB_GID kernels /opt/jupyter/share/jupyter/kernels
+# COPY --chown=$NB_UID:$NB_GID kernels /opt/jupyter/share/jupyter/kernels
+COPY --chown=$NB_UID:$NB_GID --from=assets /kernels /opt/jupyter/share/jupyter/kernels
 
 # copy other setup scripts
-COPY misc-setup.sh /usr/local/bin/before-notebook.d/
+COPY scripts/misc-setup.sh /usr/local/bin/before-notebook.d/
 
 # add a build version
 ARG BUILD_VERSION=0
@@ -87,9 +88,9 @@ pam_password clear
 EOF
 
 # Add OOM watcher script
-COPY oom_watch.py /usr/local/bin/oom_watch
+COPY scripts/oom_watch.py /usr/local/bin/oom_watch
 RUN chmod +x /usr/local/bin/oom_watch \
- && printf '#!/bin/bash\nnohup /usr/local/bin/oom_watch > /tmp/oom_watch.log 2>&1 &' > /usr/local/bin/before-notebook.d/start-oom-watchdog.sh
+ && printf '#!/bin/bash\n/usr/local/bin/oom_watch --delay > /tmp/oom-watch.log 2>&1 & disown' > /usr/local/bin/before-notebook.d/start-oom-watch.sh
 
 ENV DEFAULT_ENV=python3
 USER ${NB_UID}
