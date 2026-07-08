@@ -69,32 +69,95 @@ wget $esass_link \
 ############ Setup the eSASS Conda environment ############
 # Creates a Conda definition file that can be used to setup the environment that eSASS
 #  will be associated with
-cat <<EOF > conda-$ENV_NAME.yml
-name: $ENV_NAME
-channels:
-  - conda-forge
-dependencies:
-  - python=$py_version
-  - pytest
-  - fftw
-  - pip
-  - pip:
-    - pytest
-    - astroquery
-    - astropy
-    - s3fs
-    - boto3
-    - https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer.tar.gz
-    - xga
-EOF
+#cat <<EOF > conda-$ENV_NAME.yml
+#name: $ENV_NAME
+#channels:
+#  - conda-forge
+#dependencies:
+#  - python=$py_version
+#  - pytest
+#  - fftw
+#  - pip
+#  - pip:
+#    - pytest
+#    - astroquery
+#    - astropy
+#    - s3fs
+#    - boto3
+#    - https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer.tar.gz
+#    - xga
+#EOF
 
 # Use the yml to create the eSASS env
-bash /usr/local/bin/setup-conda-env <<< yes
-
-# Updating the lock file and moving it to the lock file directory
-micromamba env -n $ENV_NAME export > $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
-cp $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml $LOCK_DIR
+#bash /usr/local/bin/setup-conda-env <<< yes
+#
+## Updating the lock file and moving it to the lock file directory
+#micromamba env -n $ENV_NAME export > $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
+#cp $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml $LOCK_DIR
 ###########################################################
+
+
+
+########### Create the "Fake" Conda environment ###########
+# THIS IS A THIN WRAPPER OVER THE HEASOFT ENVIRONMENT
+echo "Creating fake conda environment symlinked to heasoft..."
+mkdir -p $ENV_DIR/$ENV_NAME
+
+# 1. Top-level symlinks (skip etc)
+for item in $ENV_DIR/heasoft/*; do
+    basename_item=$(basename "$item")
+    if [ "$basename_item" != "etc" ]; then
+        ln -s "$item" "$ENV_DIR/$ENV_NAME/$basename_item"
+    fi
+done
+
+# 2. Handle 'etc' (skip conda)
+mkdir -p $ENV_DIR/$ENV_NAME/etc
+if [ -d "$ENV_DIR/heasoft/etc" ]; then
+    for etc_item in $ENV_DIR/heasoft/etc/*; do
+        etc_basename=$(basename "$etc_item")
+        if [ "$etc_basename" != "conda" ]; then
+            ln -s "$etc_item" "$ENV_DIR/$ENV_NAME/etc/$etc_basename"
+        fi
+    done
+fi
+
+# 3. Handle 'etc/conda' (skip activate.d and deactivate.d)
+mkdir -p $ENV_DIR/$ENV_NAME/etc/conda
+if [ -d "$ENV_DIR/heasoft/etc/conda" ]; then
+    for conda_item in $ENV_DIR/heasoft/etc/conda/*; do
+        conda_basename=$(basename "$conda_item")
+        if [ "$conda_basename" != "activate.d" ] && [ "$conda_basename" != "deactivate.d" ]; then
+            ln -s "$conda_item" "$ENV_DIR/$ENV_NAME/etc/conda/$conda_basename"
+        fi
+    done
+fi
+
+# 4. Handle 'activate.d' (create dir, symlink individual scripts)
+mkdir -p $ENV_DIR/$ENV_NAME/etc/conda/activate.d
+if [ -d "$ENV_DIR/heasoft/etc/conda/activate.d" ]; then
+    for act_item in $ENV_DIR/heasoft/etc/conda/activate.d/*; do
+        # -e check handles the case where the directory is empty and the glob fails
+        if [ -e "$act_item" ]; then
+            ln -s "$act_item" "$ENV_DIR/$ENV_NAME/etc/conda/activate.d/$(basename "$act_item")"
+        fi
+    done
+fi
+
+# 5. Handle 'deactivate.d' (create dir, symlink individual scripts)
+mkdir -p $ENV_DIR/$ENV_NAME/etc/conda/deactivate.d
+if [ -d "$ENV_DIR/heasoft/etc/conda/deactivate.d" ]; then
+    for deact_item in $ENV_DIR/heasoft/etc/conda/deactivate.d/*; do
+        if [ -e "$deact_item" ]; then
+            ln -s "$deact_item" "$ENV_DIR/$ENV_NAME/etc/conda/deactivate.d/$(basename "$deact_item")"
+        fi
+    done
+fi
+###########################################################
+
+
+
+
 
 ############ Create HEASoft environment clone #############
 # Copy the heasoft environment to a temporary backup environment
