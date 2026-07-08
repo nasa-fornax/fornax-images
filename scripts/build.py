@@ -28,7 +28,7 @@ IMAGE_ORDER = (
 # images that contains environments
 SOFTWARE_IMAGES = [
     im for im in IMAGE_ORDER if (
-        im.startswith('env-') or '-nb' in im and im != 'env-assets')
+        (im.startswith('env-') or '-nb' in im) and im != 'env-assets')
 ]
 COMMON_FILES = ['introduction.md', 'changes.md']
 
@@ -46,6 +46,7 @@ class Builder:
         self.images = args.images
 
         self.tag = args.tag
+        self.list_envs = args.list_envs
 
         self.build = args.build
         self.push = args.push
@@ -144,7 +145,7 @@ class Builder:
         ):
             need_image = True
 
-        if need_image or self.ecr is not None or self.retag:
+        if need_image or self.ecr is not None or self.retag or self.list_envs:
             need_tag = True
 
         if need_image and self.images is None:
@@ -194,6 +195,11 @@ class Builder:
         """Run the requested commands"""
         # check the input
         self.check_input()
+
+        # list env
+        if self.list_envs:
+            print(' '.join([f'{im}:{self.tag}' for im in SOFTWARE_IMAGES]))
+            return
 
         # if we are exporting files; run and exit
         if self.export_locks:
@@ -525,8 +531,8 @@ def main():
     help = ("Build variables for docker build, e.g. e.g. 'a=b c=d'")
     ap.add_argument("--build-vars", help=help)
 
-    help = ("List software images. i.e. those with kernels that need export")
-    ap.add_argument("--kernel-images", action='store_true', help=help)
+    help = ("List software images. i.e. those with software environments")
+    ap.add_argument("--list-envs", action='store_true', help=help)
 
     help = ("Print debug messages")
     ap.add_argument("--debug", action="store_true", help=help, default=False)
@@ -536,10 +542,6 @@ def main():
 
     # parse input arguments
     args = ap.parse_args()
-
-    # soft-images does not need a builder
-    if args.kernel_images:
-        print(' '.join(SOFTWARE_IMAGES))
 
     builder = Builder(args)
 

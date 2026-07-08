@@ -3,10 +3,13 @@ from unittest.mock import patch, MagicMock, call
 from argparse import Namespace
 import sys
 import os
+import io
+from contextlib import redirect_stdout
 
 
 sys.path.insert(0, f'{os.path.dirname(__file__)}/../scripts/')
-from build import Builder, DEFAULT_REPO, IMAGE_ORDER  # noqa: E402
+from build import (Builder, DEFAULT_REPO,  # noqa: E402
+                   IMAGE_ORDER, SOFTWARE_IMAGES)
 
 
 class TestBuilder(unittest.TestCase):
@@ -25,6 +28,7 @@ class TestBuilder(unittest.TestCase):
             extra_args=None,
             build_vars=None,
             export_locks=False,
+            list_envs=False,
             repo=None
         )
 
@@ -150,6 +154,22 @@ class TestBuilder(unittest.TestCase):
         # Test failure on invalid tag format
         with self.assertRaises(ValueError):
             builder.get_full_tag('fornax-main', 'invalid:tag')
+
+    @patch('build.Builder.run')
+    def test_list_envs(self, mock_run):
+        """Test print envs."""
+        self.default_args.list_envs = True
+        tag = 'dev'
+        self.default_args.tag = tag
+        builder = Builder(self.default_args)
+
+        # capture the printed text
+        fp = io.StringIO()
+        with redirect_stdout(fp):
+            builder.run_with_args()
+        msg = fp.getvalue().strip()
+        expected = ' '.join([f'{im}:{tag}' for im in SOFTWARE_IMAGES])
+        assert msg == expected
 
     @patch('build.Builder.run')
     def test_do_export_locks(self, mock_run):
