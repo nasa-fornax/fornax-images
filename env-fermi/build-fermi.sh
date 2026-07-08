@@ -32,7 +32,7 @@ channels:
 dependencies:
   - python=3.11
   - regions<0.12
-  - fermitools
+  - fermitools=2.5.1
   - fermipy
   - pip
   - pip:

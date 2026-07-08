@@ -40,12 +40,17 @@ def test_uv_env():
 
 
 def test_kernels():
-    """Kernel defnitions should exist"""
+    """Kernel definitions should exist"""
     CommonTests.test_kernels_exist(KERNELS)
 
 
 def test_check_packages():
+    """Check that we can import fermipy and fermitools related Python packages."""
     import fermipy # noqa 401
+    # This is a particularly good diagnostic, as it is apparently the main
+    #  fermipy class - importing it helped find several dependecy-version-based
+    #  problems with the environment.
+    from fermipy.gtanalysis import GTAnalysis # noqa 401
     import gt_apps  # noqa 401
 
 
