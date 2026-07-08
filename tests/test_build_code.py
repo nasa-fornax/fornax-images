@@ -47,7 +47,6 @@ class TestBuilder(unittest.TestCase):
             shell=True,
             check=True,
             text=True,
-            capture_output=True,
             timeout=10
         )
 
