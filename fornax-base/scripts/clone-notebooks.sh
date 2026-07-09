@@ -25,7 +25,7 @@ case "$choice" in
         branch="deploy_to_fornax"
         ;;
     mast)
-        repo="https://github.com/sedonaprice/mast_notebooks.git"
+        repo="https://github.com/spacetelescope/mast_notebooks.git"
         branch="deploy_to_fornax"
         ;;
     heasarc)
