@@ -126,7 +126,7 @@ fi
 ########## Create lock files for the environment ##########
 cp $ENV_DIR/heasoft/heasoft-lock.yml $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
 # Replace the prefix for the heasoft environment with the esassdr1 environment
-sed -i "s|envs/heasoft|envs/$ENV_NAME|g" $ENV_NAME-lock.yml
+sed -i "s|envs/heasoft|envs/$ENV_NAME|g" $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
 cp $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml $LOCK_DIR
 ###########################################################
 
