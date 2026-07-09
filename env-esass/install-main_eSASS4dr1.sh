@@ -66,52 +66,19 @@ wget $esass_link \
 ###########################################################
 
 
-############ Setup the eSASS Conda environment ############
-# Creates a Conda definition file that can be used to setup the environment that eSASS
-#  will be associated with
-#cat <<EOF > conda-$ENV_NAME.yml
-#name: $ENV_NAME
-#channels:
-#  - conda-forge
-#dependencies:
-#  - python=$py_version
-#  - pytest
-#  - fftw
-#  - pip
-#  - pip:
-#    - pytest
-#    - astroquery
-#    - astropy
-#    - s3fs
-#    - boto3
-#    - https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer.tar.gz
-#    - xga
-#EOF
-
-# Use the yml to create the eSASS env
-#bash /usr/local/bin/setup-conda-env <<< yes
-#
-## Updating the lock file and moving it to the lock file directory
-#micromamba env -n $ENV_NAME export > $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
-#cp $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml $LOCK_DIR
-###########################################################
-
-
-
 ########### Create the "Fake" Conda environment ###########
 # THIS IS A THIN WRAPPER OVER THE HEASOFT ENVIRONMENT
-echo "Creating fake conda environment symlinked to heasoft..."
 mkdir -p $ENV_DIR/$ENV_NAME
 
-# 1. Top-level symlinks (skip etc)
+# Top-level symlinks (skip etc and the heasoft environment lock file)
 for item in $ENV_DIR/heasoft/*; do
     basename_item=$(basename "$item")
-    if [ "$basename_item" != "etc" ]; then
+    if [ "$basename_item" != "etc" ] && [ "$basename_item" != "heasoft-lock.yml" ]; then
         ln -s "$item" "$ENV_DIR/$ENV_NAME/$basename_item"
     fi
 done
 
-# 2. Handle 'etc' (skip conda)
+# Handle 'etc' (skip conda)
 mkdir -p $ENV_DIR/$ENV_NAME/etc
 if [ -d "$ENV_DIR/heasoft/etc" ]; then
     for etc_item in $ENV_DIR/heasoft/etc/*; do
@@ -122,7 +89,7 @@ if [ -d "$ENV_DIR/heasoft/etc" ]; then
     done
 fi
 
-# 3. Handle 'etc/conda' (skip activate.d and deactivate.d)
+# Handle 'etc/conda' (skip activate.d and deactivate.d)
 mkdir -p $ENV_DIR/$ENV_NAME/etc/conda
 if [ -d "$ENV_DIR/heasoft/etc/conda" ]; then
     for conda_item in $ENV_DIR/heasoft/etc/conda/*; do
@@ -133,7 +100,7 @@ if [ -d "$ENV_DIR/heasoft/etc/conda" ]; then
     done
 fi
 
-# 4. Handle 'activate.d' (create dir, symlink individual scripts)
+# Handle 'activate.d' (create dir, symlink individual scripts)
 mkdir -p $ENV_DIR/$ENV_NAME/etc/conda/activate.d
 if [ -d "$ENV_DIR/heasoft/etc/conda/activate.d" ]; then
     for act_item in $ENV_DIR/heasoft/etc/conda/activate.d/*; do
@@ -144,7 +111,7 @@ if [ -d "$ENV_DIR/heasoft/etc/conda/activate.d" ]; then
     done
 fi
 
-# 5. Handle 'deactivate.d' (create dir, symlink individual scripts)
+# Handle 'deactivate.d' (create dir, symlink individual scripts)
 mkdir -p $ENV_DIR/$ENV_NAME/etc/conda/deactivate.d
 if [ -d "$ENV_DIR/heasoft/etc/conda/deactivate.d" ]; then
     for deact_item in $ENV_DIR/heasoft/etc/conda/deactivate.d/*; do
@@ -156,7 +123,22 @@ fi
 ###########################################################
 
 
+########## Create lock files for the environment ##########
+cp $ENV_DIR/heasoft/heasoft-lock.yml $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
+# Replace the prefix for the heasoft environment with the esassdr1 environment
+sed -i "s|envs/heasoft|envs/$ENV_NAME|g" $ENV_NAME-lock.yml
+cp $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml $LOCK_DIR
+###########################################################
 
+######### Create a kernel directory for esassdr1 ##########
+# Make a copy of the HEASoft environment kernel, we'll just modify it for this
+#  fake environment we've concocted
+cp -r $JUPYTER_DIR/share/jupyter/kernels/heasoft $JUPYTER_DIR/share/jupyter/kernels/$ENV_NAME
+# Now we modify the contents of the kernel.json, first the display name
+sed -i 's|"display_name": "heasoft"|"display_name": "'"$ENV_NAME"'"|g' "$JUPYTER_DIR/share/jupyter/kernels/$ENV_NAME/kernel.json"
+# Now the paths that point to the heasoft env directory
+sed -i "s|envs/heasoft|envs/$ENV_NAME|g" "$JUPYTER_DIR/share/jupyter/kernels/$ENV_NAME/kernel.json"
+###########################################################
 
 
 ############ Create HEASoft environment clone #############
