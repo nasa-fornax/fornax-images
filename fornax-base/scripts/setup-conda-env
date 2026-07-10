@@ -107,7 +107,7 @@ for envfile in ${files[@]}; do
         fi
     fi
     # clean up
-    find $envdir/$env -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete
+    find $envdir/$env -follow -type f \( -name '*.a' -o -name '*.js.map' \) -delete
 done
 
 # clean
