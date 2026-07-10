@@ -121,6 +121,7 @@ def test_notebook_permissions(notebook):
     assert os.access(f'{notebook_dir}/{nb_path}', os.W_OK)
 
 
+@pytest.mark.full_notebook
 @pytest.mark.parametrize("notebook",  list(notebooks.keys()))
 def test_run_notebooks(notebook):
     """Do a full run of the notebook"""
