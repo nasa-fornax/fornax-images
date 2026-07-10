@@ -1,5 +1,14 @@
 # Latest Changes
 
+## dev
+- Upgrade fermitools to 2.5.1 and fix the fermipy dependencies.
+- Add a symlink to /scratch in the home folder.
+- Bug fixes and enhancements:
+  - Fix files permissions in the /opt/envs
+  - Fix cotnainer time zone.
+  - Fix oom_watch script.
+  - Update the repo url for mast notebooks.
+
 ## 26.0703
 - Add Fermi GBM environment.
 - Security updates
