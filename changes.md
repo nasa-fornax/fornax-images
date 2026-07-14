@@ -9,6 +9,7 @@
   - Fix cotnainer time zone.
   - Fix oom_watch script.
   - Update the repo url for mast notebooks.
+- (For testing; remove later) add jupyter-collaboration
 
 ## 26.0703
 - Add Fermi GBM environment.
