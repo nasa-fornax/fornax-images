@@ -68,11 +68,13 @@ jobs:
       - name: "Run image tests inside the image: ${{ matrix.image }}"
         run: |
           image=${{ matrix.image }}
+          env_cmd=""
           if [ "$image" == "fornax-nb" ]; then
             # do full notebook runs
             export FULL_RUN="1"
+            env_cmd="-e FULL_RUN"
           fi
-          docker run -i --rm -v .:/opt/workspace/repo-code \
+          docker run -i --rm -v .:/opt/workspace/repo-code $env_cmd \
             $image \
             bash -c "pytest -s -v /opt/workspace/repo-code/tests/test_${image//-/_}.py"
     
