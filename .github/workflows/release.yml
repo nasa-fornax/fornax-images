@@ -9,10 +9,15 @@ jobs:
   # Export the locks from env-assets       
   export-locks:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     
     permissions:
       contents: write  # to upload locks
       packages: read
+      pages: write
+      id-token: write
 
     steps:
 
@@ -41,10 +46,17 @@ jobs:
               --tag develop \
               --export-locks \
               "env-assets"
-            
+          
+          # generate a lock index
+          python scripts/locks-index.py
+
+          # put all published content to public/
+          mkdir -p public/${{ github.ref_name }}
+          cp -r locks index.md public/${{ github.ref_name }}
+
           # pack lock files into a zip file
           if [ -d locks ]; then
-            zip -r "environment-locks.zip" "locks"
+            zip -r "environment-locks.zip" "locks" index.md
           fi
       
       - name: Upload artifacts
@@ -57,7 +69,19 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: ./environment-locks.zip
-
+      
+      # Publish to gh pages      
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'public'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
   
   tag-images-for-release:
     needs: export-locks
