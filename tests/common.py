@@ -15,10 +15,14 @@ class CommonTests:
     @staticmethod
     def run_cmd(command, env=None, **runargs):
         """Run shell command"""
-        # Failures raise subprocess.CalledProcessError
-        # callers can intercept it.
-        result = subprocess.run(command, shell=True, check=True, text=True,
+        result = subprocess.run(command, shell=True, check=False, text=True,
                                 capture_output=True, env=env, **runargs)
+        if result.returncode != 0:
+            sep = '\n' + ('+'*20) + '\n'
+            raise RuntimeError(
+                (f'*** ERROR running: {command}' + sep + result.stdout
+                 + sep + result.stderr)
+            )
         return result
 
     @staticmethod
