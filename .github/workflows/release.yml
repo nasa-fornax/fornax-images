@@ -47,16 +47,19 @@ jobs:
               --export-locks \
               "env-assets"
           
+          # add .txt for build-* and toml files
+          find locks -type f \( -name "build-*" -o -name "*.toml" \) -exec mv {} {}.txt \;
+          
           # generate a lock index
-          python scripts/locks-index.py
+          python scripts/locks-index.py ${{ github.ref_name }}
 
           # put all published content to public/
           mkdir -p public/${{ github.ref_name }}
-          cp -r locks index.md public/${{ github.ref_name }}
+          cp -r locks/* public/${{ github.ref_name }}
 
           # pack lock files into a zip file
           if [ -d locks ]; then
-            zip -r "environment-locks.zip" "locks" index.md
+            zip -r "environment-locks.zip" "locks"
           fi
       
       - name: Upload artifacts
@@ -70,13 +73,11 @@ jobs:
         with:
           files: ./environment-locks.zip
       
-      # Publish to gh pages      
-      - name: Checkout
-        uses: actions/checkout@v4
+      # Publish to gh pages
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: 'public'
       - name: Deploy to GitHub Pages
