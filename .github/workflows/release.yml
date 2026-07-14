@@ -62,17 +62,6 @@ jobs:
             zip -r "environment-locks.zip" "locks"
           fi
       
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: environment-locks
-          path: ./environment-locks.zip
-      
-      - name: Upload lock files to the release
-        uses: softprops/action-gh-release@v3
-        with:
-          files: ./environment-locks.zip
-      
       # Publish to gh pages
       - name: Setup Pages
         uses: actions/configure-pages@v6
@@ -83,6 +72,23 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+      
+      - name: Patch Release Notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PAGES_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ github.ref_name }}/"
+          
+          # Fetch the current release notes and save to a temporary file
+          gh release view ${{ github.ref_name }} --json body --jq '.body' > release_notes.md
+
+          # Append the Pages link to the lock page
+          echo "" >> release_notes.md
+          echo "### Installed Environments" >> release_notes.md
+          echo "[Browse the lock files for the installed environments]($PAGES_URL)" >> release_notes.md
+
+          # Update the release with the newly modified file
+          gh release edit ${{ github.ref_name }} --notes-file release_notes.md
   
   # tag-images-for-release:
   #   needs: export-locks
