@@ -46,19 +46,14 @@ dependencies:
     - s3fs
     - boto3
     - xga>=0.6.3
+    - daxa
 EOF
 
 # Use conda-esass4dr1.yml to create the esass4dr1 env
 bash /usr/local/bin/setup-conda-env <<< yes
 
-# Extract the heasoft environment's HEASoft version
-#HEA_ENV_HEA_VERSION=$(micromamba list heasoft -p $ENV_DIR/heasoft --json | jq -r '.[0].version')
-
-# And the same for this new  environment
+# Extract the HEASoft package version
 HEA_VERSION=$(micromamba list heasoft -p $ENV_DIR/$ENV_NAME --json | jq -r '.[0].version')
-
-echo $HEA_VERSION
-#echo $ESASS_HEA_VERSION
 
 # (re)move data files;
 bash $script_dir/map-data.sh $ENV_DIR/$ENV_NAME/heasoft/refdata heasoft-$HEA_VERSION
@@ -75,11 +70,23 @@ sed -i 's/HTML_COMMAND:[[:space:]]*firefox/HTML_COMMAND:  lynx/g' $ENV_DIR/$ENV_
 #  the XSPEC model package instead
 ln -sf $SUPPORT_DATA_DIR/heasoft-${HEA_VERSION}/spectral/modelData $ENV_DIR/$ENV_NAME/heasoft/spectral/modelData
 
-
+# The path to the eROSITA CalDB on Fornax
 caldb_dir=$SUPPORT_DATA_DIR/erosita_caldb4DR1
 
-TARGET_FILE="$ENV_DIR/$ENV_NAME/etc/conda/activate.d/post_heasoft_esass_activate.sh"
-echo "export CALDB=$caldb_dir" | cat - "$TARGET_FILE" > temp_file && mv temp_file "$TARGET_FILE"
+# Modify the eSASS activation script to set the CALDB environment variable at the
+#  very start
+ACTIVATE_FILE="$ENV_DIR/$ENV_NAME/etc/conda/activate.d/post_heasoft_esass_activate.sh"
+echo "export CALDB=$caldb_dir" | cat - "$ACTIVATE_FILE" > temp_file && mv temp_file "$ACTIVATE_FILE"
+
+# We also make sure to add the CALDB (and co) unsetting commands to the deactivation
+#  script
+DEACTIVATE_FILE="$ENV_DIR/$ENV_NAME/etc/conda/deactivate.d/esass_deactivate.sh"
+cat << 'EOF' >> "$DEACTIVATE_FILE"
+unset CALDB
+unset CALDBCONFIG
+unset CALDBALIAS
+unset SASS_CALVERS
+EOF
 
 # clean and reset
 cd $HOME
