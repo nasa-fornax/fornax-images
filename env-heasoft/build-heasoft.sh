@@ -32,7 +32,6 @@ dependencies:
   - heasoft=6.36.*
   - uncompresspy
   - lynx
-  - fftw
   - pip
   - pip:
     - pytest
