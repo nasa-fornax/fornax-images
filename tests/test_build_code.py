@@ -3,10 +3,13 @@ from unittest.mock import patch, MagicMock, call
 from argparse import Namespace
 import sys
 import os
+import io
+from contextlib import redirect_stdout
 
 
 sys.path.insert(0, f'{os.path.dirname(__file__)}/../scripts/')
-from build import Builder, DEFAULT_REPO, IMAGE_ORDER  # noqa: E402
+from build import (Builder, DEFAULT_REPO,  # noqa: E402
+                   IMAGE_ORDER, SOFTWARE_IMAGES)
 
 
 class TestBuilder(unittest.TestCase):
@@ -25,6 +28,7 @@ class TestBuilder(unittest.TestCase):
             extra_args=None,
             build_vars=None,
             export_locks=False,
+            list_envs=False,
             repo=None
         )
 
@@ -47,7 +51,6 @@ class TestBuilder(unittest.TestCase):
             shell=True,
             check=True,
             text=True,
-            capture_output=True,
             timeout=10
         )
 
@@ -97,7 +100,7 @@ class TestBuilder(unittest.TestCase):
 
         # Assert git branch was checked and tag was updated
         mock_run.assert_called_once_with(
-            'git branch --show-current', 100)
+            'git branch --show-current', 100, capture_output=True)
         self.assertEqual(builder.tag, 'main-branch')
 
     def test_check_input_retag(self):
@@ -153,6 +156,22 @@ class TestBuilder(unittest.TestCase):
             builder.get_full_tag('fornax-main', 'invalid:tag')
 
     @patch('build.Builder.run')
+    def test_list_envs(self, mock_run):
+        """Test print envs."""
+        self.default_args.list_envs = True
+        tag = 'dev'
+        self.default_args.tag = tag
+        builder = Builder(self.default_args)
+
+        # capture the printed text
+        fp = io.StringIO()
+        with redirect_stdout(fp):
+            builder.run_with_args()
+        msg = fp.getvalue().strip()
+        expected = ' '.join([f'{im}:{tag}' for im in SOFTWARE_IMAGES])
+        assert msg == expected
+
+    @patch('build.Builder.run')
     def test_do_export_locks(self, mock_run):
         """Test docker build command generation."""
         self.default_args.export_locks = True
@@ -172,7 +191,8 @@ class TestBuilder(unittest.TestCase):
             return f'{DEFAULT_REPO}/{image}:{self.default_args.tag}'
 
         expected_calls = [
-            call(f"docker create {full_tag('env-assets')} /bin/true", 1000),
+            call(f"docker create {full_tag('env-assets')} /bin/true",
+                 1000, capture_output=True),
             call(f"docker cp {id}:/locks locks", 1000),
         ]
         mock_run.assert_has_calls(expected_calls, any_order=False)

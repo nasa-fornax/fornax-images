@@ -35,7 +35,12 @@ jobs:
       
       - name: Trigger the builder
         run: |
-          echo "IMAGES = ${{ inputs.images }}"
+          if [ "${{ inputs.images }}" == "all" ]; then
+            IMAGES=`python scripts/build.py --list-envs`
+          else
+            IMAGES="${{ inputs.images }}"
+          fi
+          echo "IMAGES = $IMAGES"
           echo "launch? ${{ inputs.launch }}"
           echo "extra ${{ inputs.extra_args }}"
           LAUNCH=${{ inputs.launch && '--launch' || '' }}
@@ -46,5 +51,5 @@ jobs:
           python scripts/ami-builder.py \
             --endpoint $ENDPOINT \
             --ssm-path $SSM_PATH \
-            ${{ inputs.images }} $LAUNCH $EXTRA
+            $IMAGES $LAUNCH $EXTRA
 

@@ -33,13 +33,6 @@ ENV DEFAULT_ENV=jupyter \
 
 USER root
 
-# Create folder and set premissions
-RUN \
- for folder in $ENV_DIR $LOCK_DIR $NOTEBOOK_DIR; do \
-   mkdir -p $folder; \
-   fix-permissions $folder; \
- done
-
 # Copy our scripts
 COPY --chmod=0555 --chown=$NB_UID:$NB_GID scripts/* /usr/local/bin/
 
@@ -70,6 +63,13 @@ RUN cd /tmp/ && \
 # reset user and location
 WORKDIR ${HOME}
 USER $NB_USER
+
+# Create folder and set premissions
+RUN \
+ for folder in $ENV_DIR $LOCK_DIR $NOTEBOOK_DIR; do \
+   mkdir -p $folder; \
+   fix-permissions $folder; \
+ done
 
 # Add a base conda environment; include what we need in the scripts
 RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \

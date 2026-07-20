@@ -108,7 +108,7 @@ for envfile in ${files[@]}; do
         | .env.VIRTUAL_ENV = \"$VIRTUAL_ENV\"" $KERNEL_JSON > /tmp/tmp.$$.json
     mv /tmp/tmp.$$.json $KERNEL_JSON
     # clean up
-    find $VIRTUAL_ENV -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete
+    find $VIRTUAL_ENV -follow -type f \( -name '*.a' -o -name '*.js.map' \) -delete
 done
 
 # clean

@@ -124,6 +124,9 @@ def test_notebook_permissions(notebook):
 @pytest.mark.parametrize("notebook",  list(notebooks.keys()))
 def test_run_notebooks(notebook):
     """Do a full run of the notebook"""
+    # skip if FULL_RUN is not defined
+    if os.environ.get("FULL_RUN") != "1":
+        pytest.skip("NO FULL_RUN=1")
     # skip the nootebook that needs large RAM for now.
     if notebook in ['light_curve_collector']:
         pytest.skip(f'Skipping {notebook}')

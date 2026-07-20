@@ -9,10 +9,15 @@ jobs:
   # Export the locks from env-assets       
   export-locks:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     
     permissions:
       contents: write  # to upload locks
       packages: read
+      pages: write
+      id-token: write
 
     steps:
 
@@ -41,23 +46,49 @@ jobs:
               --tag develop \
               --export-locks \
               "env-assets"
-            
+          
+          # add .txt for build-* and toml files
+          find locks -type f \( -name "build-*" -o -name "*.toml" \) -exec mv {} {}.txt \;
+          
+          # generate a lock index
+          python scripts/locks-index.py ${{ github.ref_name }}
+
+          # put all published content to public/
+          mkdir -p public/${{ github.ref_name }}
+          cp -r locks/* public/${{ github.ref_name }}
+
           # pack lock files into a zip file
           if [ -d locks ]; then
             zip -r "environment-locks.zip" "locks"
           fi
       
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v7
+      # Publish to gh pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
         with:
-          name: environment-locks
-          path: ./environment-locks.zip
+          path: 'public'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
       
-      - name: Upload lock files to the release
-        uses: softprops/action-gh-release@v3
-        with:
-          files: ./environment-locks.zip
+      - name: Patch Release Notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PAGES_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ github.ref_name }}/"
+          
+          # Fetch the current release notes and save to a temporary file
+          gh release view ${{ github.ref_name }} --json body --jq '.body' > release_notes.md
 
+          # Append the Pages link to the lock page
+          echo "" >> release_notes.md
+          echo "### Installed Environments" >> release_notes.md
+          echo "[Browse the lock files for the installed environments]($PAGES_URL)" >> release_notes.md
+
+          # Update the release with the newly modified file
+          gh release edit ${{ github.ref_name }} --notes-file release_notes.md
   
   tag-images-for-release:
     needs: export-locks

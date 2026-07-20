@@ -57,7 +57,7 @@ RUN apt-get update --yes && apt-get upgrade --yes \
 COPY --chmod=0555 scripts/start* scripts/fix-permissions scripts/run-hooks.sh /usr/local/bin/
 COPY --chown=$NB_UID:$NB_GID scripts/docker_healthcheck.py scripts/jupyter_server_config.py /etc/jupyter/
 RUN cd /usr/local/bin/ \
- && fix-permissions /etc/jupyter/ /opt/ \
+ && mkdir -p /etc/jupyter /opt/ && fix-permissions /etc/jupyter/ /opt/ \
  && mkdir -p start-notebook.d before-notebook.d
 
 # Configure container entrypoint, port, cmd and healthcheck
@@ -93,8 +93,6 @@ RUN cd /tmp/ \
  && mv $HOME/.local/bin/uv* /usr/local/bin/ \
  && rm -rf $HOME/.local/bin \
  && sed -i '/\.local\/bin/d' $HOME/.bashrc \
- # add the main python interpreter
- && uv python install $PYTHON_VERSION \
  # micromamba
  && curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
  && mv bin/micromamba /usr/local/bin/ \
@@ -108,15 +106,17 @@ RUN cd /tmp/ \
 
 ## -- install jupyter -- ##
 USER ${NB_UID}
-RUN uv venv $JUPYTER_DIR \
+RUN \
+ # add the main python interpreter
+ uv python install $PYTHON_VERSION \
+ && uv venv $JUPYTER_DIR \
  && export VIRTUAL_ENV=$JUPYTER_DIR \
  && uv pip install "jupyterlab==4.*" "jupyterhub==5.*" "jupytext" pytest \
  && uv clean \
  && jupyter lab clean \
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
- && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.pyc' -o -name '*.js.map' \) -delete \
- && cd $HOME && rm -rf .* * \
- && fix-permissions $JUPYTER_DIR
+ && find $JUPYTER_DIR -follow -type f \( -name '*.a' -o -name '*.js.map' \) -delete \
+ && cd $HOME && rm -rf .* *
 
 
 WORKDIR $HOME

@@ -22,7 +22,7 @@ class CommonTests:
             raise RuntimeError(
                 (f'*** ERROR running: {command}' + sep + result.stdout
                  + sep + result.stderr)
-                )
+            )
         return result
 
     @staticmethod

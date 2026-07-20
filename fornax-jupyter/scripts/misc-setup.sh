@@ -77,3 +77,10 @@ if [ -n "${JUPYTERHUB_USER+x}" ]; then
     sudo -u $JUPYTERHUB_USER bash $script & disown
 fi
 ## ----------------------------------------- ##
+
+## ------------------------------------ ##
+## Create a symlink to /scratch in $HOME
+if [[ ! -e /home/$NB_USER/scratch && ! -L /home/$NB_USER/scratch && -d /scratch ]]; then
+    ln -s /scratch /home/$NB_USER/
+fi
+## ------------------------------------ ##

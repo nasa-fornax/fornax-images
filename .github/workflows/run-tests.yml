@@ -68,16 +68,15 @@ jobs:
       - name: "Run image tests inside the image: ${{ matrix.image }}"
         run: |
           image=${{ matrix.image }}
-          docker run -i --rm -v .:/opt/workspace/repo-code \
+          env_cmd=""
+          if [ "$image" == "fornax-nb" ]; then
+            # do full notebook runs
+            export FULL_RUN="1"
+            env_cmd="-e FULL_RUN"
+          fi
+          docker run -i --rm -v .:/opt/workspace/repo-code $env_cmd \
             $image \
             bash -c "pytest -s -v /opt/workspace/repo-code/tests/test_${image//-/_}.py"
-      
-      - name: "Run full notbeook tests: ${{ matrix.image }}"
-        if: github.event_name == 'workflow_dispatch' && matrix.image == 'fornax-main'
-        run: |
-          docker run -i --rm -v .:/opt/workspace/repo-code \
-            ${{ matrix.image }} \
-            bash -c "pytest -s -v /opt/workspace/repo-code/tests/test_fornax_notebooks.py"
     
       - name: "Run jupyter-lab: ${{ matrix.image }}"
         run: |
