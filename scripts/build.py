@@ -314,15 +314,22 @@ class Builder:
             image tag, e.g. develop, stable etc.
         """
         for image in self.images:
-            if image != 'env-assets':
-                print(f'Only env-assets has locks; skipping {image}')
+            if image not in ['env-assets', 'fornax-jupyter']:
+                print(('Only env-assets|fornax-jupyter has locks; '
+                       f'skipping {image}'))
                 continue
             full_tag = self.get_full_tag(image, self.tag)
 
             cmd = (f'docker create {full_tag} /bin/true')
             res = self.run(cmd, 1000, capture_output=True)
             id = res.stdout.split('\n')[-2].strip()
-            cmd = (f'docker cp {id}:/locks locks')
+            if image == 'env-assets':
+                cmd = (f'docker cp {id}:/locks locks')
+            elif image == 'fornax-jupyter':
+                cmd = ((f'docker cp {id}:'
+                        '/opt/jupyter/requirements-jupyter.txt locks'))
+            else:
+                pass
             res = self.run(cmd, 1000)
 
     def do_build(self, time_tag):
