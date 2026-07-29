@@ -7,10 +7,11 @@ FROM ${REPOSITORY}/fornax-base:${BASE_TAG} AS build
 
 # Copy our jupyter settings overrides
 USER $NB_USER
-RUN mkdir -p $JUPYTER_DIR/share/jupyter/lab/settings/ \
+RUN mkdir -p $JUPYTER_DIR/share/jupyter/lab/settings/
  # Disable the announcement extension
- && jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
+ # && jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
 COPY --chown=$NB_UID:$NB_GID overrides.json $JUPYTER_DIR/share/jupyter/lab/settings/
+COPY --chown=$NB_UID:$NB_GID page_config.json $JUPYTER_DIR/etc/jupyter/labconfig/
 # Copy our jupyter server config file
 COPY --chown=$NB_UID:$NB_GID jupyter_server_config.py /tmp/
 RUN cat /tmp/jupyter_server_config.py >> /etc/jupyter/jupyter_server_config.py \

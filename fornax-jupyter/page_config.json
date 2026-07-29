@@ -1,0 +1,23 @@
+{
+  "disabledExtensions": {
+    "@jupyterlab/apputils-extension:announcements": true
+  },
+  "lockedExtensions": {
+    "@jupyterlab/apputils-extension:announcements": true
+  },
+  "deferredExtensions": {
+    "nbdime-jupyterlab": true,
+    "jupyter-vue": true,
+    "jupyter-vuedraggable": true,
+    "bqplot-image-gl": true,
+    "bqplot-linlog": true,
+    "jupyterlab_pygments": true,
+    "jupyter-threejs": true,
+    "jupyter-webrtc": true,
+    "jupyter-golden-layout": true,
+    "jupyter-vuetify": true,
+    "bqplot": true,
+    "@jupyterlab/git": true,
+    "ipyvolume": true
+  }
+}

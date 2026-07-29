@@ -2,7 +2,9 @@
 
 ## dev
 - Bug fixes and enhancements:
+  - Security updates.
   - Fix issue where some ciao tasks fail with numpy>=2.5 (#192).
+  - Move several jupyter extension to deferred mode.
 
 ## 26.0717
 - Upgrade fermitools to 2.5.1 and fix the fermipy dependencies.
