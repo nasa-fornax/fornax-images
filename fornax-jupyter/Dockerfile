@@ -2,11 +2,7 @@ ARG BASE_TAG=latest
 ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
 FROM ${REPOSITORY}/env-assets:${BASE_TAG} AS assets
-FROM ${REPOSITORY}/fornax-base:${BASE_TAG}
-
-LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
-LABEL org.opencontainers.image.description="Fornax Primary Jupyter Image"
-LABEL org.opencontainers.image.authors="Fornax Project"
+FROM ${REPOSITORY}/fornax-base:${BASE_TAG} AS build
 
 
 # Copy our jupyter settings overrides
@@ -34,12 +30,6 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && fix-permissions $JUPYTER_DIR /tmp/cache \
  && find $JUPYTER_DIR \( -name "yarn.lock" -o -name "package-lock.json" \) -delete \
  && rm /tmp/jupyter-deps.txt /tmp/misc-build.sh
-
-# From the images
-ARG JULIA_VERSION=1.8.0
-ENV JULIA_DEPOT_PATH=$ENV_DIR/julia-$JULIA_VERSION \
-    JULIA_PKGDIR=$ENV_DIR/julia-$JULIA_VERSION \
-    PATH=$ENV_DIR/julia-$JULIA_VERSION/bin:$PATH
 
 # Add the notebooks
 COPY --from=assets $NOTEBOOK_DIR $NOTEBOOK_DIR
@@ -88,6 +78,98 @@ EOF
 COPY scripts/oom_watch.py /usr/local/bin/oom_watch
 RUN chmod +x /usr/local/bin/oom_watch \
  && printf '#!/bin/bash\n/usr/local/bin/oom_watch --delay > /tmp/oom-watch.log 2>&1 & disown' > /usr/local/bin/before-notebook.d/start-oom-watch.sh
+
+
+FROM scratch
+
+LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
+LABEL org.opencontainers.image.description="Fornax Primary Jupyter Image"
+LABEL org.opencontainers.image.authors="Fornax Project"
+
+# Copy everything *except* the folder you want to remove
+COPY --from=build /opt/jupyter /opt/jupyter
+COPY --from=build /opt/build-fornax-jupyter /opt/
+COPY --from=build /opt/support-data /opt/
+COPY --from=build /opt/notebooks /opt/notebooks
+COPY --from=build /opt/python /opt/python
+COPY --from=build /tmp /tmp
+COPY --from=build /usr /usr
+COPY --from=build /bin /bin
+COPY --from=build /etc /etc
+COPY --from=build /lib /lib
+COPY --from=build /lib64 /lib64
+COPY --from=build /home /home
+COPY --from=build /root /root
+COPY --from=build /run /run
+COPY --from=build /sbin /sbin
+COPY --from=build /var /var
+RUN mkdir -p /tmp/ && chmod 777 /tmp/
+
+## ---- from jupyter-base ---- ##
+ARG NB_USER="jovyan"
+ARG NB_UID="1000"
+ARG NB_GID="100"
+ARG PYTHON_VERSION=3.12
+ARG JUPYTER_PORT=8888
+ARG JUPYTER_DIR=/opt/jupyter
+ARG ENV_DIR=/opt/envs
+
+# Set docker shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Define environment variables
+ENV JUPYTER_DIR=$JUPYTER_DIR \
+    ENV_DIR=$ENV_DIR \
+    SHELL=/bin/bash \
+    NB_USER=${NB_USER} \
+    NB_UID=${NB_UID} \
+    NB_GID=${NB_GID} \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8 \
+    LANGUAGE=C.UTF-8 \
+    PYTHON_VERSION=${PYTHON_VERSION} \
+    PATH=${JUPYTER_DIR}/bin:${PATH} \
+    UV_PYTHON_INSTALL_DIR=/opt/python \
+    DEBIAN_FRONTEND=noninteractive \
+    HOME=/home/${NB_USER}
+
+# Configure container entrypoint, port, cmd and healthcheck
+ENTRYPOINT ["tini", "-g", "--", "start.sh"]
+EXPOSE $JUPYTER_PORT
+CMD ["start-notebook.py"]
+HEALTHCHECK --interval=3s --timeout=1s --start-period=3s --retries=3 \
+    CMD /etc/jupyter/docker_healthcheck.py || exit 1
+
+## ---- from fornax-base ---- ##
+ARG MAMBA_ROOT_PREFIX=$ENV_DIR/base
+
+# Environment variables
+ENV CACHE_DIR=/tmp/cache
+ENV DEFAULT_ENV=jupyter \
+    MAMBA_ROOT_PREFIX=$MAMBA_ROOT_PREFIX \
+    LOCK_DIR=$ENV_DIR/lock \
+    XDG_CACHE_HOME=$CACHE_DIR \
+    XDG_CACHE_DIR=$CACHE_DIR \
+    XDG_CACHE_DIR=$CACHE_DIR \
+    TECTONIC_CACHE_DIR=$CACHE_DIR \
+    PIP_CACHE_DIR=$CACHE_DIR/pip \
+    UV_CACHE_DIR=$CACHE_DIR/uv \
+    UV_LINK_MODE=copy \
+    NOTEBOOK_DIR=/opt/notebooks \
+    # folder that start.sh need to fix permissions for
+    CHOWN_EXTRA=/opt/notebooks \
+    CHOWN_EXTRA_OPTS="-R" \
+    # Location of the support data
+    SUPPORT_DATA_DIR=/opt/support-data \
+    # path
+    PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
+
+## ----- from other images ----- ##
+# From the images
+ARG JULIA_VERSION=1.8.0
+ENV JULIA_DEPOT_PATH=$ENV_DIR/julia-$JULIA_VERSION \
+    JULIA_PKGDIR=$ENV_DIR/julia-$JULIA_VERSION \
+    PATH=$ENV_DIR/julia-$JULIA_VERSION/bin:$PATH
 
 ENV DEFAULT_ENV=python3
 USER ${NB_UID}

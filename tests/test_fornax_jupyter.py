@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests  # noqa E402
@@ -38,3 +39,57 @@ def test_notebooks_folder():
     assert os.path.exists(f'{notebook_dir}/irsa-tutorials')
     assert os.path.exists(f'{notebook_dir}/heasarc-tutorials')
     assert os.path.exists(f'{notebook_dir}/mast-tutorials')
+
+
+def test_env_dir_not_exist():
+    assert not os.path.exists(os.environ['ENV_DIR'])
+
+
+def test_env_vars_from_other_images():
+    """ensure all variables defined in fornax-base and subsequent images
+    are propagated to fornax-slim
+    """
+    images = [
+        'jupyter-base', 'fornax-base', 'fornax-nb', 'archive-nb',
+        'env-core', 'env-heasoft', 'env-ciao', 'env-fermi', 'env-sas'
+    ]
+    wdir = os.path.dirname(__file__)
+    envs = []
+    for image in images:
+        _envs = _extract_env_vars(f'{wdir}/../{image}/Dockerfile')
+        envs += _envs
+
+    slim_envs = _extract_env_vars(f'{wdir}/../fornax-jupyter/Dockerfile')
+    assert set(envs) == set(slim_envs)
+
+    assert 'FORNAX_SOFTWARE_VERSION' in os.environ
+
+
+def _extract_env_vars(dockerfile):
+    """Extract all ENV variables from a Dockerfile"""
+    env_vars = []
+    with open(dockerfile, 'r') as fp:
+        lines = fp.readlines()
+
+    # Join lines that end with backslash
+    combined_lines = []
+    current = ''
+    for line in lines:
+        sline = line.strip()
+        if not sline or sline.startswith('#'):
+            continue
+        if sline[-1] == '\\':
+            current += sline[:-1] + ' '
+        else:
+            current += sline
+            combined_lines.append(current)
+            current = ''
+    # now look for the ENV
+    pattern = re.compile(r'^\s*ENV\s+(.*)')
+    for line in combined_lines:
+        match = pattern.match(line)
+        if match:
+            parts = match.group(1)
+            for var in re.findall(r'(\S+?)(?:=)', parts):
+                env_vars.append(var)
+    return env_vars
