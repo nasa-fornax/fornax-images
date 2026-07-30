@@ -59,8 +59,9 @@ def test_env_vars_from_other_images():
         _envs = _extract_env_vars(f'{wdir}/../{image}/Dockerfile')
         envs += _envs
 
-    slim_envs = _extract_env_vars(f'{wdir}/../fornax-jupyter/Dockerfile')
-    assert set(envs) == set(slim_envs)
+    jupyter_envs = _extract_env_vars(f'{wdir}/../fornax-jupyter/Dockerfile')
+    # we can have vars in jupyter_envs but not in the other images
+    assert envs.issubset(jupyter_envs)
 
     assert 'FORNAX_SOFTWARE_VERSION' in os.environ
 
