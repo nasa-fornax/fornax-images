@@ -99,7 +99,7 @@ for envfile in ${files[@]}; do
         fi
     else
         uv run python -m ipykernel install --name $env --user
-        KERNEL_JSON="$HOME/.local/share/jupyter/kernels/$env/kernel.json"
+        KERNEL_JSON="$JUPYTER_RUNTIME_DIR/kernels/$env/kernel.json"
     fi
     # set PATH, so `!which python` works correctly in the notebook
     # set VIRTUAL_ENV so `!uv ..` works too.
