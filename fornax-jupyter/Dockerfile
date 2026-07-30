@@ -80,7 +80,8 @@ COPY scripts/oom_watch.py /usr/local/bin/oom_watch
 RUN chmod +x /usr/local/bin/oom_watch \
  && printf '#!/bin/bash\n/usr/local/bin/oom_watch --delay > /tmp/oom-watch.log 2>&1 & disown' > /usr/local/bin/before-notebook.d/start-oom-watch.sh
 
-
+## ------------------------------------------------------- ##
+## -------- Start from scratch for a minmial image ------- ##
 FROM scratch
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
@@ -164,6 +165,20 @@ ENV DEFAULT_ENV=jupyter \
     SUPPORT_DATA_DIR=/opt/support-data \
     # path
     PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
+
+
+# JUPYTER variables
+ARG JUPYTER_CUSTOM_DIR=/scratch/.jupyter
+ENV JUPYTER_RUNTIME_DIR=$JUPYTER_CUSTOM_DIR \
+    JUPYTER_DATA_DIR=$JUPYTER_CUSTOM_DIR \
+    JUPYTER_CONFIG_DIR=$JUPYTER_CUSTOM_DIR \
+    IPYTHONDIR=$JUPYTER_CUSTOM_DIR
+# Use scratch for jupyter folders #194 
+# The folder is empty in the image but is mounted in deployment
+USER root
+RUN mkdir /scratch && chown $NB_UID:$NB_GID -R /scratch
+USER $NB_UID
+RUN fix-permissions /scratch
 
 ## ----- from other images ----- ##
 # From the images
