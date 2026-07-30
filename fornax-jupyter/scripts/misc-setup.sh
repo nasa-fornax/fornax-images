@@ -56,7 +56,7 @@ fi
 script=/tmp/kernel-warmer.sh
 cat <<EOF > $script
 set +ex
-sleep 180
+sleep 300
 echo "Starting kernel warmer ..."
 cd $ENV_DIR
 for env in python3 heasoft \$(ls -d py-*) ciao fermi; do

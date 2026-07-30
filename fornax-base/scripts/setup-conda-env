@@ -74,7 +74,7 @@ for envfile in ${files[@]}; do
         KERNEL_JSON="$JUPYTER_DIR/share/jupyter/kernels/$env/kernel.json"
     else
         jupyter_spec="--user"
-        KERNEL_JSON="$HOME/.local/share/jupyter/kernels/$env/kernel.json"
+        KERNEL_JSON="$JUPYTER_RUNTIME_DIR/kernels/$env/kernel.json"
     fi
     micromamba create -y -p $envdir/$env -f $ENVFILE --use-uv
 

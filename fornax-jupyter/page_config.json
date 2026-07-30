@@ -1,0 +1,8 @@
+{
+  "disabledExtensions": {
+    "@jupyterlab/apputils-extension:announcements": true
+  },
+  "lockedExtensions": {
+    "@jupyterlab/apputils-extension:announcements": true
+  }
+}

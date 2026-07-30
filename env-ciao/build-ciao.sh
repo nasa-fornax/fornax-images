@@ -30,6 +30,7 @@ dependencies:
   - ciao=4.18.0
   - sherpa
   - ciao-contrib=4.18.0
+  - numpy<2.5  # remove once chararray issue is fixed in ciao-contrib
   - marx
   - pip
   - pip:

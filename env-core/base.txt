@@ -2,6 +2,7 @@ vim
 nano
 less
 zip
+unzip
 pandoc
 awscli
 htop
