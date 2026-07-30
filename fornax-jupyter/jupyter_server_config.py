@@ -13,6 +13,7 @@ c.PDFExporter.bib_command = ['/bin/true', '{filename}']
 c.ServerApp.tornado_settings = {
     "page_config_data": {
         "buildCheck": False,
-        "buildAvailable": False
+        "buildAvailable": False,
+        "checkUpdates": False
     }
 }
