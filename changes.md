@@ -1,6 +1,6 @@
 # Latest Changes
 
-## dev
+## 26.0731
 - Bug fixes and enhancements:
   - Security updates.
   - Fix issue where some ciao tasks fail with numpy>=2.5 (#192).
