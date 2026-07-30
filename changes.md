@@ -4,7 +4,6 @@
 - Bug fixes and enhancements:
   - Security updates.
   - Fix issue where some ciao tasks fail with numpy>=2.5 (#192).
-  - Move several jupyter extension to deferred mode.
   - Use scratch for jupyter local files instead of ~.
 
 ## 26.0717
