@@ -75,9 +75,10 @@ bindpw T3mp3rman3nt
 pam_password clear
 EOF
 
-# Add OOM watcher script
+# Add OOM watcher and s3archive helper script into the build in a single layer
 COPY scripts/oom_watch.py /usr/local/bin/oom_watch
-RUN chmod +x /usr/local/bin/oom_watch \
+COPY scripts/s3archive.py /usr/local/bin/s3archive
+RUN chmod +x /usr/local/bin/oom_watch /usr/local/bin/s3archive \
  && printf '#!/bin/bash\n/usr/local/bin/oom_watch --delay > /tmp/oom-watch.log 2>&1 & disown' > /usr/local/bin/before-notebook.d/start-oom-watch.sh
 
 ## ------------------------------------------------------- ##
