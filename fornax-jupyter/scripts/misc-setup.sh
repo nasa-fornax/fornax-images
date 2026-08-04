@@ -29,7 +29,7 @@ export CONDA_ENVS_PATH=$USER_ENV_DIR
 export CODE_EXECUTABLE=code-server
 export CODE_EXTENSIONSDIR="/home/$NB_USER/.local/share/code-server/extensions"
 # For firefly
-export FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
+export FIREFLY_URL=https://irsacloud.ipac.caltech.edu/firefly \
 # for dask
 export DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/{port}/status"
 # Tell dask-labextension to use GatewayCluster
