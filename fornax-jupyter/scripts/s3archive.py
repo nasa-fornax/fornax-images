@@ -124,7 +124,7 @@ def main(
 
     try:
         with os.fdopen(fd, "wb") as f:
-            # 1. Build the tar command
+            # Build the tar command
             tar_cmd = ["tar", "-c"]
 
             # Both pigz and gzip read the GZIP env variable for the
@@ -144,19 +144,47 @@ def main(
             # paths are relative.
             tar_cmd.extend(["-f", "-", "-C", str(source.parent), source.name])
 
-            # 2. Run the subprocess, piping stdout directly to your
-            # file object (f)
-            try:
-                subprocess.run(
-                    tar_cmd,
-                    stdout=f,
-                    stderr=subprocess.PIPE,
-                    env=env,
-                    check=True,
-                    text=True  # Decodes stderr to string
-                )
-            except subprocess.CalledProcessError as e:
-                raise click.ClickException(f"Tar command failed: {e.stderr}")
+            # Use Popen to stream the output manually
+            with subprocess.Popen(
+                tar_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=env
+            ) as proc:
+
+                print(f"Archiving '{source.name}' to {dest_path} ...")
+                total_bytes = 0
+
+                while True:
+                    # Read in 1MB chunks
+                    chunk = proc.stdout.read(16 * 1024 * 1024)
+                    if not chunk:
+                        break
+
+                    f.write(chunk)
+                    total_bytes += len(chunk)
+
+                    # Dynamically format to GB, MB, or KB
+                    if total_bytes >= 1024**3:  # Greater than 1 GB
+                        size_str = f"{total_bytes / 1024**3:.2f} GB"
+                    elif total_bytes >= 1024**2:  # Greater than 1 MB
+                        size_str = f"{total_bytes / 1024**2:.2f} MB"
+                    else:  # KB
+                        size_str = f"{total_bytes / 1024:.2f} KB"
+
+                    # \r returns the cursor to the start of the line to
+                    # overwrite it. The spaces at the end ensure trailing
+                    # characters are cleared
+                    print(f"\rWritten: {size_str}".ljust(40), end="",
+                          flush=True)
+
+                # Wait for the process to fully complete
+                proc.wait()
+                print()  # Move to a new line when finished
+
+                if proc.returncode != 0:
+                    err = proc.stderr.read().decode("utf-8", errors="replace")
+                    raise click.ClickException(f"Tar command failed: {err}")
 
             # 3. Ensure all data flushed to the mountpoint
             f.flush()
@@ -165,7 +193,7 @@ def main(
             except (OSError, AttributeError):
                 pass
 
-        # 4. Handle source removal after successful close
+        # Handle source removal after successful close
         if remove_source:
             if source.is_dir():
                 shutil.rmtree(source)
