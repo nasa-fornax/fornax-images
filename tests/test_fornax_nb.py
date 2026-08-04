@@ -128,8 +128,8 @@ def test_run_notebooks(notebook):
     if os.environ.get("FULL_RUN") != "1":
         pytest.skip("NO FULL_RUN=1")
     # skip the nootebook that needs large RAM for now.
-    if notebook in ['light_curve_collector']:
-        pytest.skip(f'Skipping {notebook}')
+    # if notebook in ['light_curve_collector']:
+    #     pytest.skip(f'Skipping {notebook}')
     nb_file = notebooks[notebook]['file']
     nb_path = os.path.dirname(nb_file)
     nb_filename = os.path.basename(nb_file)
