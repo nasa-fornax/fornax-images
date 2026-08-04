@@ -157,7 +157,7 @@ def main(
 
                 while True:
                     # Read in 1MB chunks
-                    chunk = proc.stdout.read(16 * 1024 * 1024)
+                    chunk = proc.stdout.read(4 * 1024 * 1024)
                     if not chunk:
                         break
 
