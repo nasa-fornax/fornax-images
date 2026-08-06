@@ -9,7 +9,7 @@ set -o pipefail
 
 pythonenv=py-multiband_photometry
 astrometry_version=0.97
-tractor_commit=8dc2bd8
+tractor_commit=3fd2e80
 
 
 source $ENV_DIR/$pythonenv/bin/activate
@@ -41,15 +41,11 @@ cd /tmp
 git clone https://github.com/dstndstn/tractor.git
 cd tractor
 git checkout $tractor_commit
-### -- patch import_array() -- ##
-find "tractor" -type f -name "*.i" | while read -r file; do
-    if grep -q 'import_array();' "$file"; then
-        echo "Patching: $file"
-        cp "$file" "$file.bak"
-        # Replace the line safely using sed
-        sed -i 's/import_array();/if (_import_array() < 0) return -1;/' "$file"
-    fi
-done
+### -- patch PyString_Check -> PyUnicode_Check and PyInt_Check -> PyLong_Check -- ##
+grep -RIl --exclude-dir=.git --exclude=*.o --exclude=*.so -E 'PyString_Check|PyInt_Check' --include='*.c' --include='*.h' --include='*.cc' --include='*.cpp' . \
+  | xargs -r sed -i \
+    -e 's/\bPyString_Check\s*(/PyUnicode_Check(/g' \
+    -e 's/\bPyInt_Check\s*(/PyLong_Check(/g'
 ### -------------------------- ##
 python setup.py build_ext --inplace --with-cython
 uv pip install --no-cache . --no-build-isolation  --target ${TARGET_DIR}
