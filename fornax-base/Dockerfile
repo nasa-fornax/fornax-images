@@ -36,14 +36,6 @@ USER root
 # Copy our scripts
 COPY --chmod=0555 --chown=$NB_UID:$NB_GID scripts/* /usr/local/bin/
 
-# Support data location; SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
-# SUPPORT_DATA_MOUNT is used here to allow the images to be used
-# outside the platform; in the platform, this is replaced by JH deployment
-RUN SUPPORT_DATA_MOUNT=/shared-storage/support-data \
- && mkdir -p $SUPPORT_DATA_MOUNT \
- && ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR \
- && fix-permissions $SUPPORT_DATA_MOUNT
-
 # Make $DEFAULT_ENV default; do it at the global level
 # because ~/.bashrc is not loaded when user space is mounted
 # Also, add it to before-notebook.d main script
