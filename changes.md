@@ -1,5 +1,8 @@
 # Latest Changes
 
+## 26.0814
+- Hotfix for the missing /opt/support-data symlink.
+
 ## 26.0731
 - Bug fixes and enhancements:
   - Security updates.
