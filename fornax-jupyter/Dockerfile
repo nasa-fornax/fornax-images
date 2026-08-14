@@ -91,7 +91,6 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 # Copy everything *except* the folder you want to remove
 COPY --from=build /opt/jupyter /opt/jupyter
 COPY --from=build /opt/build-fornax-jupyter /opt/
-COPY --from=build /opt/support-data /opt/
 COPY --from=build /opt/notebooks /opt/notebooks
 COPY --from=build /opt/python /opt/python
 COPY --from=build /tmp /tmp
@@ -179,6 +178,13 @@ USER root
 RUN mkdir /scratch && chown $NB_UID:$NB_GID -R /scratch
 USER $NB_UID
 RUN fix-permissions /scratch
+
+# Support data location; SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
+# SUPPORT_DATA_MOUNT is empty here; it is mounted in the deployment
+RUN SUPPORT_DATA_MOUNT=/shared-storage/support-data \
+ && mkdir -p $SUPPORT_DATA_MOUNT \
+ && ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR \
+ && fix-permissions $SUPPORT_DATA_MOUNT
 
 ## ----- from other images ----- ##
 # From the images
