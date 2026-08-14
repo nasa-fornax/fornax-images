@@ -181,10 +181,12 @@ RUN fix-permissions /scratch
 
 # Support data location; SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
 # SUPPORT_DATA_MOUNT is empty here; it is mounted in the deployment
+USER root
 RUN SUPPORT_DATA_MOUNT=/shared-storage/support-data \
  && mkdir -p $SUPPORT_DATA_MOUNT \
  && ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR \
  && fix-permissions $SUPPORT_DATA_MOUNT
+USER $NB_USER
 
 ## ----- from other images ----- ##
 # From the images
