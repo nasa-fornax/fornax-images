@@ -43,7 +43,7 @@ jobs:
         run: |
           python scripts/build.py --debug \
               --repo "ghcr.io/${{ github.repository }}" \
-              --tag 26.0731 \
+              --tag develop \
               --export-locks \
               "env-assets"
           
@@ -115,7 +115,7 @@ jobs:
           # Note that all images are tagged for release
           python scripts/build.py --debug \
               --repo "ghcr.io/${{ github.repository }}" \
-              --tag 26.0731 \
+              --tag develop \
               --retag main stable "${{ github.event.release.tag_name }}" \
               $ENDPOINT
 
@@ -145,10 +145,10 @@ jobs:
         run: |            
           echo "++++ Copy develop AMI to stable ++++ "
           ENDPOINT="${{ secrets.AMI_ENDPOINT }} ${{ secrets.AMI_ENDPOINT_PROD }}"
-          python scripts/ami-builder.py --src 26.0731 --ssm-path stable \
+          python scripts/ami-builder.py --src develop --ssm-path stable \
               --endpoint $ENDPOINT
           
           RELEASE="${{ github.event.release.tag_name }}"
           echo "++++ Copy develop AMI to release: $RELEASE ++++ "
-          python scripts/ami-builder.py --src 26.0731 --ssm-path $RELEASE \
+          python scripts/ami-builder.py --src develop --ssm-path $RELEASE \
               --endpoint $ENDPOINT
