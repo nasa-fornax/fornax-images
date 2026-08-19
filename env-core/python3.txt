@@ -9,7 +9,6 @@ tqdm
 matplotlib
 seaborn
 pytest
-dask[distributed]
 bokeh
 s3fs
 torch
@@ -18,3 +17,8 @@ scikit-learn
 xgboost
 tensorflow
 keras
+dask==2026.3.0
+dask_gateway
+distributed==2026.3.0
+msgpack==1.1.2
+tornado==6.5.5
