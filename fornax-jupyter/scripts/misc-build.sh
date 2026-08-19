@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 
 # Cateogry in the JL Launcher
 CATEGORY=Tools

@@ -1,3 +1,7 @@
+<!--
+Copyright 2026, University of Maryland, All Rights Reserved
+-->
+
 # Latest Changes
 
 ## dev

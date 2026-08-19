@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 # Build astronomy.net and tractor
 # Assumes build-01-notebook-req.sh has been run
 

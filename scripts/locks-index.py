@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 # Generate an html index for the lock files for gh-pages
 # Assumes ./locks/ exit
 import sys

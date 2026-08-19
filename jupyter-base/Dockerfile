@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 # Jupyter foundation.
 # This is a merged version of jupyter's docker-stacks-foundation and base-notebook
 # It is a separate image to give us flexibility to use non-conda environment management.

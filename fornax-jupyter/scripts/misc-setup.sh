@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 
 # Add ~/.profile if it does not exist; which sources ~/.bashrc
 # JL terminals source ~/.profile not ~/.bashrc
