@@ -93,7 +93,6 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 COPY --from=build /opt/jupyter /opt/jupyter
 COPY --from=build /opt/build-fornax-jupyter /opt/
 COPY --from=build /opt/notebooks /opt/notebooks
-COPY --from=build /opt/python /opt/python
 COPY --from=build /tmp /tmp
 COPY --from=build /usr /usr
 COPY --from=build /bin /bin
@@ -105,6 +104,7 @@ COPY --from=build /root /root
 COPY --from=build /run /run
 COPY --from=build /sbin /sbin
 COPY --from=build /var /var
+COPY --from=assets /python /opt/python
 RUN mkdir -p /tmp/ && chmod 777 /tmp/
 
 ## ---- from jupyter-base ---- ##
