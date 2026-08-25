@@ -23,9 +23,9 @@ ENV DEFAULT_ENV=jupyter \
     UV_CACHE_DIR=$CACHE_DIR/uv \
     UV_LINK_MODE=copy \
     NOTEBOOK_DIR=/opt/notebooks \
-    # folder that start.sh need to fix permissions for
-    CHOWN_EXTRA=/opt/notebooks \
-    CHOWN_EXTRA_OPTS="-R" \
+    # NOTE: CHOWN_EXTRA=/opt/notebooks was removed: it made start.sh do a
+    # recursive chown on every container start. Notebook folders are instead
+    # made group-writable (group 100) at build time in clone-notebooks.sh.
     # Location of the support data
     SUPPORT_DATA_DIR=/opt/support-data \
     # path

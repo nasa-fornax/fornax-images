@@ -12,7 +12,8 @@ if [ -f /home/$NB_USER/.bashrc ]; then
     source /home/$NB_USER/.bashrc
 fi
 PROFILE
-    chown $NB_USER:$NB_USER /home/$NB_USER/.profile
+    # use numeric ids: a name-based chown triggers an NSS/LDAP group lookup
+    chown $NB_UID:$NB_GID /home/$NB_USER/.profile
 fi
 # reset exit-on-error
 set -e
@@ -52,21 +53,33 @@ fi
 
 ## ----------------------------------------- ##
 ## run a kernel warmer in the background     ##
-# warmup ipykernel so it loads faster in the environments
+# Warm ipykernel so it loads faster in the environments.
+# It starts immediately (it used to wait 5 minutes, which was after the user
+# had already paid the cold-start cost) but at idle IO/CPU priority so it
+# yields to the booting jupyter server. The default kernel (python3) is warmed
+# first and fully (bin + lib, including site-packages), because
+# autoStartDefaultKernel launches it as soon as the Lab UI opens and its files
+# are cold on the lazy-loading EBS volume backing /opt/envs.
 script=/tmp/kernel-warmer.sh
 cat <<EOF > $script
 set +ex
-sleep 300
 echo "Starting kernel warmer ..."
 cd $ENV_DIR
-for env in python3 heasoft \$(ls -d py-*) ciao fermi; do
+idle="ionice -c3 nice -n19"
+if test -x $DEFAULT_ENV/bin/python; then
+    echo "warming $DEFAULT_ENV (default kernel) .."
+    \$idle $DEFAULT_ENV/bin/python -m ipykernel -h > /dev/null
+    find $DEFAULT_ENV/bin $DEFAULT_ENV/lib -type f 2>/dev/null \
+        | \$idle xargs -P8 -n 50 cat > /dev/null 2>&1
+fi
+for env in heasoft \$(ls -d py-* 2>/dev/null) ciao fermi; do
     if test -x "\$env/bin/python"; then
         echo "warming \$env .."
-        \$env/bin/python -m ipykernel -h > /dev/null
+        \$idle \$env/bin/python -m ipykernel -h > /dev/null
     fi
 done
 echo "warming base .."
-find base/bin/ -type f | xargs -n 100 cat >/dev/null
+find base/bin/ -type f | \$idle xargs -P4 -n 100 cat >/dev/null
 echo "Done with kernel warmer ..."
 
 # remove the script

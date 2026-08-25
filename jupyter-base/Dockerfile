@@ -61,7 +61,8 @@ RUN cd /usr/local/bin/ \
  && mkdir -p start-notebook.d before-notebook.d
 
 # Configure container entrypoint, port, cmd and healthcheck
-ENTRYPOINT ["tini", "-g", "--", "start.sh"]
+# start-trace.sh is a passthrough to start.sh unless FORNAX_STARTUP_TRACE is set
+ENTRYPOINT ["tini", "-g", "--", "start-trace.sh"]
 EXPOSE $JUPYTER_PORT
 CMD ["start-notebook.py"]
 HEALTHCHECK --interval=3s --timeout=1s --start-period=3s --retries=3 \

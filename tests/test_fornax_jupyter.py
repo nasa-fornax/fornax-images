@@ -45,6 +45,20 @@ def test_env_dir_not_exist():
     assert not os.path.exists(os.environ['ENV_DIR'])
 
 
+def test_notebook_folders_group_writable():
+    """Notebook folders must be group-writable (group 100 'users') at build.
+
+    start.sh no longer runs `chown -R /opt/notebooks` at startup
+    (CHOWN_EXTRA was removed to speed up startup), so runtime users --
+    any uid, with supplementary group 100 -- rely on g+w directories.
+    """
+    import stat
+    for root, dirs, files in os.walk(notebook_dir):
+        st = os.stat(root)
+        assert st.st_gid == 100, f'{root}: gid={st.st_gid}, expected 100'
+        assert st.st_mode & stat.S_IWGRP, f'{root}: not group-writable'
+
+
 def test_env_vars_from_other_images():
     """ensure all variables defined in fornax-base and subsequent images
     are propagated to fornax-slim

@@ -33,7 +33,7 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && rm /tmp/jupyter-deps.txt /tmp/misc-build.sh
 
 # Add the notebooks
-COPY --from=assets $NOTEBOOK_DIR $NOTEBOOK_DIR
+COPY --chown=$NB_UID:$NB_GID --from=assets $NOTEBOOK_DIR $NOTEBOOK_DIR
 
 # landing page; even an empty one
 COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md $NOTEBOOK_DIR/introduction.mdv
@@ -67,12 +67,20 @@ RUN \
    sed -i 's/passwd:         files/passwd:         files ldap/g' /etc/nsswitch.conf \
 && sed -i 's/group:          files/group:          files ldap/g' /etc/nsswitch.conf \
 && cat <<'EOF' > /etc/ldap.conf
-base dc=fornax,dc=core              
-uri ldap://glauth.fornax.core:30389 
-ldap_version 3                      
+base dc=fornax,dc=core
+uri ldap://glauth.fornax.core:30389
+ldap_version 3
 binddn cn=svcacct,dc=fornax,dc=core
-bindpw T3mp3rman3nt 
+bindpw T3mp3rman3nt
 pam_password clear
+# Bound NSS/LDAP lookups so a slow or unreachable LDAP server cannot stall
+# container startup (libnss-ldap defaults are bind_policy hard + 30s binds,
+# and start.sh performs ~10 NSS lookups before the server starts).
+bind_timelimit 3
+timelimit 5
+bind_policy soft
+nss_reconnect_tries 1
+nss_initgroups_ignoreusers root,jovyan
 EOF
 
 # Add OOM watcher and s3archive helper script into the build in a single layer
@@ -136,7 +144,8 @@ ENV JUPYTER_DIR=$JUPYTER_DIR \
     HOME=/home/${NB_USER}
 
 # Configure container entrypoint, port, cmd and healthcheck
-ENTRYPOINT ["tini", "-g", "--", "start.sh"]
+# start-trace.sh is a passthrough to start.sh unless FORNAX_STARTUP_TRACE is set
+ENTRYPOINT ["tini", "-g", "--", "start-trace.sh"]
 EXPOSE $JUPYTER_PORT
 CMD ["start-notebook.py"]
 HEALTHCHECK --interval=3s --timeout=1s --start-period=3s --retries=3 \
@@ -158,9 +167,9 @@ ENV DEFAULT_ENV=jupyter \
     UV_CACHE_DIR=$CACHE_DIR/uv \
     UV_LINK_MODE=copy \
     NOTEBOOK_DIR=/opt/notebooks \
-    # folder that start.sh need to fix permissions for
-    CHOWN_EXTRA=/opt/notebooks \
-    CHOWN_EXTRA_OPTS="-R" \
+    # NOTE: CHOWN_EXTRA=/opt/notebooks was removed: it made start.sh do a
+    # recursive chown on every container start. Notebook folders are instead
+    # group-writable (group 100), baked at build time in clone-notebooks.sh.
     # Location of the support data
     SUPPORT_DATA_DIR=/opt/support-data \
     # path

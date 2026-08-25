@@ -105,8 +105,13 @@ EOF
 fi
 
 
-# Now make the notebooks files read-only
+# Now make the notebooks files read-only.
+# Folders are group-writable (setgid, group=users) so any runtime user in group
+# 100 can write outputs; this replaces the per-start `chown -R /opt/notebooks`
+# (CHOWN_EXTRA), which slowed container startup.
 find $name -type f -exec chmod 444 {} +
+find $name -type d -exec chmod 2775 {} +
+chmod 2775 $NOTEBOOK_DIR
 
 # reset location
 cd $HOME
