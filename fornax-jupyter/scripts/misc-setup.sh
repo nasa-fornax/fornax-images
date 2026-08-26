@@ -51,33 +51,6 @@ if [[ "$CLEAN_HOME" == "1" ]]; then
         mv /home/$NB_USER/.jupyter /home/$NB_USER/.jupyter-$stamp
     fi
 fi
-
-## ----------------------------------------- ##
-## run a kernel warmer in the background     ##
-# warmup ipykernel so it loads faster in the environments
-script=/tmp/kernel-warmer.sh
-cat <<EOF > $script
-set +ex
-sleep 300
-echo "Starting kernel warmer ..."
-cd $ENV_DIR
-for env in python3 heasoft \$(ls -d py-*) ciao fermi; do
-    if test -x "\$env/bin/python"; then
-        echo "warming \$env .."
-        \$env/bin/python -m ipykernel -h > /dev/null
-    fi
-done
-echo "warming base .."
-find base/bin/ -type f | xargs -n 100 cat >/dev/null
-echo "Done with kernel warmer ..."
-
-# remove the script
-rm -- $script
-EOF
-# run it in the background if we are inside JH
-if [ -n "${JUPYTERHUB_USER+x}" ]; then
-    sudo -u $JUPYTERHUB_USER bash $script & disown
-fi
 ## ----------------------------------------- ##
 
 ## ------------------------------------ ##
