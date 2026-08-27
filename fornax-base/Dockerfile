@@ -77,9 +77,11 @@ RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
 
 # Move micromamba and uv to ENV_DIR so they are portable too; needed for dask gateway
 USER root
-RUN mv /usr/local/bin/{micromamba,uv} $MAMBA_ROOT_PREFIX/bin \
- && ln -s $MAMBA_ROOT_PREFIX/bin/micromamba /usr/local/bin/ \
- && ln -s $MAMBA_ROOT_PREFIX/bin/uv /usr/local/bin/
+RUN for tool in micromamba uv; do \
+  mv /usr/local/bin/$tool $ENV_DIR/bin; \
+  ln -s $MAMBA_ROOT_PREFIX/bin/$tool /usr/local/bin/; \
+  fix-permissions $MAMBA_ROOT_PREFIX/bin/$tool; \
+ done
 USER $NB_UID
 
 # For outside mount when using outside fornax
