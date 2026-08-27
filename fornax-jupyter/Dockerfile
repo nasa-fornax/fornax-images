@@ -106,7 +106,6 @@ COPY --from=build /root /root
 COPY --from=build /run /run
 COPY --from=build /sbin /sbin
 COPY --from=build /var /var
-COPY --from=assets /python /opt/python
 RUN mkdir -p /tmp/ && chmod 777 /tmp/
 
 ## ---- from jupyter-base ---- ##

@@ -42,6 +42,3 @@ COPY --from=env_fermi $LOCK_DIR /locks/
 COPY --from=fornax_nb $LOCK_DIR /locks/
 COPY --from=archive_nb $LOCK_DIR /locks/
 COPY --from=env_core $LOCK_DIR /locks/
-
-# python versions
-COPY --from=env_core /opt/python /python
