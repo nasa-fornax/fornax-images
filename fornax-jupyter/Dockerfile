@@ -159,9 +159,6 @@ ENV DEFAULT_ENV=jupyter \
     UV_CACHE_DIR=$CACHE_DIR/uv \
     UV_LINK_MODE=copy \
     NOTEBOOK_DIR=/opt/notebooks \
-    # folder that start.sh need to fix permissions for
-    CHOWN_EXTRA=/opt/notebooks \
-    CHOWN_EXTRA_OPTS="-R" \
     # Location of the support data
     SUPPORT_DATA_DIR=/opt/support-data \
     # path
