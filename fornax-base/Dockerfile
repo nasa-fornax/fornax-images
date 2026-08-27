@@ -78,6 +78,10 @@ RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
 # the solution is make MAMBA_ROOT_PREFIX/envs a symlin to $ENV_DIR
  && cd $MAMBA_ROOT_PREFIX && rm -rf envs && ln -s $ENV_DIR
 
+# Move micromamba and uv to ENV_DIR so they are portable too; needed for dask gateway
+USER root
+RUN mv /usr/local/bin/{micromamba,uv} $MAMBA_ROOT_PREFIX/bin
+USER $NB_UID
 
 # For outside mount when using outside fornax
 RUN mkdir -p /opt/workspace
