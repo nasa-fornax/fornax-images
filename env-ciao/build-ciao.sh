@@ -52,7 +52,7 @@ rm -rf $ENV_DIR/ciao/docs
 
 
 # get ciao version
-CIAO_VERSION=$(micromamba list ciao -p $ENV_DIR/ciao --json | jq -r '.[0].version')
+CIAO_VERSION=$(micromamba list ciao -p $ENV_DIR/ciao --json | jq -r '.packages[0].version')
 CALDB_VERSION=4.12.3
 
 # (re)move data files;

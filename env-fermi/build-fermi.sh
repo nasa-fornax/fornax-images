@@ -45,7 +45,7 @@ EOF
 bash /usr/local/bin/setup-conda-env  <<< yes
 
 # Get fermitools version
-FERMITOOLS_VERSION=$(micromamba list fermitools -p $ENV_DIR/fermi --json | jq -r '.[0].version')
+FERMITOOLS_VERSION=$(micromamba list fermitools -p $ENV_DIR/fermi --json | jq -r '.packages[0].version')
 
 # (re)move data files;
 bash $script_dir/map-data.sh $ENV_DIR/fermi/share/fermitools/refdata fermitools-${FERMITOOLS_VERSION}
