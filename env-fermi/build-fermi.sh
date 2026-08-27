@@ -23,7 +23,9 @@ cd $WORKDIR
 rm -rf * > /dev/null 2>&1
 
 # TODO IF UPDATING, CHECK WHETHER 'gammapy' HAS A RELEASE VERSION HIGHER THAN 2.1, IF
-#  YES THEN YOU CAN PROBABLY REMOVE THE REGION<0.12 RESTRICTION.
+#  YES THEN YOU CAN PROBABLY REMOVE THE regions<0.12 RESTRICTION.
+# TODO: fermipy>=1.4.3 that goes with fermitools=2.5.2 is not available in conda,
+# use pip, and update once that moves to conda
 cat <<EOF > conda-fermi.yml
 name: fermi
 channels:
@@ -33,10 +35,9 @@ dependencies:
   - python=3.12
   - regions<0.12
   - fermitools=2.5.2
-  - region<0.12
-  - fermipy
   - pip
   - pip:
+    - fermipy
     - pytest
 EOF
 
