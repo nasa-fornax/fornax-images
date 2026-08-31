@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 # Jupyter foundation.
 # This is a merged version of jupyter's docker-stacks-foundation and base-notebook
 # It is a separate image to give us flexibility to use non-conda environment management.
@@ -35,7 +37,8 @@ ENV JUPYTER_DIR=$JUPYTER_DIR \
     LANGUAGE=C.UTF-8 \
     PYTHON_VERSION=${PYTHON_VERSION} \
     PATH=${JUPYTER_DIR}/bin:${PATH} \
-    UV_PYTHON_INSTALL_DIR=/opt/python \
+    # Make uv put python binaries in /opt/envs so it is portable
+    UV_PYTHON_INSTALL_DIR=$ENV_DIR/python \
     DEBIAN_FRONTEND=noninteractive \
     HOME=/home/${NB_USER}
 

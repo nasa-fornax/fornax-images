@@ -1,4 +1,6 @@
 #!/usr/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 # This is a script used by other build scripts to map data to SUPPORT_DATA_DIR
 # The data will be stored in $SUPPORT_DATA_DIR instead of $ENV_DIR and symlinks
 # are added in ENV_DIR; so the software dir is not bloated and at the same time, 

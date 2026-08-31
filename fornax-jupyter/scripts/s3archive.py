@@ -1,4 +1,6 @@
 #!/opt/envs/python3/bin/python
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 
 """Archive a file or directory into a tar or tar.gz file
 on the target filesystem."""

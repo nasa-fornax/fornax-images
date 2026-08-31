@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 ARG BASE_TAG=latest
 ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
@@ -98,6 +100,7 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 COPY --from=build /opt/jupyter /opt/jupyter
 COPY --from=build /opt/build-fornax-jupyter /opt/
 COPY --from=build /opt/notebooks /opt/notebooks
+COPY --from=build /opt/envs/python /opt/envs/python
 COPY --from=build /tmp /tmp
 COPY --from=build /usr /usr
 COPY --from=build /bin /bin
@@ -109,7 +112,6 @@ COPY --from=build /root /root
 COPY --from=build /run /run
 COPY --from=build /sbin /sbin
 COPY --from=build /var /var
-COPY --from=assets /python /opt/python
 RUN mkdir -p /tmp/ && chmod 777 /tmp/
 
 ## ---- from jupyter-base ---- ##

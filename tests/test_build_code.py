@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 import unittest
 from unittest.mock import patch, MagicMock, call
 from argparse import Namespace

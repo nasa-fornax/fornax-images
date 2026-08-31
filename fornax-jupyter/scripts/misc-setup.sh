@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 
 # Add ~/.profile if it does not exist; which sources ~/.bashrc
 # JL terminals source ~/.profile not ~/.bashrc
@@ -48,39 +50,6 @@ if [[ "$CLEAN_HOME" == "1" ]]; then
         echo "renaming /home/$NB_USER/.jupyter to ~/.jupyter-$stamp"
         mv /home/$NB_USER/.jupyter /home/$NB_USER/.jupyter-$stamp
     fi
-fi
-
-## ----------------------------------------- ##
-## run a kernel warmer in the background     ##
-# warmup ipykernel so it loads faster in the environments
-script=/tmp/kernel-warmer.sh
-cat <<EOF > $script
-set +ex
-echo "Starting kernel warmer ..."
-cd $ENV_DIR
-idle="ionice -c3 nice -n19"
-if test -x $DEFAULT_ENV/bin/python; then
-    echo "warming $DEFAULT_ENV (default kernel) .."
-    \$idle $DEFAULT_ENV/bin/python -m ipykernel -h > /dev/null
-    find $DEFAULT_ENV/bin $DEFAULT_ENV/lib -type f 2>/dev/null \
-        | \$idle xargs -P8 -n 50 cat > /dev/null 2>&1
-fi
-for env in heasoft \$(ls -d py-* 2>/dev/null) ciao fermi; do
-    if test -x "\$env/bin/python"; then
-        echo "warming \$env .."
-        \$idle \$env/bin/python -m ipykernel -h > /dev/null
-    fi
-done
-echo "warming base .."
-find base/bin/ -type f | \$idle xargs -P4 -n 100 cat >/dev/null
-echo "Done with kernel warmer ..."
-
-# remove the script
-rm -- $script
-EOF
-# run it in the background if we are inside JH
-if [ -n "${JUPYTERHUB_USER+x}" ]; then
-    sudo -u $JUPYTERHUB_USER bash $script & disown
 fi
 ## ----------------------------------------- ##
 

@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 # This will be run as root inside Dockerfile
 
 # exit on failure; print commands

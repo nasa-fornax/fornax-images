@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 ARG BASE_TAG=latest
 ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
@@ -73,6 +75,14 @@ RUN PY_EXACT_VERSION=`python -c "import sys; print(sys.version.split()[0])"` \
 # the solution is make MAMBA_ROOT_PREFIX/envs a symlin to $ENV_DIR
  && cd $MAMBA_ROOT_PREFIX && rm -rf envs && ln -s $ENV_DIR
 
+# Move micromamba and uv to ENV_DIR so they are portable too; needed for dask gateway
+USER root
+RUN for tool in micromamba uv; do \
+  mv /usr/local/bin/$tool $MAMBA_ROOT_PREFIX/bin; \
+  ln -s $MAMBA_ROOT_PREFIX/bin/$tool /usr/local/bin/; \
+  fix-permissions $MAMBA_ROOT_PREFIX/bin/$tool; \
+ done
+USER $NB_UID
 
 # For outside mount when using outside fornax
 RUN mkdir -p /opt/workspace
