@@ -95,6 +95,7 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 COPY --from=build /opt/jupyter /opt/jupyter
 COPY --from=build /opt/build-fornax-jupyter /opt/
 COPY --from=build /opt/notebooks /opt/notebooks
+COPY --from=build /opt/envs/python /opt/envs/python
 COPY --from=build /tmp /tmp
 COPY --from=build /usr /usr
 COPY --from=build /bin /bin
