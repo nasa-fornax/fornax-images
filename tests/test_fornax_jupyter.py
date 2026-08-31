@@ -47,6 +47,15 @@ def test_notebooks_folder():
 #     assert not os.path.exists(os.environ['ENV_DIR'])
 
 
+def test_notebook_folders_group_writable():
+    """Notebook folders are group-writable (group 100) at build time"""
+    import stat
+    for root, dirs, files in os.walk(notebook_dir):
+        st = os.stat(root)
+        assert st.st_gid == 100, f'{root}: gid={st.st_gid}, expected 100'
+        assert st.st_mode & stat.S_IWGRP, f'{root}: not group-writable'
+
+
 def test_env_vars_from_other_images():
     """ensure all variables defined in fornax-base and subsequent images
     are propagated to fornax-slim
