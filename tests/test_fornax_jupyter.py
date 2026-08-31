@@ -46,12 +46,7 @@ def test_env_dir_not_exist():
 
 
 def test_notebook_folders_group_writable():
-    """Notebook folders must be group-writable (group 100 'users') at build.
-
-    start.sh no longer runs `chown -R /opt/notebooks` at startup
-    (CHOWN_EXTRA was removed to speed up startup), so runtime users --
-    any uid, with supplementary group 100 -- rely on g+w directories.
-    """
+    """Notebook folders are group-writable (group 100) at build time"""
     import stat
     for root, dirs, files in os.walk(notebook_dir):
         st = os.stat(root)

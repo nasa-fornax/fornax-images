@@ -12,7 +12,6 @@ if [ -f /home/$NB_USER/.bashrc ]; then
     source /home/$NB_USER/.bashrc
 fi
 PROFILE
-    # use numeric ids: a name-based chown triggers an NSS/LDAP group lookup
     chown $NB_UID:$NB_GID /home/$NB_USER/.profile
 fi
 # reset exit-on-error
@@ -53,13 +52,7 @@ fi
 
 ## ----------------------------------------- ##
 ## run a kernel warmer in the background     ##
-# Warm ipykernel so it loads faster in the environments.
-# It starts immediately (it used to wait 5 minutes, which was after the user
-# had already paid the cold-start cost) but at idle IO/CPU priority so it
-# yields to the booting jupyter server. The default kernel (python3) is warmed
-# first and fully (bin + lib, including site-packages), because
-# autoStartDefaultKernel launches it as soon as the Lab UI opens and its files
-# are cold on the lazy-loading EBS volume backing /opt/envs.
+# warmup ipykernel so it loads faster in the environments
 script=/tmp/kernel-warmer.sh
 cat <<EOF > $script
 set +ex
