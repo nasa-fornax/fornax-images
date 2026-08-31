@@ -31,8 +31,9 @@ def test_env_vars():
     assert os.environ['CODE_EXECUTABLE'] == 'code-server'
 
 
-def test_base_env():
-    CommonTests._test_uv_env_file(jupyter_env, jupyter_root)
+# Commented out since the python binaries are in /opt/envs/python
+# def test_base_env():
+#     CommonTests._test_uv_env_file(jupyter_env, jupyter_root)
 
 
 def test_notebooks_folder():
