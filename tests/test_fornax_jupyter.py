@@ -31,9 +31,8 @@ def test_env_vars():
     assert os.environ['CODE_EXECUTABLE'] == 'code-server'
 
 
-# Commented out since the python binaries are in /opt/envs/python
-# def test_base_env():
-#     CommonTests._test_uv_env_file(jupyter_env, jupyter_root)
+def test_base_env():
+    CommonTests._test_uv_env_file(jupyter_env, jupyter_root)
 
 
 def test_notebooks_folder():
@@ -43,9 +42,9 @@ def test_notebooks_folder():
     assert os.path.exists(f'{notebook_dir}/heasarc-tutorials')
     assert os.path.exists(f'{notebook_dir}/mast-tutorials')
 
-
-def test_env_dir_not_exist():
-    assert not os.path.exists(os.environ['ENV_DIR'])
+# commented out because we need endir for the python binary
+# def test_env_dir_not_exist():
+#     assert not os.path.exists(os.environ['ENV_DIR'])
 
 
 def test_env_vars_from_other_images():
