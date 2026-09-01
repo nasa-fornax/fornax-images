@@ -9,7 +9,6 @@ Copyright 2026, University of Maryland, All Rights Reserved
 - Upgrade the default python to 3.13.
 - Update fornax-labextension to 0.1.22: Change the label Introduction to Tutorials.
 - Add s3archive script to help efficiently archive data to ~/s3-storage.
-- Add jupyter-ai extension.
 - Bug fixes and enhancements:
   - Firefly now uses IRSA's cloud backend.
 
