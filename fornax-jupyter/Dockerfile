@@ -36,6 +36,8 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
 
 # Add the notebooks
 COPY --chown=$NB_UID:$NB_GID --from=assets $NOTEBOOK_DIR $NOTEBOOK_DIR
+# make the folders group-writable; a quick solution to get around stale images - remove later
+RUN find $NOTEBOOK_DIR -type d -exec chmod 2775 {} +
 
 # landing page; even an empty one
 COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md $NOTEBOOK_DIR/introduction.mdv
@@ -122,7 +124,9 @@ COPY --from=build /root /root
 COPY --from=build /run /run
 COPY --from=build /sbin /sbin
 COPY --from=build /var /var
-RUN mkdir -p /tmp/ && chmod 777 /tmp/
+# COPY creates the destination folder with default permissions; restore the mode
+RUN mkdir -p /tmp/ && chmod 777 /tmp/ \
+ && chmod 2775 /opt/notebooks
 
 # Set docker shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
