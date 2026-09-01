@@ -122,9 +122,7 @@ COPY --from=build /root /root
 COPY --from=build /run /run
 COPY --from=build /sbin /sbin
 COPY --from=build /var /var
-# COPY creates the destination folder with default permissions; restore the mode
-RUN mkdir -p /tmp/ && chmod 777 /tmp/ \
- && chmod 2775 /opt/notebooks
+RUN mkdir -p /tmp/ && chmod 777 /tmp/
 
 # Set docker shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
