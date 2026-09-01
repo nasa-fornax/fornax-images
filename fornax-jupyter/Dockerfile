@@ -35,7 +35,7 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && rm /tmp/jupyter-deps.txt /tmp/misc-build.sh
 
 # Add the notebooks
-COPY --from=assets $NOTEBOOK_DIR $NOTEBOOK_DIR
+COPY --chown=$NB_UID:$NB_GID --from=assets $NOTEBOOK_DIR $NOTEBOOK_DIR
 
 # landing page; even an empty one
 COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md $NOTEBOOK_DIR/introduction.mdv
@@ -69,12 +69,17 @@ RUN \
    sed -i 's/passwd:         files/passwd:         files ldap/g' /etc/nsswitch.conf \
 && sed -i 's/group:          files/group:          files ldap/g' /etc/nsswitch.conf \
 && cat <<'EOF' > /etc/ldap.conf
-base dc=fornax,dc=core              
-uri ldap://glauth.fornax.core:30389 
-ldap_version 3                      
+base dc=fornax,dc=core
+uri ldap://glauth.fornax.core:30389
+ldap_version 3
 binddn cn=svcacct,dc=fornax,dc=core
-bindpw T3mp3rman3nt 
+bindpw T3mp3rman3nt
 pam_password clear
+bind_timelimit 3
+timelimit 5
+bind_policy soft
+nss_reconnect_tries 1
+nss_initgroups_ignoreusers root,jovyan
 EOF
 
 # Add OOM watcher and s3archive helper script into the build in a single layer

@@ -107,8 +107,10 @@ EOF
 fi
 
 
-# Now make the notebooks files read-only
+# Now make the notebooks files read-only, and the folders group-writable
 find $name -type f -exec chmod 444 {} +
+find $name -type d -exec chmod 2775 {} +
+chmod 2775 $NOTEBOOK_DIR
 
 # reset location
 cd $HOME

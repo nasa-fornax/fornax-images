@@ -14,7 +14,7 @@ if [ -f /home/$NB_USER/.bashrc ]; then
     source /home/$NB_USER/.bashrc
 fi
 PROFILE
-    chown $NB_USER:$NB_USER /home/$NB_USER/.profile
+    chown $NB_UID:$NB_GID /home/$NB_USER/.profile
 fi
 # reset exit-on-error
 set -e
