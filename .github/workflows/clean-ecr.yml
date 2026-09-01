@@ -1,0 +1,43 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
+name: Clean ECR
+run-name: "Clean ECR: ${{ inputs.images }} :: ${{ inputs.tag }}"
+on:
+  workflow_dispatch:
+    inputs:
+      images:
+        description: 'Images of the form: image-1 image-2 (pass the tag separately)'
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
+
+jobs:
+
+  clean-ecr:
+    runs-on: ubuntu-latest
+    
+    # Sets the permissions granted to the `GITHUB_TOKEN`
+    permissions:
+      contents: read
+  
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      
+      - name: "Call ECR"
+        run: |
+          IMAGES="${{ inputs.images }}"
+          TAG="${{ inputs.tag || github.head_ref || github.ref_name }}"          
+          echo "Passed parameters: $IMAGES with tag $TAG"
+
+          ENDPOINT="--ecr ${{ secrets.ECR_ENDPOINT }} --ecr ${{ secrets.ECR_ENDPOINT_PROD }}"
+
+          python scripts/build.py --debug \
+              --repo "ghcr.io/${{ github.repository }}" \
+              --tag $TAG \
+              $ENDPOINT \
+              $IMAGES
+
