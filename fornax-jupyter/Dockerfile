@@ -96,10 +96,19 @@ LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-imag
 LABEL org.opencontainers.image.description="Fornax Primary Jupyter Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
+## ---- from jupyter-base ---- ##
+ARG NB_USER="jovyan"
+ARG NB_UID="1000"
+ARG NB_GID="100"
+ARG PYTHON_VERSION=3.12
+ARG JUPYTER_PORT=8888
+ARG JUPYTER_DIR=/opt/jupyter
+ARG ENV_DIR=/opt/envs
+
 # Copy everything *except* the folder you want to remove
-COPY --from=build /opt/jupyter /opt/jupyter
+COPY --from=build --chown=$NB_UID:$NB_GID /opt/jupyter /opt/jupyter
 COPY --from=build /opt/build-fornax-jupyter /opt/
-COPY --from=build /opt/notebooks /opt/notebooks
+COPY --from=build --chown=$NB_UID:$NB_GID /opt/notebooks /opt/notebooks
 COPY --from=build /opt/envs/python /opt/envs/python
 COPY --from=build /opt/envs/base/bin/uv /opt/envs/base/bin/uv
 COPY --from=build /tmp /tmp
@@ -114,15 +123,6 @@ COPY --from=build /run /run
 COPY --from=build /sbin /sbin
 COPY --from=build /var /var
 RUN mkdir -p /tmp/ && chmod 777 /tmp/
-
-## ---- from jupyter-base ---- ##
-ARG NB_USER="jovyan"
-ARG NB_UID="1000"
-ARG NB_GID="100"
-ARG PYTHON_VERSION=3.12
-ARG JUPYTER_PORT=8888
-ARG JUPYTER_DIR=/opt/jupyter
-ARG ENV_DIR=/opt/envs
 
 # Set docker shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
