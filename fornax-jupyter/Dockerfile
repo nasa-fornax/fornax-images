@@ -36,6 +36,8 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
 
 # Add the notebooks
 COPY --chown=$NB_UID:$NB_GID --from=assets $NOTEBOOK_DIR $NOTEBOOK_DIR
+# make the folders group-writable; a quick solution to get around stale images - remove later
+RUN find $NOTEBOOK_DIR -type d -exec chmod 2775 {} +
 
 # landing page; even an empty one
 COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md $NOTEBOOK_DIR/introduction.mdv
