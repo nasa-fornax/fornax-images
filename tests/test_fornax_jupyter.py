@@ -3,6 +3,7 @@
 import sys
 import os
 import re
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests  # noqa E402
@@ -45,6 +46,25 @@ def test_notebooks_folder():
 # commented out because we need endir for the python binary
 # def test_env_dir_not_exist():
 #     assert not os.path.exists(os.environ['ENV_DIR'])
+
+
+def test_support_data_synlink():
+    opt_path = Path("/opt/support-data")
+    target_path = Path("/shared-storage/support-data")
+
+    assert opt_path.exists(), f"{opt_path} does not exist"
+    assert opt_path.is_symlink(), f"{opt_path} is not a symlink"
+
+    # raw link target (may be relative)
+    resolved_target = Path(opt_path.readlink())
+    # Normalize comparison by resolving both as paths relative to
+    # opt_path's parent
+    if not resolved_target.is_absolute():
+        resolved_target = (opt_path.parent / resolved_target)
+
+    assert resolved_target == target_path, (
+        f"{opt_path} points to {resolved_target}, expected {target_path}"
+    )
 
 
 def test_notebook_folders_group_writable():
