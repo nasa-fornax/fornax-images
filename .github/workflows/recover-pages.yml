@@ -1,0 +1,51 @@
+name: Recover Old Release Pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'The exact tag to recover (e.g., 26.0814)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  packages: read
+
+jobs:
+  recover-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout specific tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag_name }}
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          clean_storage: false
+
+      - name: Export the locks
+        run: |
+          # Use inputs.tag_name instead of github.ref_name
+          python scripts/build.py --debug \
+              --repo "ghcr.io/${{ github.repository }}" \
+              --tag ${{ inputs.tag_name }} \
+              --export-locks \
+              "env-assets"
+          
+          find locks -type f \( -name "build-*" -o -name "*.toml" \) -exec mv {} {}.txt \;
+          
+          python scripts/locks-index.py ${{ inputs.tag_name }}
+
+          mkdir -p public/${{ inputs.tag_name }}
+          cp -r locks/* public/${{ inputs.tag_name }}
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          keep_files: true
