@@ -16,16 +16,8 @@ jobs:
   recover-pages:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout specific tag
+      - name: Checkout the latest code (so we get the update scripts)
         uses: actions/checkout@v6
-        with:
-          ref: ${{ inputs.tag_name }}
-
-      - name: Setup Environment
-        uses: ./.github/actions/setup
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          clean_storage: false
 
       - name: Export the locks
         run: |
