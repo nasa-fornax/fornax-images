@@ -5,6 +5,7 @@ Copyright 2026, University of Maryland, All Rights Reserved
 # Latest Changes
 
 ## dev
+- Upgrade HEASoft to 6.37.1
 - Add dask-gateway to python3
 - Upgrade the default python to 3.13.
 - Update fornax-labextension to 0.1.22: Change the label Introduction to Tutorials.

@@ -31,7 +31,7 @@ channels:
   - nodefaults
 dependencies:
   - python=$PYTHON_VERSION
-  - heasoft=6.36.*
+  - heasoft=6.37.*
   - uncompresspy
   - lynx
   - pip
@@ -53,7 +53,7 @@ EOF
 bash /usr/local/bin/setup-conda-env <<< yes
 
 # Extract the heasoft version
-HEA_VERSION=$(micromamba list heasoft -p $ENV_DIR/heasoft --json | jq -r '.[0].version')
+HEA_VERSION=$(micromamba list heasoft -p $ENV_DIR/heasoft --json | jq -r '.packages[0].version')
 
 # (re)move data files;
 bash $script_dir/map-data.sh $ENV_DIR/heasoft/heasoft/refdata heasoft-$HEA_VERSION
