@@ -1,15 +1,68 @@
 # Copyright 2026, University of Maryland, All Rights Reserved
 
-name: Tag released images
+name: Create Release and Tag Images
+run-name: "Release: ${{ inputs.source_tag }} -> ${{ inputs.release_version }}"
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      source_tag:
+        description: 'Source image tag to use for this release'
+        required: true
+        default: 'develop'
+      release_version:
+        description: 'New release version (e.g., v1.2.0)'
+        required: true
 
 jobs:
 
+  # 1. First, create the actual GitHub Release
+  create-github-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to create a release and git tag
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Extract Release Notes for Tag
+        id: extract_notes
+        run: |
+          VERSION="${{ inputs.release_version }}"
+          echo "Extracting notes for version: $VERSION"
+          
+          # Use awk to find the heading (e.g., "## 26.0908") and print everything
+          # until it hits the next "## " heading or the end of the file.
+          awk -v tag="## $VERSION" '
+            index($0, tag) == 1 {flag=1; next}  # When we find the heading, set flag to 1 and skip printing the heading itself
+            /^## / {if(flag) exit}              # If flag is 1 and we hit the *next* heading, stop
+            flag {print}                        # If flag is 1, print the line
+          ' changes.md > extracted_notes.md
+          
+          # Fail if no release notes was available in changes.md
+          if [ ! -s extracted_notes.md ]; then
+            echo "⚠️ No specific release notes found for $VERSION in changes.md."
+            exit 1
+          fi
+          
+          # Print the extracted notes to the Action log for debugging
+          echo "=== Extracted Notes ==="
+          cat extracted_notes.md
+          echo "======================="
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ inputs.release_version }} \
+            --target main \
+            --title "${{ inputs.release_version }}" \
+            --notes-file extracted_notes.md
+
   # Export the locks from env-assets       
   export-locks:
+    needs: create-github-release
     runs-on: ubuntu-latest
     
     permissions:
@@ -19,15 +72,6 @@ jobs:
       id-token: write
 
     steps:
-
-      - name: Check the release is from main
-        run: |
-          if [ "${{ github.event.release.target_commitish }}" != "main" ]; then
-            echo "❌ Releases must be created from main branch."
-            echo "    Current ref: ${{ github.ref_name }}"
-            exit 1
-          fi
-          echo "✅ Branch check passed."
 
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -42,7 +86,7 @@ jobs:
         run: |
           python scripts/build.py --debug \
               --repo "ghcr.io/${{ github.repository }}" \
-              --tag develop \
+              --tag ${{ inputs.source_tag }} \
               --export-locks \
               "env-assets"
           
@@ -50,11 +94,11 @@ jobs:
           find locks -type f \( -name "build-*" -o -name "*.toml" \) -exec mv {} {}.txt \;
           
           # generate a lock index
-          python scripts/locks-index.py ${{ github.ref_name }}
+          python scripts/locks-index.py "${{ inputs.release_version }}"
 
           # put all published content to public/
-          mkdir -p public/${{ github.ref_name }}
-          cp -r locks/* public/${{ github.ref_name }}
+          mkdir -p public/"${{ inputs.release_version }}"
+          cp -r locks/* public/"${{ inputs.release_version }}"/
 
           # pack lock files into a zip file
           if [ -d locks ]; then
@@ -69,14 +113,14 @@ jobs:
           publish_dir: ./public
           keep_files: true # Prevents overwriting older releases
       
-      - name: Add New Release Notes
+      - name: Update Release Notes with Lock Link
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PAGES_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ github.ref_name }}/"
+          PAGES_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ inputs.release_version }}/"
           
           # Fetch the current release notes and save to a temporary file
-          gh release view ${{ github.ref_name }} --json body --jq '.body' > release_notes.md
+          gh release view ${{ inputs.release_version }} --json body --jq '.body' > release_notes.md
 
           # Append the Pages link to the lock page
           echo "" >> release_notes.md
@@ -84,13 +128,16 @@ jobs:
           echo "[Browse the lock files for the installed environments]($PAGES_URL)" >> release_notes.md
 
           # Update the release with the newly modified file
-          gh release edit ${{ github.ref_name }} --notes-file release_notes.md
+          gh release edit ${{ inputs.release_version }} --notes-file release_notes.md
+          
+          # Upload the locks zip as a release asset!
+          if [ -f "environment-locks.zip" ]; then
+            gh release upload ${{ inputs.release_version }} environment-locks.zip --clobber
+          fi
   
   tag-images-for-release:
     needs: export-locks
     runs-on: ubuntu-latest
-    if: github.event.release.target_commitish == 'main'
-
     permissions:
       contents: read
       packages: write
@@ -111,21 +158,20 @@ jobs:
           # Note that all images are tagged for release
           python scripts/build.py --debug \
               --repo "ghcr.io/${{ github.repository }}" \
-              --tag develop \
-              --retag main stable "${{ github.event.release.tag_name }}" \
+              --tag ${{ inputs.source_tag }} \
+              --retag main stable "${{ inputs.release_version }}" \
               $ENDPOINT
 
   tag-ami-for-release:
     needs: tag-images-for-release
     runs-on: ubuntu-latest
-    if: github.event.release.target_commitish == 'main'
     
     steps:
 
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Steup Environment
+      - name: Setup Environment
         uses: ./.github/actions/setup
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -139,12 +185,12 @@ jobs:
       
       - name: Trigger ami release
         run: |            
-          echo "++++ Copy develop AMI to stable ++++ "
+          echo "++++ Copy ${{ inputs.source_tag }} AMI to stable ++++ "
           ENDPOINT="${{ secrets.AMI_ENDPOINT }} ${{ secrets.AMI_ENDPOINT_PROD }}"
-          python scripts/ami-builder.py --src develop --ssm-path stable \
+          python scripts/ami-builder.py --src ${{ inputs.source_tag }} --ssm-path stable \
               --endpoint $ENDPOINT
           
-          RELEASE="${{ github.event.release.tag_name }}"
-          echo "++++ Copy develop AMI to release: $RELEASE ++++ "
-          python scripts/ami-builder.py --src develop --ssm-path $RELEASE \
+          RELEASE="${{ inputs.release_version }}"
+          echo "++++ Copy ${{ inputs.source_tag }} AMI to release: $RELEASE ++++ "
+          python scripts/ami-builder.py --src ${{ inputs.source_tag }} --ssm-path $RELEASE \
               --endpoint $ENDPOINT
