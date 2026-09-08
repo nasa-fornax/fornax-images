@@ -1,4 +1,5 @@
-name: Recover Old Release Pages
+name: Recover Old Release Pages"
+run-name: "Recover Old Release Pages: ${{ inputs.tag_name }}"
 
 on:
   workflow_dispatch:
