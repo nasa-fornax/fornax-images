@@ -19,3 +19,4 @@ motorcycle >= 0.1.2
 sidecar >= 0.8.1
 bqplot>=0.12.45,<0.13
 jdaviz >= 5.0.3
+anywidget
