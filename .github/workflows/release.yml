@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ github.ref_name }}/
     
     permissions:
-      contents: write  # to upload locks
+      contents: write  # to push to gh-pages branch
       packages: read
       pages: write
       id-token: write
@@ -64,18 +64,15 @@ jobs:
             zip -r "environment-locks.zip" "locks"
           fi
       
-      # Publish to gh pages
-      - name: Setup Pages
-        uses: actions/configure-pages@v6
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: 'public'
+      # Publish to gh pages using a branch to preserve old releases
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          keep_files: true # Prevents overwriting older releases
       
-      - name: Patch Release Notes
+      - name: Add New Release Notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
