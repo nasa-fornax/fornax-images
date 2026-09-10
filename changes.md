@@ -5,6 +5,7 @@ Copyright 2026, University of Maryland, All Rights Reserved
 # Latest Changes
 
 ## dev
+- Expose the MAST and IRSA environments in the Jupyterlab launcher.
 - Upgrade HEASoft to 6.37.1
 - Add dask-gateway to python3
 - Upgrade the default python to 3.13.

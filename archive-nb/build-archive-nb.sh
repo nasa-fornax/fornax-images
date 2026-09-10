@@ -22,7 +22,7 @@ bash /usr/local/bin/clone-notebooks.sh heasarc
 cd $NOTEBOOK_DIR/irsa-tutorials
 # remove packages already in the jupyter env
 sed -i -e '/jupytext/d' -e '/jupyterlab-myst/d' -e '/firefly-extensions/d' requirements-irsa-tutorials.txt
-mv requirements-irsa-tutorials.txt requirements-irsa-tutorials.txt
+# mv requirements-irsa-tutorials.txt requirements-py-irsa-tutorials.txt
 # setup the environment
 setup-pip-env <<< yes
 
