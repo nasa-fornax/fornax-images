@@ -22,13 +22,13 @@ bash /usr/local/bin/clone-notebooks.sh heasarc
 cd $NOTEBOOK_DIR/irsa-tutorials
 # remove packages already in the jupyter env
 sed -i -e '/jupytext/d' -e '/jupyterlab-myst/d' -e '/firefly-extensions/d' requirements-irsa-tutorials.txt
-mv requirements-irsa-tutorials.txt requirements-py-irsa-tutorials.txt
+mv requirements-irsa-tutorials.txt requirements-irsa-tutorials.txt
 # setup the environment
 setup-pip-env <<< yes
 
 # fix kernel names for irsa
 for nb in `find . -name '*.md'`; do
-    $JUPYTER_DIR/bin/jupytext --set-kernel py-irsa-tutorials $nb
+    $JUPYTER_DIR/bin/jupytext --set-kernel irsa-tutorials $nb
 done
 
 # SPHEREx is special
@@ -54,7 +54,7 @@ setup-pip-env <<< yes
 
 # fix kernel names for mast
 for nb in `find . -name '*.ipynb'`; do
-    jq '.metadata.kernelspec = {"display_name": "py-mast-tutorials", "language": "python", "name": "py-mast-tutorials"}' $nb > temp.ipynb
+    jq '.metadata.kernelspec = {"display_name": "mast-tutorials", "language": "python", "name": "py-mast-tutorials"}' $nb > temp.ipynb
     mv temp.ipynb $nb
 done
 ## -------- END MAST notebooks -------- ##
