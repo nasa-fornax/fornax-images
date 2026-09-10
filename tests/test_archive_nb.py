@@ -13,7 +13,7 @@ notebook_dir = os.environ.get(
 default_kernel = 'jupyter'
 
 
-KERNELS = ['py-irsa-tutorials', 'py-mast-tutorials', 'py-spherex_sdt']
+KERNELS = ['irsa-tutorials', 'mast-tutorials', 'py-spherex_sdt']
 
 
 def test_env_vars():
