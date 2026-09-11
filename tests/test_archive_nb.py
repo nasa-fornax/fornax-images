@@ -39,7 +39,7 @@ def test_notebooks_folder():
 
 
 def test_check_packages():
-    for env in ['py-irsa-tutorials', 'py-mast-tutorials']:
+    for env in ['irsa-tutorials', 'mast-tutorials']:
         CommonTests._test_uv_env_file(env, env_root)
     senv = 'py-spherex_sdt'
     CommonTests._test_conda_env_file(
