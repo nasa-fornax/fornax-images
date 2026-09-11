@@ -31,7 +31,7 @@ channels:
   - nodefaults
 dependencies:
   - python=$PYTHON_VERSION
-  - heasoft=6.37.*
+  - heasoft=6.36.*
   - uncompresspy
   - lynx
   - pip
