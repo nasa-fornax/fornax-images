@@ -37,6 +37,8 @@ export DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/
 # Tell dask-labextension to use GatewayCluster
 # export DASK_LABEXTENSION__FACTORY__MODULE="dask_gateway"
 # export DASK_LABEXTENSION__FACTORY__CLASS="GatewayCluster"
+# For open universe
+export SPS_HOME=/shared-storage/support-data/fsps
 
 # image version
 export FORNAX_SOFTWARE_VERSION=$(sed -n '/^##/ { s/^##[[:space:]]*//; p; q; }' $NOTEBOOK_DIR/changes.mdv)
