@@ -1,4 +1,6 @@
 #!/opt/jupyter/bin/python
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 import time
 import os
 import sys

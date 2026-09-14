@@ -1,4 +1,6 @@
 #!/usr/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 
 # exit on failure; error on undefiend vars; print commands
 set -eux

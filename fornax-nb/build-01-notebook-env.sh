@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 # Create environments for the fornax demo notebooks to run in
 # Download the notebook repo and use the requirement files
 

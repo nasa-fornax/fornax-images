@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 name: AMI Build
 on:
   workflow_dispatch:

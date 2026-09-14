@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 ARG BASE_TAG=latest
 ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
@@ -22,7 +24,7 @@ RUN xargs -a /tmp/base.txt micromamba install -y -p $MAMBA_ROOT_PREFIX \
 ## install DEFAULT_ENV ##
 ENV DEFAULT_ENV=python3
 COPY --chown=$NB_UID:$NB_GID $DEFAULT_ENV.txt /tmp/requirements-$DEFAULT_ENV.txt
-RUN cd /tmp/ && bash /usr/local/bin/setup-pip-env <<< yes \
+RUN cd /tmp/ && bash /usr/local/bin/setup-pip-env --python=3.13.6 <<< yes \
  # fix the display name of DEFAULT_ENV
  && $ENV_DIR/$DEFAULT_ENV/bin/python -m ipykernel install --name $DEFAULT_ENV \
     --prefix $JUPYTER_DIR --display-name "$DEFAULT_ENV" \

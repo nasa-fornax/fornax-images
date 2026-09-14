@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 # Kernel holder to help fornax-jupyter to avoid downloading the images
 # with every build
 

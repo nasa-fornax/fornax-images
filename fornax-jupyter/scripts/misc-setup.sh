@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 
 # Add ~/.profile if it does not exist; which sources ~/.bashrc
 # JL terminals source ~/.profile not ~/.bashrc
@@ -12,7 +14,7 @@ if [ -f /home/$NB_USER/.bashrc ]; then
     source /home/$NB_USER/.bashrc
 fi
 PROFILE
-    chown $NB_USER:$NB_USER /home/$NB_USER/.profile
+    chown $NB_UID:$NB_GID /home/$NB_USER/.profile
 fi
 # reset exit-on-error
 set -e
@@ -29,12 +31,14 @@ export CONDA_ENVS_PATH=$USER_ENV_DIR
 export CODE_EXECUTABLE=code-server
 export CODE_EXTENSIONSDIR="/home/$NB_USER/.local/share/code-server/extensions"
 # For firefly
-export FIREFLY_URL=https://irsa.ipac.caltech.edu/irsaviewer \
+export FIREFLY_URL=https://irsacloud.ipac.caltech.edu/firefly \
 # for dask
 export DASK_DISTRIBUTED__DASHBOARD__LINK="/jupyter/user/{JUPYTERHUB_USER}/proxy/{port}/status"
 # Tell dask-labextension to use GatewayCluster
 # export DASK_LABEXTENSION__FACTORY__MODULE="dask_gateway"
 # export DASK_LABEXTENSION__FACTORY__CLASS="GatewayCluster"
+# For open universe
+export SPS_HOME=/shared-storage/support-data/fsps
 
 # image version
 export FORNAX_SOFTWARE_VERSION=$(sed -n '/^##/ { s/^##[[:space:]]*//; p; q; }' $NOTEBOOK_DIR/changes.mdv)
@@ -48,33 +52,6 @@ if [[ "$CLEAN_HOME" == "1" ]]; then
         echo "renaming /home/$NB_USER/.jupyter to ~/.jupyter-$stamp"
         mv /home/$NB_USER/.jupyter /home/$NB_USER/.jupyter-$stamp
     fi
-fi
-
-## ----------------------------------------- ##
-## run a kernel warmer in the background     ##
-# warmup ipykernel so it loads faster in the environments
-script=/tmp/kernel-warmer.sh
-cat <<EOF > $script
-set +ex
-sleep 300
-echo "Starting kernel warmer ..."
-cd $ENV_DIR
-for env in python3 heasoft \$(ls -d py-*) ciao fermi; do
-    if test -x "\$env/bin/python"; then
-        echo "warming \$env .."
-        \$env/bin/python -m ipykernel -h > /dev/null
-    fi
-done
-echo "warming base .."
-find base/bin/ -type f | xargs -n 100 cat >/dev/null
-echo "Done with kernel warmer ..."
-
-# remove the script
-rm -- $script
-EOF
-# run it in the background if we are inside JH
-if [ -n "${JUPYTERHUB_USER+x}" ]; then
-    sudo -u $JUPYTERHUB_USER bash $script & disown
 fi
 ## ----------------------------------------- ##
 

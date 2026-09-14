@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Copyright 2026, University of Maryland, All Rights Reserved
+
+
 # handle conda environment and lock files
 # look for conda-{env}-lock.yml and conda-{env}.yml files
 

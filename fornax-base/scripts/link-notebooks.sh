@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 
 # if NOTEBOOK_DIR is not defined; return or exit
 if test -z $NOTEBOOK_DIR; then

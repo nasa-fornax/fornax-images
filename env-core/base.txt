@@ -12,3 +12,4 @@ make
 pkg-config
 tectonic
 rsync
+pigz

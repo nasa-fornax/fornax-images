@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 import sys
 import os
 
@@ -11,7 +13,7 @@ notebook_dir = os.environ.get(
 default_kernel = 'jupyter'
 
 
-KERNELS = ['py-irsa-tutorials', 'py-mast-tutorials', 'py-spherex_sdt']
+KERNELS = ['irsa-tutorials', 'mast-tutorials', 'py-spherex_sdt']
 
 
 def test_env_vars():
@@ -37,7 +39,7 @@ def test_notebooks_folder():
 
 
 def test_check_packages():
-    for env in ['py-irsa-tutorials', 'py-mast-tutorials']:
+    for env in ['irsa-tutorials', 'mast-tutorials']:
         CommonTests._test_uv_env_file(env, env_root)
     senv = 'py-spherex_sdt'
     CommonTests._test_conda_env_file(

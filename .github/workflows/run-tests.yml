@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 name: image-tests
 run-name: "Image tests: ${{ inputs.images }}"
 on:

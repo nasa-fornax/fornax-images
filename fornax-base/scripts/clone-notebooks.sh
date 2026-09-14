@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 
 # Clone the notbeooks
 # USAGE:
@@ -78,7 +80,7 @@ if [ "$choice" == "mast" ]; then
         mv mast_notebooks/*.* mast_notebooks/mast_notebooks
         mv mast_notebooks mast_notebooks.off
         mv mast_notebooks.off/mast_notebooks mast-tutorials
-        mv mast-tutorials/requirements_mast_tutorials.txt mast-tutorials/requirements-py-mast-tutorials.txt 
+        mv mast-tutorials/requirements_mast_tutorials.txt mast-tutorials/requirements-mast-tutorials.txt 
         rm -r mast_notebooks.off
     fi
 fi
@@ -105,8 +107,10 @@ EOF
 fi
 
 
-# Now make the notebooks files read-only
+# Now make the notebooks files read-only, and the folders group-writable
 find $name -type f -exec chmod 444 {} +
+find $name -type d -exec chmod 2775 {} +
+chmod 2775 $NOTEBOOK_DIR
 
 # reset location
 cd $HOME

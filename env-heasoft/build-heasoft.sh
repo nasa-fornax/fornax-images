@@ -1,4 +1,6 @@
 #!/usr/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 
 # exit on failure; error on undefiend vars; print commands
 set -eux
@@ -51,7 +53,7 @@ EOF
 bash /usr/local/bin/setup-conda-env <<< yes
 
 # Extract the heasoft version
-HEA_VERSION=$(micromamba list heasoft -p $ENV_DIR/heasoft --json | jq -r '.[0].version')
+HEA_VERSION=$(micromamba list heasoft -p $ENV_DIR/heasoft --json | jq -r '.packages[0].version')
 
 # (re)move data files;
 bash $script_dir/map-data.sh $ENV_DIR/heasoft/heasoft/refdata heasoft-$HEA_VERSION

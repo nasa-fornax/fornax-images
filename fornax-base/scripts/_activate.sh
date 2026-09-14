@@ -1,4 +1,6 @@
 #!/usr/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 # A script to activate the default environment from DEFAULT_ENV
 
 

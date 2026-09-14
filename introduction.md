@@ -1,3 +1,6 @@
+<!--
+Copyright 2026, University of Maryland, All Rights Reserved
+-->
 
 # Welcome to Fornax
 

@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 name: Setup Docker/python
 description: 'cleans storage, setup Python and logs into Docker'
 

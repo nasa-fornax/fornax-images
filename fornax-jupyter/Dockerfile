@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 ARG BASE_TAG=latest
 ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
@@ -33,7 +35,9 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  && rm /tmp/jupyter-deps.txt /tmp/misc-build.sh
 
 # Add the notebooks
-COPY --from=assets $NOTEBOOK_DIR $NOTEBOOK_DIR
+COPY --chown=$NB_UID:$NB_GID --from=assets $NOTEBOOK_DIR $NOTEBOOK_DIR
+# make the folders group-writable; a quick solution to get around stale images - remove later
+RUN find $NOTEBOOK_DIR -type d -exec chmod 2775 {} +
 
 # landing page; even an empty one
 COPY --chown=$NB_UID:$NB_GID --chmod=644 introduction.md $NOTEBOOK_DIR/introduction.mdv
@@ -67,17 +71,23 @@ RUN \
    sed -i 's/passwd:         files/passwd:         files ldap/g' /etc/nsswitch.conf \
 && sed -i 's/group:          files/group:          files ldap/g' /etc/nsswitch.conf \
 && cat <<'EOF' > /etc/ldap.conf
-base dc=fornax,dc=core              
-uri ldap://glauth.fornax.core:30389 
-ldap_version 3                      
+base dc=fornax,dc=core
+uri ldap://glauth.fornax.core:30389
+ldap_version 3
 binddn cn=svcacct,dc=fornax,dc=core
-bindpw T3mp3rman3nt 
+bindpw T3mp3rman3nt
 pam_password clear
+bind_timelimit 3
+timelimit 5
+bind_policy soft
+nss_reconnect_tries 1
+nss_initgroups_ignoreusers root,jovyan
 EOF
 
-# Add OOM watcher script
+# Add OOM watcher and s3archive helper script into the build in a single layer
 COPY scripts/oom_watch.py /usr/local/bin/oom_watch
-RUN chmod +x /usr/local/bin/oom_watch \
+COPY scripts/s3archive.py /usr/local/bin/s3archive
+RUN chmod +x /usr/local/bin/oom_watch /usr/local/bin/s3archive \
  && printf '#!/bin/bash\n/usr/local/bin/oom_watch --delay > /tmp/oom-watch.log 2>&1 & disown' > /usr/local/bin/before-notebook.d/start-oom-watch.sh
 
 ## ------------------------------------------------------- ##
@@ -88,11 +98,21 @@ LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-imag
 LABEL org.opencontainers.image.description="Fornax Primary Jupyter Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
+## ---- from jupyter-base ---- ##
+ARG NB_USER="jovyan"
+ARG NB_UID="1000"
+ARG NB_GID="100"
+ARG PYTHON_VERSION=3.12
+ARG JUPYTER_PORT=8888
+ARG JUPYTER_DIR=/opt/jupyter
+ARG ENV_DIR=/opt/envs
+
 # Copy everything *except* the folder you want to remove
-COPY --from=build /opt/jupyter /opt/jupyter
+COPY --from=build --chown=$NB_UID:$NB_GID /opt/jupyter /opt/jupyter
 COPY --from=build /opt/build-fornax-jupyter /opt/
-COPY --from=build /opt/notebooks /opt/notebooks
-COPY --from=build /opt/python /opt/python
+COPY --from=build --chown=$NB_UID:$NB_GID /opt/notebooks /opt/notebooks
+COPY --from=build /opt/envs/python /opt/envs/python
+COPY --from=build /opt/envs/base/bin/uv /opt/envs/base/bin/uv
 COPY --from=build /tmp /tmp
 COPY --from=build /usr /usr
 COPY --from=build /bin /bin
@@ -104,16 +124,9 @@ COPY --from=build /root /root
 COPY --from=build /run /run
 COPY --from=build /sbin /sbin
 COPY --from=build /var /var
-RUN mkdir -p /tmp/ && chmod 777 /tmp/
-
-## ---- from jupyter-base ---- ##
-ARG NB_USER="jovyan"
-ARG NB_UID="1000"
-ARG NB_GID="100"
-ARG PYTHON_VERSION=3.12
-ARG JUPYTER_PORT=8888
-ARG JUPYTER_DIR=/opt/jupyter
-ARG ENV_DIR=/opt/envs
+# COPY creates the destination folder with default permissions; restore the mode
+RUN mkdir -p /tmp/ && chmod 777 /tmp/ \
+ && chmod 2775 /opt/notebooks
 
 # Set docker shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -157,9 +170,6 @@ ENV DEFAULT_ENV=jupyter \
     UV_CACHE_DIR=$CACHE_DIR/uv \
     UV_LINK_MODE=copy \
     NOTEBOOK_DIR=/opt/notebooks \
-    # folder that start.sh need to fix permissions for
-    CHOWN_EXTRA=/opt/notebooks \
-    CHOWN_EXTRA_OPTS="-R" \
     # Location of the support data
     SUPPORT_DATA_DIR=/opt/support-data \
     # path

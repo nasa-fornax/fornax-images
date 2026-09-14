@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 
 action=$1
 image=$2

@@ -1,3 +1,6 @@
+<!--
+Copyright 2026, University of Maryland, All Rights Reserved
+-->
 ![GitHub Release](https://img.shields.io/github/v/release/nasa-fornax/fornax-images?label=Latest%20Release)
 
 ![Static Badge](https://img.shields.io/badge/develop-blue)
