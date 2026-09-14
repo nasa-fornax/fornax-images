@@ -4,7 +4,7 @@ Copyright 2026, University of Maryland, All Rights Reserved
 
 # Latest Changes
 
-## dev
+## 26.0914
 - Expose the MAST and IRSA environments in the Jupyterlab launcher.
 - Upgrade the default python to 3.13.
 - Update fornax-labextension to 0.1.22: Change the label Introduction to Tutorials.
