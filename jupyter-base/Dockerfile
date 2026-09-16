@@ -38,7 +38,7 @@ ENV JUPYTER_DIR=$JUPYTER_DIR \
     PYTHON_VERSION=${PYTHON_VERSION} \
     PATH=${JUPYTER_DIR}/bin:${PATH} \
     # Make uv put python binaries in /opt/envs so it is portable
-    UV_PYTHON_INSTALL_DIR=$ENV_DIR/python \
+    UV_PYTHON_INSTALL_DIR=/opt/python \
     DEBIAN_FRONTEND=noninteractive \
     HOME=/home/${NB_USER}
 

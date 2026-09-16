@@ -111,8 +111,7 @@ ARG ENV_DIR=/opt/envs
 COPY --from=build --chown=$NB_UID:$NB_GID /opt/jupyter /opt/jupyter
 COPY --from=build /opt/build-fornax-jupyter /opt/
 COPY --from=build --chown=$NB_UID:$NB_GID /opt/notebooks /opt/notebooks
-COPY --from=build /opt/envs/python /opt/envs/python
-COPY --from=build /opt/envs/base/bin/uv /opt/envs/base/bin/uv
+COPY --from=build /opt/python /opt/python
 COPY --from=build /tmp /tmp
 COPY --from=build /usr /usr
 COPY --from=build /bin /bin
