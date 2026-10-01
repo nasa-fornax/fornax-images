@@ -5,7 +5,7 @@ Copyright 2026, University of Maryland, All Rights Reserved
 # Latest Changes
 
 ## dev
-- Restore the python binary to the container.
+- ...
 
 ## 26.0914
 - Expose the MAST and IRSA environments in the Jupyterlab launcher.

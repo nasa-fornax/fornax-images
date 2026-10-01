@@ -111,7 +111,9 @@ ARG ENV_DIR=/opt/envs
 COPY --from=build --chown=$NB_UID:$NB_GID /opt/jupyter /opt/jupyter
 COPY --from=build /opt/build-fornax-jupyter /opt/
 COPY --from=build --chown=$NB_UID:$NB_GID /opt/notebooks /opt/notebooks
-COPY --from=build /opt/python /opt/python
+COPY --from=build /opt/envs/python /opt/envs/python
+COPY --from=build /opt/envs/base/bin/uv /opt/envs/base/bin/uv
+COPY --from=build /opt/envs/base/bin/micromamba /opt/envs/base/bin/micromamba
 COPY --from=build /tmp /tmp
 COPY --from=build /usr /usr
 COPY --from=build /bin /bin
@@ -176,11 +178,11 @@ ENV DEFAULT_ENV=jupyter \
 
 
 # JUPYTER variables
-# ARG JUPYTER_CUSTOM_DIR=/scratch/.jupyter
-# ENV JUPYTER_RUNTIME_DIR=$JUPYTER_CUSTOM_DIR \
-#     JUPYTER_DATA_DIR=$JUPYTER_CUSTOM_DIR \
-#     JUPYTER_CONFIG_DIR=$JUPYTER_CUSTOM_DIR \
-#     IPYTHONDIR=$JUPYTER_CUSTOM_DIR
+ARG JUPYTER_CUSTOM_DIR=/scratch/.jupyter
+ENV JUPYTER_RUNTIME_DIR=$JUPYTER_CUSTOM_DIR \
+    JUPYTER_DATA_DIR=$JUPYTER_CUSTOM_DIR \
+    JUPYTER_CONFIG_DIR=$JUPYTER_CUSTOM_DIR \
+    IPYTHONDIR=$JUPYTER_CUSTOM_DIR
 # Use scratch for jupyter folders #194 
 # The folder is empty in the image but is mounted in deployment
 USER root

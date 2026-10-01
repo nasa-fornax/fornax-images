@@ -43,8 +43,9 @@ def test_notebooks_folder():
     assert os.path.exists(f'{notebook_dir}/heasarc-tutorials')
     assert os.path.exists(f'{notebook_dir}/mast-tutorials')
 
-def test_env_dir_not_exist():
-    assert not os.path.exists(os.environ['ENV_DIR'])
+# commented out because we need envdir for the python binary
+# def test_env_dir_not_exist():
+#     assert not os.path.exists(os.environ['ENV_DIR'])
 
 
 def test_support_data_synlink():
