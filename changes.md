@@ -5,7 +5,8 @@ Copyright 2026, University of Maryland, All Rights Reserved
 # Latest Changes
 
 ## dev
-- ...
+- Update fornax-labextension to 0.1.23:
+  - Add MAST schema browser to the launcher.
 
 ## 26.0914
 - Expose the MAST and IRSA environments in the Jupyterlab launcher.
