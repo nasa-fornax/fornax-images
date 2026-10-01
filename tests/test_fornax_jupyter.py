@@ -97,6 +97,15 @@ def test_env_vars_from_other_images():
     assert 'FORNAX_SOFTWARE_VERSION' in os.environ
 
 
+def test_jupyter_env_settings():
+    """Check the env vars that control jupyter settings"""
+    for name in [
+        'JUPYTER_RUNTIME_DIR', 'JUPYTER_DATA_DIR',
+        'JUPYTER_CONFIG_DIR', 'IPYTHONDIR'
+        ]:
+        assert name in os.environ
+        assert os.environ[name] == '/scratch/.jupyter'
+
 def _extract_env_vars(dockerfile):
     """Extract all ENV variables from a Dockerfile"""
     env_vars = []
