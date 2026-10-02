@@ -91,7 +91,7 @@ RUN chmod +x /usr/local/bin/oom_watch /usr/local/bin/s3archive \
  && printf '#!/bin/bash\n/usr/local/bin/oom_watch --delay > /tmp/oom-watch.log 2>&1 & disown' > /usr/local/bin/before-notebook.d/start-oom-watch.sh
 
 ## ------------------------------------------------------- ##
-## -------- Start from scratch for a minmial image ------- ##
+## -------- Start from scratch for a minimal image ------- ##
 FROM scratch
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
@@ -102,7 +102,7 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 ARG NB_USER="jovyan"
 ARG NB_UID="1000"
 ARG NB_GID="100"
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.13
 ARG JUPYTER_PORT=8888
 ARG JUPYTER_DIR=/opt/jupyter
 ARG ENV_DIR=/opt/envs
