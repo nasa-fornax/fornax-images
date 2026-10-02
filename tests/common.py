@@ -30,12 +30,17 @@ class CommonTests:
     @staticmethod
     def _test_python_path(env, root):
         version = f'{sys.version_info.major}.{sys.version_info.minor}'
-        assert (
-            Path(sys.executable) in
-            [Path(f'{root}/{env}/bin/python'),
-             Path(f'{root}/{env}/bin/python{sys.version_info.major}'),
-             Path(f'{root}/{env}/bin/python{version}')]
-        )
+        # We use resolve here to account for symlinked environments (for instance,
+        #  the esassdr1 environment is a thin wrapper over the heasoft environment).
+        resolved_executable = Path(sys.executable).resolve()
+
+        expected_paths = [
+            Path(f'{root}/{env}/bin/python').resolve(),
+            Path(f'{root}/{env}/bin/python{sys.version_info.major}').resolve(),
+            Path(f'{root}/{env}/bin/python{version}').resolve()
+        ]
+
+        assert resolved_executable in expected_paths
 
     @staticmethod
     def _test_which_python(env, root):
