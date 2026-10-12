@@ -19,3 +19,7 @@ c.ServerApp.tornado_settings = {
         "checkUpdates": False
     }
 }
+
+# ensure jupytext metadata is saved
+c.ContentsManager.default_notebook_metadata_filter = "all"
+c.ContentsManager.default_cell_metadata_filter = "all"
