@@ -5,8 +5,10 @@ Copyright 2026, University of Maryland, All Rights Reserved
 # Latest Changes
 
 ## dev
-- Update fornax-labextension to 0.1.23:
+- Update fornax-labextension to 0.1.25:
   - Add MAST schema browser to the launcher.
+  - Add a warning when saving read-only notebooks.
+- Make Jupytext notebooks save all their metadata by default.
 
 ## 26.0914
 - Expose the MAST and IRSA environments in the Jupyterlab launcher.
