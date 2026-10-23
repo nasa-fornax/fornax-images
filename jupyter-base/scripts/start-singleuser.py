@@ -3,7 +3,9 @@
 # Distributed under the terms of the Modified BSD License.
 import os
 import shlex
+import socket
 import sys
+import time
 
 # Entrypoint is start.sh
 singleuser_exe = f"{os.environ['JUPYTER_DIR']}/bin/jupyterhub-singleuser"
@@ -19,6 +21,18 @@ if "NOTEBOOK_ARGS" in os.environ:
 
 # Pass any other args we have been passed through
 command += sys.argv[1:]
+
+if os.environ.get("HOSTIP"):
+    try:
+        line = (
+            f"jupyter_startup,pod_uid={os.environ.get('POD_UID', '')},"
+            f"node={os.environ.get('NODE_NAME', '')},phase=exec v=1i {time.time_ns()}\n"
+        )
+        socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
+            line.encode(), (os.environ["HOSTIP"], 8094)
+        )
+    except OSError:
+        pass
 
 # Execute the command!
 print("Executing: " + " ".join(command), flush=True)

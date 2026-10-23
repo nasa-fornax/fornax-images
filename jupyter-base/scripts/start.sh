@@ -12,7 +12,13 @@ _log () {
         echo "$@" >&2
     fi
 }
+_emit () {
+    [ -n "${HOSTIP}" ] || return 0
+    { printf 'jupyter_startup,pod_uid=%s,node=%s,phase=%s v=1i %s\n' \
+        "${POD_UID}" "${NODE_NAME}" "$1" "$(date +%s%N)" > "/dev/udp/${HOSTIP}/8094"; } 2>/dev/null || true
+}
 _log "Entered start.sh with args:" "$@"
+_emit start_sh
 
 # A helper function to unset env vars listed in the value of the env var
 # JUPYTER_ENV_VARS_TO_UNSET.
@@ -143,6 +149,8 @@ if [ "$(id -u)" == 0 ]; then
         done
     fi
 
+    _emit refit_done
+
     # Prepend ${CONDA_DIR}/bin to sudo secure_path
     sed -r "s#Defaults\s+secure_path\s*=\s*\"?([^\"]+)\"?#Defaults secure_path=\"${CONDA_DIR}/bin:\1\"#" /etc/sudoers | grep secure_path > /etc/sudoers.d/path
 
@@ -156,6 +164,7 @@ if [ "$(id -u)" == 0 ]; then
     # shellcheck source=images/docker-stacks-foundation/run-hooks.sh
     source /usr/local/bin/run-hooks.sh /usr/local/bin/before-notebook.d
     unset_explicit_env_vars
+    _emit hooks_done
 
     _log "Running as ${NB_USER}:" "${cmd[@]}"
     if [ "${NB_USER}" = "root" ] && [ "${NB_UID}" = "$(id -u "${NB_USER}")" ] && [ "${NB_GID}" = "$(id -g "${NB_USER}")" ]; then
