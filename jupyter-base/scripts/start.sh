@@ -4,6 +4,8 @@
 
 set -e
 
+export JUPYTER_START_NS="$(date +%s%N)"
+
 # The _log function is used for everything this script wants to log.
 # It will always log errors and warnings but can be silenced for other messages
 # by setting the JUPYTER_DOCKER_STACKS_QUIET environment variable.
@@ -14,8 +16,10 @@ _log () {
 }
 _emit () {
     [ -n "${HOSTIP}" ] || return 0
-    { printf 'jupyter_startup,pod_uid=%s,node=%s,phase=%s v=1i %s\n' \
-        "${POD_UID}" "${NODE_NAME}" "$1" "$(date +%s%N)" > "/dev/udp/${HOSTIP}/8094"; } 2>/dev/null || true
+    local now
+    now="$(date +%s%N)"
+    { printf 'jupyter_startup,pod_uid=%s,node=%s,phase=%s v=%si %s\n' \
+        "${POD_UID}" "${NODE_NAME}" "$1" "$(( (now - JUPYTER_START_NS) / 1000000 ))" "${now}" > "/dev/udp/${HOSTIP}/8094"; } 2>/dev/null || true
 }
 _log "Entered start.sh with args:" "$@"
 _emit start_sh

@@ -24,15 +24,19 @@ command += sys.argv[1:]
 
 if os.environ.get("HOSTIP"):
     try:
+        now = time.time_ns()
+        elapsed_ms = (now - int(os.environ.get("JUPYTER_START_NS") or now)) // 1_000_000
         line = (
             f"jupyter_startup,pod_uid={os.environ.get('POD_UID', '')},"
-            f"node={os.environ.get('NODE_NAME', '')},phase=exec v=1i {time.time_ns()}\n"
+            f"node={os.environ.get('NODE_NAME', '')},phase=exec v={elapsed_ms}i {now}\n"
         )
         socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
             line.encode(), (os.environ["HOSTIP"], 8094)
         )
-    except OSError:
+    except (OSError, ValueError):
         pass
+
+os.environ.pop("JUPYTER_START_NS", None)
 
 # Execute the command!
 print("Executing: " + " ".join(command), flush=True)
