@@ -4,7 +4,7 @@ Copyright 2026, University of Maryland, All Rights Reserved
 
 # Latest Changes
 
-## dev
+## 26.1027
 - Update fornax-labextension to 0.1.25:
   - Add MAST schema browser to the launcher.
   - Add a warning when saving read-only notebooks.
