@@ -48,23 +48,17 @@ def test_notebooks_folder():
 #     assert not os.path.exists(os.environ['ENV_DIR'])
 
 
-def test_support_data_synlink():
-    opt_path = Path("/opt/support-data")
-    target_path = Path("/shared-storage/support-data")
+def test_support_data_dirs():
+    for dir_name in ['SUPPORT_DATA_DIR', 'SUPPORT_DATA_MOUNT']:
+        assert dir_name in os.environ, f'{dir_name} not set in environment'
 
-    assert opt_path.exists(), f"{opt_path} does not exist"
-    assert opt_path.is_symlink(), f"{opt_path} is not a symlink"
+    data_dir = Path(os.environ['SUPPORT_DATA_DIR'])
+    mount_dir = Path(os.environ['SUPPORT_DATA_MOUNT'])
 
-    # raw link target (may be relative)
-    resolved_target = Path(opt_path.readlink())
-    # Normalize comparison by resolving both as paths relative to
-    # opt_path's parent
-    if not resolved_target.is_absolute():
-        resolved_target = (opt_path.parent / resolved_target)
-
-    assert resolved_target == target_path, (
-        f"{opt_path} points to {resolved_target}, expected {target_path}"
-    )
+    assert mount_dir.exists()
+    assert data_dir.exists()
+    assert data_dir.is_symlink()
+    assert data_dir.resolve() == mount_dir
 
 
 def test_notebook_folders_group_writable():

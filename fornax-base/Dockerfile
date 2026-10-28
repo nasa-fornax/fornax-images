@@ -25,8 +25,10 @@ ENV DEFAULT_ENV=jupyter \
     UV_CACHE_DIR=$CACHE_DIR/uv \
     UV_LINK_MODE=copy \
     NOTEBOOK_DIR=/opt/notebooks \
-    # Location of the support data
+    # Location of the support data: SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
+    # SUPPORT_DATA_MOUNT is where the data is mounted
     SUPPORT_DATA_DIR=/opt/support-data \
+    SUPPORT_DATA_MOUNT=/shared-storage/support-data \
     # path
     PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
 
@@ -41,7 +43,9 @@ COPY --chmod=0555 --chown=$NB_UID:$NB_GID scripts/* /usr/local/bin/
 RUN cat /usr/local/bin/_activate.sh >> /etc/bash.bashrc \
  && cat /usr/local/bin/_activate.sh  >> /usr/local/bin/before-notebook.d/10activate-env.sh \
  && echo "bash /usr/local/bin/link-notebooks.sh" > /usr/local/bin/before-notebook.d/20link-notebooks.sh \
- && rm -r /usr/local/bin/_activate.sh /tmp/*
+ && rm -r /usr/local/bin/_activate.sh /tmp/* \
+ && mkdir -p $SUPPORT_DATA_MOUNT && chown -R $NB_UID:$NB_GID $SUPPORT_DATA_MOUNT \
+ && ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR
 
 # Do any apt system packages
 COPY apt.txt* /tmp/
@@ -57,7 +61,7 @@ USER $NB_USER
 
 # Create folder and set premissions
 RUN \
- for folder in $ENV_DIR $LOCK_DIR $NOTEBOOK_DIR; do \
+ for folder in $ENV_DIR $LOCK_DIR $NOTEBOOK_DIR $SUPPORT_DATA_MOUNT; do \
    mkdir -p $folder; \
    fix-permissions $folder; \
  done

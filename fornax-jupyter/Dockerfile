@@ -171,8 +171,10 @@ ENV DEFAULT_ENV=jupyter \
     UV_CACHE_DIR=$CACHE_DIR/uv \
     UV_LINK_MODE=copy \
     NOTEBOOK_DIR=/opt/notebooks \
-    # Location of the support data
+    # Location of the support data: SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
+    # SUPPORT_DATA_MOUNT is where the data is mounted
     SUPPORT_DATA_DIR=/opt/support-data \
+    SUPPORT_DATA_MOUNT=/shared-storage/support-data \
     # path
     PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
 
@@ -193,8 +195,7 @@ RUN fix-permissions /scratch
 # Support data location; SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
 # SUPPORT_DATA_MOUNT is empty here; it is mounted in the deployment
 USER root
-RUN SUPPORT_DATA_MOUNT=/shared-storage/support-data \
- && mkdir -p $SUPPORT_DATA_MOUNT \
+RUN mkdir -p $SUPPORT_DATA_MOUNT \
  && ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR \
  && fix-permissions $SUPPORT_DATA_MOUNT
 USER $NB_USER
