@@ -18,8 +18,8 @@ _emit () {
     [ -n "${HOSTIP}" ] || return 0
     local now
     now="$(date +%s%N)"
-    { printf 'jupyter_startup,pod_uid=%s,node=%s,phase=%s v=%si %s\n' \
-        "${POD_UID}" "${NODE_NAME}" "$1" "$(( (now - JUPYTER_START_NS) / 1000000 ))" "${now}" > "/dev/udp/${HOSTIP}/8094"; } 2>/dev/null || true
+    { printf 'fornax_metrics.jupyter.startup:%s|ms|#phase:%s,pod_uid:%s,node:%s\n' \
+        "$(( (now - JUPYTER_START_NS) / 1000000 ))" "$1" "${POD_UID}" "${NODE_NAME}" > "/dev/udp/${HOSTIP}/8125"; } 2>/dev/null || true
 }
 _log "Entered start.sh with args:" "$@"
 _emit start_sh

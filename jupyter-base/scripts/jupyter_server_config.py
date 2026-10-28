@@ -2,13 +2,62 @@
 # Distributed under the terms of the Modified BSD License.
 # mypy: ignore-errors
 import os
+import socket
 import stat
 import subprocess
+import time
 from pathlib import Path
 
 from jupyter_core.paths import jupyter_data_dir
+from jupyter_server.extension.manager import ExtensionManager
+from jupyter_server.serverapp import ServerApp
 
 c = get_config()  # noqa: F821
+
+
+def _emit(phase):
+    host = os.environ.get("HOSTIP")
+    start = os.environ.get("JUPYTER_START_NS")
+    if not host or not start:
+        return
+    try:
+        elapsed_ms = (time.time_ns() - int(start)) // 1_000_000
+        line = (
+            f"fornax_metrics.jupyter.startup:{elapsed_ms}|ms|#phase:{phase},"
+            f"pod_uid:{os.environ.get('POD_UID', '')},"
+            f"node:{os.environ.get('NODE_NAME', '')}\n"
+        )
+        socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
+            line.encode(), (host, 8125)
+        )
+    except (OSError, ValueError):
+        pass
+
+
+_emit("server_config")
+
+_load_all_extensions = ExtensionManager.load_all_extensions
+
+
+def _load_all_extensions_emit(self):
+    result = _load_all_extensions(self)
+    _emit("ext_loaded")
+    return result
+
+
+ExtensionManager.load_all_extensions = _load_all_extensions_emit
+
+_post_start = ServerApp._post_start
+
+
+async def _post_start_emit(self):
+    _emit("server_ready")
+    os.environ.pop("JUPYTER_START_NS", None)
+    await _post_start(self)
+
+
+ServerApp._post_start = _post_start_emit
+
 # Listen on all interfaces (ipv4 and ipv6)
 c.ServerApp.ip = ""
 c.ServerApp.open_browser = False

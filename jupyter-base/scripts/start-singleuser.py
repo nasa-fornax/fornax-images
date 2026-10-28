@@ -27,16 +27,18 @@ if os.environ.get("HOSTIP"):
         now = time.time_ns()
         elapsed_ms = (now - int(os.environ.get("JUPYTER_START_NS") or now)) // 1_000_000
         line = (
-            f"jupyter_startup,pod_uid={os.environ.get('POD_UID', '')},"
-            f"node={os.environ.get('NODE_NAME', '')},phase=exec v={elapsed_ms}i {now}\n"
+            f"fornax_metrics.jupyter.startup:{elapsed_ms}|ms|#phase:exec,"
+            f"pod_uid:{os.environ.get('POD_UID', '')},"
+            f"node:{os.environ.get('NODE_NAME', '')}\n"
         )
         socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
-            line.encode(), (os.environ["HOSTIP"], 8094)
+            line.encode(), (os.environ["HOSTIP"], 8125)
         )
     except (OSError, ValueError):
         pass
 
-os.environ.pop("JUPYTER_START_NS", None)
+if not os.environ.get("HOSTIP"):
+    os.environ.pop("JUPYTER_START_NS", None)
 
 # Execute the command!
 print("Executing: " + " ".join(command), flush=True)
