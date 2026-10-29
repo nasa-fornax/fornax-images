@@ -91,7 +91,7 @@ RUN chmod +x /usr/local/bin/oom_watch /usr/local/bin/s3archive \
  && printf '#!/bin/bash\n/usr/local/bin/oom_watch --delay > /tmp/oom-watch.log 2>&1 & disown' > /usr/local/bin/before-notebook.d/start-oom-watch.sh
 
 ## ------------------------------------------------------- ##
-## -------- Start from scratch for a minmial image ------- ##
+## -------- Start from scratch for a minimal image ------- ##
 FROM scratch
 
 LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-images
@@ -102,7 +102,7 @@ LABEL org.opencontainers.image.authors="Fornax Project"
 ARG NB_USER="jovyan"
 ARG NB_UID="1000"
 ARG NB_GID="100"
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.13
 ARG JUPYTER_PORT=8888
 ARG JUPYTER_DIR=/opt/jupyter
 ARG ENV_DIR=/opt/envs
@@ -113,6 +113,7 @@ COPY --from=build /opt/build-fornax-jupyter /opt/
 COPY --from=build --chown=$NB_UID:$NB_GID /opt/notebooks /opt/notebooks
 COPY --from=build /opt/envs/python /opt/envs/python
 COPY --from=build /opt/envs/base/bin/uv /opt/envs/base/bin/uv
+COPY --from=build /opt/envs/base/bin/micromamba /opt/envs/base/bin/micromamba
 COPY --from=build /tmp /tmp
 COPY --from=build /usr /usr
 COPY --from=build /bin /bin
@@ -143,7 +144,7 @@ ENV JUPYTER_DIR=$JUPYTER_DIR \
     LANGUAGE=C.UTF-8 \
     PYTHON_VERSION=${PYTHON_VERSION} \
     PATH=${JUPYTER_DIR}/bin:${PATH} \
-    UV_PYTHON_INSTALL_DIR=/opt/python \
+    UV_PYTHON_INSTALL_DIR=$ENV_DIR/python \
     DEBIAN_FRONTEND=noninteractive \
     HOME=/home/${NB_USER}
 
@@ -170,8 +171,10 @@ ENV DEFAULT_ENV=jupyter \
     UV_CACHE_DIR=$CACHE_DIR/uv \
     UV_LINK_MODE=copy \
     NOTEBOOK_DIR=/opt/notebooks \
-    # Location of the support data
+    # Location of the support data: SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
+    # SUPPORT_DATA_MOUNT is where the data is mounted
     SUPPORT_DATA_DIR=/opt/support-data \
+    SUPPORT_DATA_MOUNT=/shared-storage/support-data \
     # path
     PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
 
@@ -192,8 +195,7 @@ RUN fix-permissions /scratch
 # Support data location; SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
 # SUPPORT_DATA_MOUNT is empty here; it is mounted in the deployment
 USER root
-RUN SUPPORT_DATA_MOUNT=/shared-storage/support-data \
- && mkdir -p $SUPPORT_DATA_MOUNT \
+RUN mkdir -p $SUPPORT_DATA_MOUNT \
  && ln -s $SUPPORT_DATA_MOUNT $SUPPORT_DATA_DIR \
  && fix-permissions $SUPPORT_DATA_MOUNT
 USER $NB_USER

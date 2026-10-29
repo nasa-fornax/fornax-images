@@ -4,6 +4,7 @@ import sys
 import os
 import shutil
 import pytest
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import CommonTests  # noqa E402
@@ -63,3 +64,16 @@ def test_build_version():
     file = f'{os.environ["LOCK_DIR"]}/build-fornax-base'
     if not os.path.exists(file):
         pytest.fail(f'Missing build version {file}')
+
+
+def test_support_data_dirs():
+    for dir_name in ['SUPPORT_DATA_DIR', 'SUPPORT_DATA_MOUNT']:
+        assert dir_name in os.environ, f'{dir_name} not set in environment'
+
+    data_dir = Path(os.environ['SUPPORT_DATA_DIR'])
+    mount_dir = Path(os.environ['SUPPORT_DATA_MOUNT'])
+
+    assert mount_dir.exists()
+    assert data_dir.exists()
+    assert data_dir.is_symlink()
+    assert data_dir.resolve() == mount_dir

@@ -13,3 +13,4 @@ pkg-config
 tectonic
 rsync
 pigz
+gnupg

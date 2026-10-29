@@ -43,28 +43,22 @@ def test_notebooks_folder():
     assert os.path.exists(f'{notebook_dir}/heasarc-tutorials')
     assert os.path.exists(f'{notebook_dir}/mast-tutorials')
 
-# commented out because we need endir for the python binary
+# commented out because we need envdir for the python binary
 # def test_env_dir_not_exist():
 #     assert not os.path.exists(os.environ['ENV_DIR'])
 
 
-def test_support_data_synlink():
-    opt_path = Path("/opt/support-data")
-    target_path = Path("/shared-storage/support-data")
+def test_support_data_dirs():
+    for dir_name in ['SUPPORT_DATA_DIR', 'SUPPORT_DATA_MOUNT']:
+        assert dir_name in os.environ, f'{dir_name} not set in environment'
 
-    assert opt_path.exists(), f"{opt_path} does not exist"
-    assert opt_path.is_symlink(), f"{opt_path} is not a symlink"
+    data_dir = Path(os.environ['SUPPORT_DATA_DIR'])
+    mount_dir = Path(os.environ['SUPPORT_DATA_MOUNT'])
 
-    # raw link target (may be relative)
-    resolved_target = Path(opt_path.readlink())
-    # Normalize comparison by resolving both as paths relative to
-    # opt_path's parent
-    if not resolved_target.is_absolute():
-        resolved_target = (opt_path.parent / resolved_target)
-
-    assert resolved_target == target_path, (
-        f"{opt_path} points to {resolved_target}, expected {target_path}"
-    )
+    assert mount_dir.exists()
+    assert data_dir.exists()
+    assert data_dir.is_symlink()
+    assert data_dir.resolve() == mount_dir
 
 
 def test_notebook_folders_group_writable():
@@ -88,18 +82,53 @@ def test_env_vars_from_other_images():
     envs = []
     for image in images:
         _envs = _extract_env_vars(f'{wdir}/../{image}/Dockerfile')
-        envs += _envs
+        envs += list(_envs.keys())
 
     jupyter_envs = _extract_env_vars(f'{wdir}/../fornax-jupyter/Dockerfile')
+    jupyter_envs = list(jupyter_envs.keys())
     # we can have vars in jupyter_envs but not in the other images
     assert set(envs).issubset(set(jupyter_envs))
 
     assert 'FORNAX_SOFTWARE_VERSION' in os.environ
 
 
+def test_env_vars_values_from_other_images():
+    """ensure key variables defined in jupyter-base are the same
+    in fornax-jupyter"""
+    images = ['jupyter-base', 'fornax-base', 'fornax-jupyter']
+    wdir = os.path.dirname(__file__)
+    envs = {}
+    for image in images:
+        _envs = _extract_env_vars(f'{wdir}/../{image}/Dockerfile')
+        envs[image] = _envs
+
+    jupyter_base_envs = envs['jupyter-base']
+    jupyter_base_envs.update(envs['fornax-base'])
+    fornax_jupyter_envs = envs['fornax-jupyter']
+
+    for key in jupyter_base_envs:
+        if key in ['PATH', 'DEFAULT_ENV']:
+            continue
+        assert key in fornax_jupyter_envs, f"{key} missing in fornax-jupyter"
+        assert jupyter_base_envs[key] == fornax_jupyter_envs[key], (
+            f"{key} value mismatch: jupyter-base={jupyter_base_envs[key]}, "
+            f"fornax-jupyter={fornax_jupyter_envs[key]}"
+        )
+
+
+def test_jupyter_env_settings():
+    """Check the env vars that control jupyter settings"""
+    for name in [
+        'JUPYTER_RUNTIME_DIR', 'JUPYTER_DATA_DIR',
+        'JUPYTER_CONFIG_DIR', 'IPYTHONDIR'
+    ]:
+        assert name in os.environ
+        assert os.environ[name] == '/scratch/.jupyter'
+
+
 def _extract_env_vars(dockerfile):
-    """Extract all ENV variables from a Dockerfile"""
-    env_vars = []
+    """Extract all ENV variables (names and values) from a Dockerfile"""
+    env_vars = {}
     with open(dockerfile, 'r') as fp:
         lines = fp.readlines()
 
@@ -110,18 +139,55 @@ def _extract_env_vars(dockerfile):
         sline = line.strip()
         if not sline or sline.startswith('#'):
             continue
-        if sline[-1] == '\\':
+        if sline.endswith('\\'):
             current += sline[:-1] + ' '
         else:
             current += sline
             combined_lines.append(current)
             current = ''
-    # now look for the ENV
+
+    # Regex to find the start of an ENV instruction
     pattern = re.compile(r'^\s*ENV\s+(.*)')
+    # Regex to parse key=value formats, handling quoted and unquoted values
+    kv_pattern = re.compile(r'([a-zA-Z_]\w*)=("(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\'|[^\s]+)')  # noqa
+
     for line in combined_lines:
         match = pattern.match(line)
         if match:
-            parts = match.group(1)
-            for var in re.findall(r'(\S+?)(?:=)', parts):
-                env_vars.append(var)
+            parts = match.group(1).strip()
+
+            # Check if it's the `ENV key value` (legacy) format
+            # or `ENV key=value` format
+            first_word = parts.split()[0] if parts.split() else ''
+
+            if '=' not in first_word:
+                # Legacy format: ENV key value (value is everything
+                # after the first space)
+                split_parts = parts.split(None, 1)
+                if len(split_parts) == 2:
+                    key, val = split_parts
+                    # Strip optional surrounding quotes
+                    if (
+                        (val.startswith('"') and val.endswith('"')) or
+                        (val.startswith("'") and val.endswith("'"))
+                    ):
+                        val = val[1:-1]
+                    env_vars[key] = val
+                elif len(split_parts) == 1:
+                    env_vars[split_parts[0]] = ""
+            else:
+                # key=value format (allows multiple pairs on one line)
+                for kv_match in kv_pattern.finditer(parts):
+                    key = kv_match.group(1)
+                    val = kv_match.group(2)
+
+                    # Strip surrounding quotes if present
+                    if (
+                        (val.startswith('"') and val.endswith('"')) or
+                        (val.startswith("'") and val.endswith("'"))
+                    ):
+                        val = val[1:-1]
+
+                    env_vars[key] = val
+
     return env_vars
