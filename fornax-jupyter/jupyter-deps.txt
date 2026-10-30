@@ -10,7 +10,7 @@ jupyter-firefly-extensions
 fviewer
 https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer_labextension.tar.gz
 https://heasarc.gsfc.nasa.gov/azoghbi/pip/xspec_extension.tar.gz
-https://github.com/nasa-fornax/fornax-labextension/releases/download/0.1.25/fornax_labextension-0.1.25.tar.gz
+https://github.com/nasa-fornax/fornax-labextension/releases/download/0.1.26/fornax_labextension-0.1.26.tar.gz
 # jupyter-ai
 pip
 # notebook-intelligence

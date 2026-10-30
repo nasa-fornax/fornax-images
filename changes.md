@@ -4,6 +4,11 @@ Copyright 2026, University of Maryland, All Rights Reserved
 
 # Latest Changes
 
+## dev
+- Update fornax-labextension to 0.1.26:
+  - Add Search box for documentation to jupyter lab top-right area.
+  - Add 'Resources' section to the launcher with the rendered docs and notebooks.
+
 ## 26.1027
 - Update fornax-labextension to 0.1.25:
   - Add MAST schema browser to the launcher.
