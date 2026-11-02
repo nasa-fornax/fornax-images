@@ -5,9 +5,10 @@ Copyright 2026, University of Maryland, All Rights Reserved
 # Latest Changes
 
 ## dev
-- Update fornax-labextension to 0.1.26:
+- Update fornax-labextension to 0.1.27:
   - Add Search box for documentation to jupyter lab top-right area.
   - Add 'Resources' section to the launcher with the rendered docs and notebooks.
+  - Fix the visibility of notebook kernels in the launcher.
 
 ## 26.1027
 - Update fornax-labextension to 0.1.25:
