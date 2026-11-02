@@ -101,6 +101,10 @@ bash /usr/local/bin/setup-conda-env <<< yes
 #  same time (as it would try to install HEASoft, and avoiding that is the reason we have to
 #  jump through all these hoops in this script in the first place).
 micromamba install -n $ENV_NAME --no-deps -c https://heasarc.gsfc.nasa.gov/FTP/software/conda -c conda-forge "davidt3::${ESASS_SPEC}"
+
+# As we installed a package outside of the setup-conda-env script, we need to regenerate the lock file
+#  and overwrite the one that setup-conda-env constructed automatically.
+micromamba env -p $ENV_DIR/$ENV_NAME export > $ENV_DIR/$ENV_NAME/$ENV_NAME-lock.yml
 ###########################################################
 
 
