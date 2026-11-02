@@ -1,4 +1,5 @@
 #!/usr/bin/bash
+# Copyright 2026, University of Maryland, All Rights Reserved
 
 # exit on failure; error on undefined vars; print commands
 set -eux
@@ -132,6 +133,14 @@ unset SASS_CALVERS
 EOF
 ###########################################################
 
-# clean and reset
+
+########### Drop included HEALPix documentation ###########
+# Don't need this and it saves ~35MB or so
+rm -r $ENV_DIR/$ENV_NAME/eSASS4DR1/external/Healpix_3.50/doc
+###########################################################
+
+
+################# Clean up the build area #################
 cd $HOME
 rm -rf $WORKDIR
+###########################################################
