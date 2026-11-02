@@ -15,15 +15,21 @@ from jupyter_server.serverapp import ServerApp
 c = get_config()  # noqa: F821
 
 
-def _emit(phase):
+_last_ns = None
+
+
+def _emit(phase, total=False):
+    global _last_ns
     host = os.environ.get("HOSTIP")
     start = os.environ.get("JUPYTER_START_NS")
     if not host or not start:
         return
     try:
-        elapsed_ms = (time.time_ns() - int(start)) // 1_000_000
+        now = time.time_ns()
+        elapsed_ms = (now - int(start if total else _last_ns or os.environ.get("JUPYTER_LAST_NS") or start)) // 1_000_000
+        _last_ns = now
         line = (
-            f"fornax_metrics.jupyter.startup:{elapsed_ms}|ms|#phase:{phase},"
+            f"jupyter.startup.{phase}.duration:{elapsed_ms}|ms|#"
             f"pod_uid:{os.environ.get('POD_UID', '')},"
             f"node:{os.environ.get('NODE_NAME', '')}\n"
         )
@@ -34,14 +40,14 @@ def _emit(phase):
         pass
 
 
-_emit("server_config")
+_emit("server.config")
 
 _load_all_extensions = ExtensionManager.load_all_extensions
 
 
 def _load_all_extensions_emit(self):
     result = _load_all_extensions(self)
-    _emit("ext_loaded")
+    _emit("extensions.loaded")
     return result
 
 
@@ -51,8 +57,9 @@ _post_start = ServerApp._post_start
 
 
 async def _post_start_emit(self):
-    _emit("server_ready")
+    _emit("server.ready", total=True)
     os.environ.pop("JUPYTER_START_NS", None)
+    os.environ.pop("JUPYTER_LAST_NS", None)
     await _post_start(self)
 
 
