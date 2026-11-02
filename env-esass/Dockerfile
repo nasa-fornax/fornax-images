@@ -1,3 +1,5 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+
 ARG BASE_TAG=latest
 ARG REPOSITORY=ghcr.io/nasa-fornax/fornax-images
 
