@@ -68,9 +68,8 @@ RUN --mount=type=bind,from=env_sas,source=$SUPPORT_DATA_MOUNT/,target=/tmp/$SUPP
 
 # Copy from env-esass #
 RUN --mount=type=bind,from=env_esass,source=/opt/,target=/tmp/opt \
-    cp -a /tmp/opt/envs/esassdr1 /opt/envs/ \
- && cp -a /tmp/opt/envs/lock/esassdr1-lock.yml /opt/envs/lock/ \
+    cp -a /tmp/opt/envs/esass4dr1 /opt/envs/ \
+ && cp -a /tmp/opt/envs/lock/esass4dr1-lock.yml /opt/envs/lock/ \
  && cp -a /tmp/opt/envs/lock/build-env-esass /opt/envs/lock/ \
- && cp -a /tmp/opt/jupyter/share/jupyter/kernels/esassdr1 /opt/jupyter/share/jupyter/kernels/
-
+ && cp -a /tmp/opt/jupyter/share/jupyter/kernels/esass4dr1 /opt/jupyter/share/jupyter/kernels/
 # ------------------- #
