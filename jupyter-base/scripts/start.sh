@@ -4,6 +4,7 @@
 
 set -e
 
+# Setting variables to calibrate timing data
 export JUPYTER_START_NS="$(date +%s%N)"
 export JUPYTER_LAST_NS="${JUPYTER_START_NS}"
 
@@ -15,6 +16,8 @@ _log () {
         echo "$@" >&2
     fi
 }
+
+# A function to emit timing data about the notebook startup process to telegraf
 _emit () {
     [ -n "${HOSTIP}" ] || return 0
     local now
@@ -23,6 +26,7 @@ _emit () {
         "$1" "$(( (now - JUPYTER_LAST_NS) / 1000000 ))" "${POD_UID}" "${NODE_NAME}" > "/dev/udp/${HOSTIP}/8125"; } 2>/dev/null || true
     export JUPYTER_LAST_NS="${now}"
 }
+
 _log "Entered start.sh with args:" "$@"
 _emit script.start
 

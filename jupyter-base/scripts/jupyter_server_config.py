@@ -18,7 +18,7 @@ c = get_config()  # noqa: F821
 _last_ns = None
 
 
-def _emit(phase, total=False):
+def _emit(phase, total=False, ms=None, **tags):
     global _last_ns
     host = os.environ.get("HOSTIP")
     start = os.environ.get("JUPYTER_START_NS")
@@ -26,12 +26,15 @@ def _emit(phase, total=False):
         return
     try:
         now = time.time_ns()
-        elapsed_ms = (now - int(start if total else _last_ns or os.environ.get("JUPYTER_LAST_NS") or start)) // 1_000_000
-        _last_ns = now
+        if ms is None:
+            ms = (now - int(start if total else _last_ns or os.environ.get("JUPYTER_LAST_NS") or start)) // 1_000_000
+            _last_ns = now
         line = (
-            f"jupyter.startup.{phase}.duration:{elapsed_ms}|ms|#"
+            f"jupyter.startup.{phase}.duration:{ms}|ms|#"
             f"pod_uid:{os.environ.get('POD_UID', '')},"
-            f"node:{os.environ.get('NODE_NAME', '')}\n"
+            f"node:{os.environ.get('NODE_NAME', '')}"
+            + "".join(f",{k}:{v}" for k, v in tags.items())
+            + "\n"
         )
         socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
             line.encode(), (host, 8125)
@@ -41,6 +44,30 @@ def _emit(phase, total=False):
 
 
 _emit("server.config")
+
+
+def timed(phase, name, fn, *args):
+    t = time.perf_counter_ns()
+    try:
+        return fn(*args)
+    finally:
+        _emit(phase, ms=(time.perf_counter_ns() - t) // 1_000_000, ext=name)
+
+
+_link_extension = ExtensionManager.link_extension
+_load_extension = ExtensionManager.load_extension
+
+
+def _link_extension_emit(self, name):
+    return timed("extension.link", name, _link_extension, self, name)
+
+
+def _load_extension_emit(self, name):
+    return timed("extension.load", name, _load_extension, self, name)
+
+
+ExtensionManager.link_extension = _link_extension_emit
+ExtensionManager.load_extension = _load_extension_emit
 
 _load_all_extensions = ExtensionManager.load_all_extensions
 
