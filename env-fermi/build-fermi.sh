@@ -26,6 +26,11 @@ rm -rf * > /dev/null 2>&1
 #  YES THEN YOU CAN PROBABLY REMOVE THE regions<0.12 RESTRICTION.
 # TODO: fermipy>=1.4.3 that goes with fermitools=2.5.2 is not available in conda,
 # use pip, and update once that moves to conda
+# TODO: fermitools (still true as of 2.5.2) can use the time binary for profiling process
+#  runtimes of certain function/binary calls (though it doesn't by default). They have
+#  a known issue with this that if /bin/sh=dash (as it does on Fornax), the `time` CLI
+#  commands they call will fail, as dash does not package a time binary like bash does. As
+#  such, we've added a 'time' dependency for the conda install.
 cat <<EOF > conda-fermi.yml
 name: fermi
 channels:
@@ -35,6 +40,7 @@ dependencies:
   - python=3.12
   - regions<0.12
   - fermitools=2.5.2
+  - time
   - pip
   - pip:
     - fermipy
