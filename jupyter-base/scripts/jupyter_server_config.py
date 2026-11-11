@@ -30,11 +30,12 @@ def _emit(phase, total=False, ms=None, **tags):
             ms = (now - int(start if total else _last_ns or os.environ.get("JUPYTER_LAST_NS") or start)) // 1_000_000
             _last_ns = now
         line = (
-            f"jupyter.startup.{phase}.duration:{ms}|ms|#"
-            f"pod_uid:{os.environ.get('POD_UID', '')},"
-            f"node:{os.environ.get('NODE_NAME', '')}"
-            + "".join(f",{k}:{v}" for k, v in tags.items())
-            + "\n"
+            f"jupyter.startup.{phase}.duration,"
+            f"pod_uid={os.environ.get('POD_UID', '')},"
+            f"node={os.environ.get('NODE_NAME', '')},"
+            f"user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
+            + "".join(f",{k}={v}" for k, v in tags.items())
+            + f":{ms}|ms\n"
         )
         socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
             line.encode(), (host, 8125)

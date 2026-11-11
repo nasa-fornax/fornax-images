@@ -27,9 +27,11 @@ if os.environ.get("HOSTIP"):
         now = time.time_ns()
         elapsed_ms = (now - int(os.environ.get("JUPYTER_LAST_NS") or now)) // 1_000_000
         line = (
-            f"jupyter.startup.server.exec.duration:{elapsed_ms}|ms|#"
-            f"pod_uid:{os.environ.get('POD_UID', '')},"
-            f"node:{os.environ.get('NODE_NAME', '')}\n"
+            f"jupyter.startup.server.exec.duration,"
+            f"pod_uid={os.environ.get('POD_UID', '')},"
+            f"node={os.environ.get('NODE_NAME', '')},"
+            f"user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
+            f":{elapsed_ms}|ms\n"
         )
         socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
             line.encode(), (os.environ["HOSTIP"], 8125)

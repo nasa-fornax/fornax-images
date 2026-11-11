@@ -13,7 +13,8 @@ export JUPYTER_LAST_NS="${JUPYTER_START_NS}"
 # by setting the JUPYTER_DOCKER_STACKS_QUIET environment variable.
 _log () {
     if [[ "$*" == "ERROR:"* ]] || [[ "$*" == "WARNING:"* ]] || [[ "${JUPYTER_DOCKER_STACKS_QUIET}" == "" ]]; then
-        echo "$@" >&2
+        printf -v _now '%(%Y-%m-%d %H:%M:%S)T' -1
+        echo "[$_now] $@" >&2
     fi
 }
 
@@ -22,8 +23,8 @@ _emit () {
     [ -n "${HOSTIP}" ] || return 0
     local now
     now="$(date +%s%N)"
-    { printf 'jupyter.startup.%s.duration:%s|ms|#pod_uid:%s,node:%s\n' \
-        "$1" "$(( (now - JUPYTER_LAST_NS) / 1000000 ))" "${POD_UID}" "${NODE_NAME}" > "/dev/udp/${HOSTIP}/8125"; } 2>/dev/null || true
+    { printf 'jupyter.startup.%s.duration,pod_uid=%s,node=%s,user=%s:%s|ms\n' \
+        "$1" "${POD_UID}" "${NODE_NAME}" "${JUPYTERHUB_USER//[,= :]/_}" "$(( (now - JUPYTER_LAST_NS) / 1000000 ))" > "/dev/udp/${HOSTIP}/8125"; } 2>/dev/null || true
     export JUPYTER_LAST_NS="${now}"
 }
 
