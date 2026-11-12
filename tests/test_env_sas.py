@@ -41,7 +41,7 @@ def test_conda_env():
 
 
 def test_kernels():
-    """Kernel defnitions should exist"""
+    """Kernel definitions should exist"""
     CommonTests.test_kernels_exist(KERNELS)
 
 
