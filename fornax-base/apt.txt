@@ -1,2 +1,1 @@
 libcurl4-gnutls-dev
-libnss-ldap
