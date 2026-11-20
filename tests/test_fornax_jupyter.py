@@ -126,6 +126,19 @@ def test_jupyter_env_settings():
         assert os.environ[name] == '/scratch/.jupyter'
 
 
+def test_sos_kernel_registered():
+    """Checks to see if the SoS kernel is registered"""
+    CommonTests.test_kernels_exist(['sos'])
+
+
+def test_sos_notebook_basic():
+    """Check if we can import sos_notebook in the Jupyter environment"""
+    imp_cmd = (
+        f"{jupyter_root}/{jupyter_env}/bin/python -c 'import sos_notebook'"
+    )
+    CommonTests.run_cmd(imp_cmd)
+
+
 def _extract_env_vars(dockerfile):
     """Extract all ENV variables (names and values) from a Dockerfile"""
     env_vars = {}

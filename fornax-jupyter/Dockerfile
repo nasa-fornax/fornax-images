@@ -29,6 +29,8 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  # update lock file and make a copy in LOCK_DIR
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
+ # Install SoS-notebook kernel properly
+ && $JUPYTER_DIR/bin/python -m sos_notebook.install --prefix=$JUPYTER_DIR \
  && bash /tmp/misc-build.sh \
  && fix-permissions $JUPYTER_DIR /tmp/cache \
  && find $JUPYTER_DIR \( -name "yarn.lock" -o -name "package-lock.json" \) -delete \
