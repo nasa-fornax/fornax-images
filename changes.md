@@ -5,9 +5,11 @@ Copyright 2026, University of Maryland, All Rights Reserved
 # Latest Changes
 
 ## dev
-- Update fornax-labextension to 0.1.28:
+- Add heasoft6.37 environment.
+- Change the location of the support data to /support-data.
+- Update fornax-labextension to 0.1.29:
   - Add Search box for documentation to jupyter lab top-right area.
-  - Add 'Resources' section to the launcher with the rendered docs and notebooks.
+  - Add the rendered notebooks to the launcher.
   - Fix the visibility of notebook kernels in the launcher.
   - Add icons for kernel description to the launcher.
 

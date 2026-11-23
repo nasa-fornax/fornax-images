@@ -46,7 +46,7 @@ dependencies:
     - tqdm
     - scikit-learn
     - umap-learn
-    - https://heasarc.gsfc.nasa.gov/azoghbi/pip/fviewer.tar.gz
+    - fviewer
 EOF
 
 # Use conda-heasoft.yml to create the heasoft env
