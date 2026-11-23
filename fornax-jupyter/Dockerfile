@@ -157,7 +157,7 @@ ENV DEFAULT_ENV=jupyter \
     # Location of the support data: SUPPORT_DATA_DIR -> SUPPORT_DATA_MOUNT
     # SUPPORT_DATA_MOUNT is where the data is mounted
     SUPPORT_DATA_DIR=/opt/support-data \
-    SUPPORT_DATA_MOUNT=/shared-storage/support-data \
+    SUPPORT_DATA_MOUNT=/support-data \
     # path
     PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
 

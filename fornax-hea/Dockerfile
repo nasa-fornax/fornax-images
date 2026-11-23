@@ -14,9 +14,6 @@ LABEL org.opencontainers.image.source=https://github.com/nasa-fornax/fornax-imag
 LABEL org.opencontainers.image.description="Fornax High Energy Image"
 LABEL org.opencontainers.image.authors="Fornax Project"
 
-# where the data is mounted
-ARG SUPPORT_DATA_MOUNT=/shared-storage/support-data
-
 
 # Copy from env-heasoft #
 RUN --mount=type=bind,from=env_heasoft,source=/opt/,target=/tmp/opt \
