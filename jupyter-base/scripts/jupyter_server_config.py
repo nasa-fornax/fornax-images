@@ -89,16 +89,16 @@ def _load_all_extensions_emit(self):
 
 ExtensionManager.load_all_extensions = _load_all_extensions_emit
 
-_init_webapp = ServerApp.init_webapp
+_init_server_extensions = ServerApp.init_server_extensions
 
 
-def _init_webapp_emit(self):
-    result = _init_webapp(self)
-    _emit("webapp.ready")
+def _init_server_extensions_emit(self):
+    result = _init_server_extensions(self)
+    _emit("extensions.linked")
     return result
 
 
-ServerApp.init_webapp = _init_webapp_emit
+ServerApp.init_server_extensions = _init_server_extensions_emit
 
 _post_start = ServerApp._post_start
 
