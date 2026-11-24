@@ -52,11 +52,18 @@ def timed(phase, name, fn, *args):
     try:
         return fn(*args)
     finally:
-        _emit(phase, ms=(time.perf_counter_ns() - t) // 1_000_000, ext=name)
+        ms = (time.perf_counter_ns() - t) // 1_000_000
+        if ms:
+            _emit(phase, ms=ms, ext=name)
 
 
+_add_extension = ExtensionManager.add_extension
 _link_extension = ExtensionManager.link_extension
 _load_extension = ExtensionManager.load_extension
+
+
+def _add_extension_emit(self, extension_name, enabled=False):
+    return timed("extension.import", extension_name, _add_extension, self, extension_name, enabled)
 
 
 def _link_extension_emit(self, name):
@@ -67,6 +74,7 @@ def _load_extension_emit(self, name):
     return timed("extension.load", name, _load_extension, self, name)
 
 
+ExtensionManager.add_extension = _add_extension_emit
 ExtensionManager.link_extension = _link_extension_emit
 ExtensionManager.load_extension = _load_extension_emit
 
@@ -80,6 +88,17 @@ def _load_all_extensions_emit(self):
 
 
 ExtensionManager.load_all_extensions = _load_all_extensions_emit
+
+_init_webapp = ServerApp.init_webapp
+
+
+def _init_webapp_emit(self):
+    result = _init_webapp(self)
+    _emit("webapp.ready")
+    return result
+
+
+ServerApp.init_webapp = _init_webapp_emit
 
 _post_start = ServerApp._post_start
 
