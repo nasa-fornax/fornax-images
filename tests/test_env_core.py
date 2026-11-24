@@ -13,7 +13,7 @@ from common import env_root, jupyter_env, jupyter_root  # noqa E402
 
 default_kernel = 'python3'
 
-KERNELS = ['python3', 'julia-1.8', 'ir']
+KERNELS = ['python3', 'julia-1.10.14', 'ir']
 
 
 def test_python_path():
