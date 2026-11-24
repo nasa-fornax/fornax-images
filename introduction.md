@@ -27,6 +27,7 @@ The common goals of the notebooks are the usage of archival data from all NASA a
 - Browser the [rendered pre-run version](#fornax-command:fornax:web-tab-fornax-nb).
 - The [source](https://github.com/nasa-fornax/fornax-demo-notebooks) and [renderd](https://nasa-fornax.github.io/fornax-demo-notebooks/) repo on github.
 
+These are the currently available Fornax notebooks:
 
 <!-- MULTI_NOTEBOOKS -->
 
@@ -42,6 +43,7 @@ working with catalogs in Parquet format, visualizing with Firefly, and general o
 - Browser the [rendered pre-run version](#fornax-command:fornax:web-tab-irsa-nb).
 - The [source](https://github.com/Caltech-IPAC/irsa-tutorials/) and [renderd](https://caltech-ipac.github.io/irsa-tutorials/) repo on github.
 
+These are the currently available IRSA notebooks:
 
 <!-- IRSA_NOTEBOOKS -->
 
@@ -56,6 +58,8 @@ They cover archive services as well as mission-specific data analyses.
 - Browser the [rendered pre-run version](#fornax-command:fornax:web-tab-heasarc-nb).
 - The [source](https://github.com/heasarc/heasarc-tutorials) and [renderd](https://heasarc.github.io/heasarc-tutorials/) repo on github.
 
+These are the currently available HEASARC notebooks:
+
 <!-- HEASARC_NOTEBOOKS -->
 
 ---
@@ -69,6 +73,7 @@ that demonstrate methods of acccessing and analyzing data from the the
 - Browser the [rendered pre-run version](#fornax-command:fornax:web-tab-mast-nb).
 - The [source](https://github.com/spacetelescope/mast_notebooks) and [renderd](https://spacetelescope.github.io/mast_notebooks/) repo on github.
 
+These are the currently available MAST notebooks:
 
 <!-- MAST_NOTEBOOKS -->
 
