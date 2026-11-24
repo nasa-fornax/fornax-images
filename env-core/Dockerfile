@@ -33,8 +33,8 @@ RUN cd /tmp/ && bash /usr/local/bin/setup-pip-env --python=3.13.6 <<< yes \
 ## ------------------- ##
 
 
-# setup julia #
-ARG JULIA_VERSION=1.8.0
+# setup julia; use LTS versions #
+ARG JULIA_VERSION=1.10.14
 ENV JULIA_DEPOT_PATH=$ENV_DIR/julia-$JULIA_VERSION \
     JULIA_PKGDIR=$ENV_DIR/julia-$JULIA_VERSION \
     PATH=$ENV_DIR/julia-$JULIA_VERSION/bin:$PATH
