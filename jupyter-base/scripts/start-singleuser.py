@@ -31,7 +31,7 @@ if os.environ.get("HOSTIP"):
             f"pod_uid={os.environ.get('POD_UID', '')},"
             f"node={os.environ.get('NODE_NAME', '')},"
             f"user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
-            f":{elapsed_ms}|ms\n"
+            f":{elapsed_ms}|g\n"
         )
         socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
             line.encode(), (os.environ["HOSTIP"], 8125)

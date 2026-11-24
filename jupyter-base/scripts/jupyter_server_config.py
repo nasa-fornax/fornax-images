@@ -35,7 +35,7 @@ def _emit(phase, total=False, ms=None, **tags):
             f"node={os.environ.get('NODE_NAME', '')},"
             f"user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
             + "".join(f",{k}={v}" for k, v in tags.items())
-            + f":{ms}|ms\n"
+            + f":{ms}|g\n"
         )
         socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
             line.encode(), (host, 8125)

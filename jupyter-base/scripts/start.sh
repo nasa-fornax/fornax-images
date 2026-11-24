@@ -23,7 +23,7 @@ _emit () {
     [ -n "${HOSTIP}" ] || return 0
     local now
     now="$(date +%s%N)"
-    { printf 'jupyter.startup.%s.duration,pod_uid=%s,node=%s,user=%s:%s|ms\n' \
+    { printf 'jupyter.startup.%s.duration,pod_uid=%s,node=%s,user=%s:%s|g\n' \
         "$1" "${POD_UID}" "${NODE_NAME}" "${JUPYTERHUB_USER//[,= :]/_}" "$(( (now - JUPYTER_LAST_NS) / 1000000 ))" > "/dev/udp/${HOSTIP}/8125"; } 2>/dev/null || true
     export JUPYTER_LAST_NS="${now}"
 }
