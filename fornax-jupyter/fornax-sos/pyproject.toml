@@ -1,0 +1,40 @@
+# Copyright 2026, University of Maryland, All Rights Reserved
+#
+# Package metadata for `fornax-sos`, Fornax's custom language plugin for SoS
+# (Script of Scripts) Notebook.
+#
+# Why this is a full installable Python package rather than a standalone script:
+# ------------------------------------------------------------------------------
+# `sos-notebook` discovers supported languages exclusively via Python package
+# entry points in the `"sos_languages"` group (queried at kernel startup via
+# `importlib.metadata.entry_points(group="sos_languages")`). There is no config
+# file or runtime hook in `sos-notebook` to register language plugins without
+# an installed package distribution providing those entry points.
+#
+# Why `dynamic = ["entry-points"]` is used:
+# -----------------------------------------
+# Each Fornax Python environment (e.g. `heasoft`, `ciao`, `sas`, `fermi`,
+# `fermi-gbm`, and the dynamically generated `py-*` notebook kernels from
+# `fornax-nb` and `archive-nb`) needs its own entry in `"sos_languages"` so
+# that `sos-notebook` treats it as a distinct language entry with its own
+# sidebar color and routes its `%get` / `%put` variable transfers through
+# `fornax_sos.kernel:fornax_Python`.
+#
+# Instead of hardcoding a list of environment names here (which would silently
+# go out of date whenever notebook environments are added or renamed in
+# `fornax-demo-notebooks`), we mark `entry-points` as dynamic and let `setup.py`
+# generate the entry points at `pip install` time by scanning all kernel specs
+# present in `/opt/jupyter/share/jupyter/kernels/`.
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fornax-sos"
+version = "0.1.0"
+description = "Fornax multi-environment Python language plugin for SoS Notebook"
+# `sos-python` provides the base `sos_Python` language class that we subclass.
+dependencies = ["sos-python"]
+# Populated at install time by `setup.py` -> `discover_entry_points()`.
+dynamic = ["entry-points"]

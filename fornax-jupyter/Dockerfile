@@ -29,6 +29,8 @@ RUN export VIRTUAL_ENV=$JUPYTER_DIR \
  # update lock file and make a copy in LOCK_DIR
  && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
  && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
+ # Install SoS-notebook kernel properly
+ && $JUPYTER_DIR/bin/python -m sos_notebook.install --prefix=$JUPYTER_DIR \
  && bash /tmp/misc-build.sh \
  && fix-permissions $JUPYTER_DIR /tmp/cache \
  && find $JUPYTER_DIR \( -name "yarn.lock" -o -name "package-lock.json" \) -delete \
@@ -57,6 +59,24 @@ RUN \
 # ./kernels is created by the the build script
 # COPY --chown=$NB_UID:$NB_GID kernels /opt/jupyter/share/jupyter/kernels
 COPY --chown=$NB_UID:$NB_GID --from=assets /kernels /opt/jupyter/share/jupyter/kernels
+
+# Install the internal `fornax-sos` language plugin into $JUPYTER_DIR AFTER all
+# kernel specs have been copied into `/opt/jupyter/share/jupyter/kernels`.
+# At install time, `fornax-sos/setup.py` scans `/opt/jupyter/share/jupyter/kernels`
+# and registers an SoS language entry point for every discovered Python kernel
+# (e.g. `python3`, `heasoft`, `ciao`, `sas`, `fermi`, `fermi-gbm`, and all `py-*`
+# notebook environments from `fornax-nb` and `archive-nb`). This allows arbitrary
+# Python objects (such as Astropy Quantities) to be passed directly between
+# sub-kernels via `%get` / `%put` without unpickling inside `/opt/jupyter`, and
+# gives each environment its own distinct sidebar color in JupyterLab.
+COPY --chown=$NB_UID:$NB_GID fornax-sos /tmp/fornax-sos
+RUN export VIRTUAL_ENV=$JUPYTER_DIR \
+ && uv pip install --no-cache /tmp/fornax-sos \
+ && uv cache clean \
+ && uv pip list --format=freeze > $JUPYTER_DIR/requirements-jupyter.txt \
+ && cp $JUPYTER_DIR/requirements-jupyter.txt $LOCK_DIR/requirements-jupyter.txt \
+ && rm -rf /tmp/fornax-sos
+
 
 # copy other setup scripts
 COPY scripts/misc-setup.sh /usr/local/bin/before-notebook.d/
