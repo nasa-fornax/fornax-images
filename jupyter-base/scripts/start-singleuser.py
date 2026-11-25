@@ -22,30 +22,22 @@ if "NOTEBOOK_ARGS" in os.environ:
 # Pass any other args we have been passed through
 command += sys.argv[1:]
 
-def _send(metric, value):
-    host = os.environ.get("HOSTIP")
-    if not host:
-        return
-    line = (
-        f"jupyter.startup.{metric},"
-        f"pod_uid={os.environ.get('POD_UID', '')},"
-        f"node={os.environ.get('NODE_NAME', '')},"
-        f"user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
-        f":{value}|g\n"
-    )
-    try:
-        socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(line.encode(), (host, 8125))
-    except OSError:
-        pass
-
-
 if os.environ.get("HOSTIP"):
     try:
         now = time.time_ns()
         elapsed_ms = (now - int(os.environ.get("JUPYTER_LAST_NS") or now)) // 1_000_000
-        _send("phase.duration_ms,phase=server_launch", elapsed_ms)
+        line = (
+            f"jupyter.startup.phase.duration_ms,phase=server_launch,"
+            f"pod_uid={os.environ.get('POD_UID', '')},"
+            f"node={os.environ.get('NODE_NAME', '')},"
+            f"user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
+            f":{elapsed_ms}|g\n"
+        )
+        socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
+            line.encode(), (os.environ["HOSTIP"], 8125)
+        )
         os.environ["JUPYTER_LAST_NS"] = str(now)
-    except ValueError:
+    except (OSError, ValueError):
         pass
 
 if not os.environ.get("HOSTIP"):

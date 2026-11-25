@@ -19,37 +19,30 @@ c = get_config()  # noqa: F821
 _last_ns = None
 
 
-def _send(metric, value, **tags):
-    host = os.environ.get("HOSTIP")
-    if not host:
-        return
-    line = (
-        f"jupyter.startup.{metric}"
-        + "".join(f",{k}={v}" for k, v in tags.items())
-        + f",pod_uid={os.environ.get('POD_UID', '')}"
-        + f",node={os.environ.get('NODE_NAME', '')}"
-        + f",user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
-        + f":{value}|g\n"
-    )
-    try:
-        socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(line.encode(), (host, 8125))
-    except OSError:
-        pass
-
-
 def _emit(metric, total=False, ms=None, **tags):
     global _last_ns
+    host = os.environ.get("HOSTIP")
     start = os.environ.get("JUPYTER_START_NS")
-    if not start:
+    if not host or not start:
         return
     try:
         now = time.time_ns()
         if ms is None:
             ms = (now - int(start if total else _last_ns or os.environ.get("JUPYTER_LAST_NS") or start)) // 1_000_000
             _last_ns = now
-    except ValueError:
-        return
-    _send(metric, ms, **tags)
+        line = (
+            f"jupyter.startup.{metric}"
+            + "".join(f",{k}={v}" for k, v in tags.items())
+            + f",pod_uid={os.environ.get('POD_UID', '')}"
+            + f",node={os.environ.get('NODE_NAME', '')}"
+            + f",user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
+            + f":{ms}|g\n"
+        )
+        socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
+            line.encode(), (host, 8125)
+        )
+    except (OSError, ValueError):
+        pass
 
 
 _emit("phase.duration_ms", phase="server_init")
