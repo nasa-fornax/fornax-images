@@ -28,14 +28,6 @@ _emit () {
     export JUPYTER_LAST_NS="${now}"
 }
 
-_emit_failure () {
-    [ -n "${HOSTIP}" ] || return 0
-    { printf 'jupyter.startup.failures,phase=%s,pod_uid=%s,node=%s,user=%s:1|c\n' \
-        "$1" "${POD_UID}" "${NODE_NAME}" "${JUPYTERHUB_USER//[,= :]/_}" > "/dev/udp/${HOSTIP}/8125"; } 2>/dev/null || true
-}
-
-trap '[ $? -eq 0 ] || _emit_failure user_setup' EXIT
-
 _log "Entered start.sh with args:" "$@"
 
 # A helper function to unset env vars listed in the value of the env var

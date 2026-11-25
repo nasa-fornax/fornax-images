@@ -22,7 +22,7 @@ if "NOTEBOOK_ARGS" in os.environ:
 # Pass any other args we have been passed through
 command += sys.argv[1:]
 
-def _send(metric, value, kind):
+def _send(metric, value):
     host = os.environ.get("HOSTIP")
     if not host:
         return
@@ -31,7 +31,7 @@ def _send(metric, value, kind):
         f"pod_uid={os.environ.get('POD_UID', '')},"
         f"node={os.environ.get('NODE_NAME', '')},"
         f"user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
-        f":{value}|{kind}\n"
+        f":{value}|g\n"
     )
     try:
         socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(line.encode(), (host, 8125))
@@ -43,7 +43,7 @@ if os.environ.get("HOSTIP"):
     try:
         now = time.time_ns()
         elapsed_ms = (now - int(os.environ.get("JUPYTER_LAST_NS") or now)) // 1_000_000
-        _send("phase.duration_ms,phase=server_launch", elapsed_ms, "g")
+        _send("phase.duration_ms,phase=server_launch", elapsed_ms)
         os.environ["JUPYTER_LAST_NS"] = str(now)
     except ValueError:
         pass
@@ -54,8 +54,4 @@ if not os.environ.get("HOSTIP"):
 
 # Execute the command!
 print("Executing: " + " ".join(command), flush=True)
-try:
-    os.execvp(command[0], command)
-except OSError:
-    _send("failures,phase=server_launch", 1, "c")
-    raise
+os.execvp(command[0], command)

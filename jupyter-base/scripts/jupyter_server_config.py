@@ -6,22 +6,20 @@ import os
 import socket
 import stat
 import subprocess
-import sys
 import time
 from pathlib import Path
 
 from jupyter_core.paths import jupyter_data_dir
-from jupyter_server.extension.manager import ExtensionManager, ExtensionPackage
+from jupyter_server.extension.manager import ExtensionManager
 from jupyter_server.serverapp import ServerApp
 
 c = get_config()  # noqa: F821
 
 
 _last_ns = None
-_phase = "server_init"
 
 
-def _send(metric, value, kind="g", **tags):
+def _send(metric, value, **tags):
     host = os.environ.get("HOSTIP")
     if not host:
         return
@@ -31,7 +29,7 @@ def _send(metric, value, kind="g", **tags):
         + f",pod_uid={os.environ.get('POD_UID', '')}"
         + f",node={os.environ.get('NODE_NAME', '')}"
         + f",user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
-        + f":{value}|{kind}\n"
+        + f":{value}|g\n"
     )
     try:
         socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(line.encode(), (host, 8125))
@@ -54,13 +52,7 @@ def _emit(metric, total=False, ms=None, **tags):
     _send(metric, ms, **tags)
 
 
-def _emit_phase(phase, next_phase):
-    global _phase
-    _emit("phase.duration_ms", phase=phase)
-    _phase = next_phase
-
-
-_emit_phase("server_init", "extension_link")
+_emit("phase.duration_ms", phase="server_init")
 
 
 def timed(operation, name, fn, *args):
@@ -73,27 +65,13 @@ def timed(operation, name, fn, *args):
             _emit("extension.duration_ms", ms=ms, operation=operation, extension=name)
 
 
-def _count_failures(operation, fn):
-    def wrapper(self, *args):
-        try:
-            return fn(self, *args)
-        except Exception:
-            _send("extension.failures", 1, "c", operation=operation, extension=self.name)
-            raise
-
-    return wrapper
-
-
 _add_extension = ExtensionManager.add_extension
 _link_extension = ExtensionManager.link_extension
 _load_extension = ExtensionManager.load_extension
 
 
 def _add_extension_emit(self, extension_name, enabled=False):
-    added = timed("import", extension_name, _add_extension, self, extension_name, enabled)
-    if added is False:
-        _send("extension.failures", 1, "c", operation="import", extension=extension_name)
-    return added
+    return timed("import", extension_name, _add_extension, self, extension_name, enabled)
 
 
 def _link_extension_emit(self, name):
@@ -107,15 +85,13 @@ def _load_extension_emit(self, name):
 ExtensionManager.add_extension = _add_extension_emit
 ExtensionManager.link_extension = _link_extension_emit
 ExtensionManager.load_extension = _load_extension_emit
-ExtensionPackage.link_all_points = _count_failures("link", ExtensionPackage.link_all_points)
-ExtensionPackage.load_all_points = _count_failures("load", ExtensionPackage.load_all_points)
 
 _load_all_extensions = ExtensionManager.load_all_extensions
 
 
 def _load_all_extensions_emit(self):
     result = _load_all_extensions(self)
-    _emit_phase("extension_load", "server_start")
+    _emit("phase.duration_ms", phase="extension_load")
     return result
 
 
@@ -126,29 +102,17 @@ _init_server_extensions = ServerApp.init_server_extensions
 
 def _init_server_extensions_emit(self):
     result = _init_server_extensions(self)
-    _emit_phase("extension_link", "extension_load")
+    _emit("phase.duration_ms", phase="extension_link")
     return result
 
 
 ServerApp.init_server_extensions = _init_server_extensions_emit
-
-_excepthook = sys.excepthook
-
-
-def _excepthook_emit(*exc_info):
-    _send("failures", 1, "c", phase=_phase)
-    _excepthook(*exc_info)
-
-
-sys.excepthook = _excepthook_emit
 
 _post_start = ServerApp._post_start
 
 
 async def _post_start_emit(self):
     _emit("duration_ms", total=True)
-    _send("completed", 1, "c")
-    sys.excepthook = _excepthook
     os.environ.pop("JUPYTER_START_NS", None)
     os.environ.pop("JUPYTER_LAST_NS", None)
     await _post_start(self)
