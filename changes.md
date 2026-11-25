@@ -8,7 +8,7 @@ Copyright 2026, University of Maryland, All Rights Reserved
 - Add heasoft6.37 environment.
 - Upgrade Julia to 1.10.14.
 - Change the location of the support data to /support-data.
-- Update fornax-labextension to 0.1.30:
+- Update fornax-labextension to 0.1.31:
   - Add Search box for documentation to jupyter lab top-right area.
   - Add the rendered notebooks to the launcher.
   - Fix the visibility of notebook kernels in the launcher.

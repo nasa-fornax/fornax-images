@@ -6,7 +6,8 @@
 CATEGORY=Tools
 
 ## -------------------------------------------------------- ##
-# Patch vs-code extnesion so the icon shows up under Other
+# Patch vs-code extnesion so the icon shows up under the specified CATEGORY
+# Also, use the standard vscode icon
 vsfile=`ls $JUPYTER_DIR/lib/python*/site-packages/jupyter_vscode_proxy/__init__.py`
 if [ -f "$vsfile" ] && ! grep -q '"category":' "$vsfile"; then
     # Use awk to insert the line safely and maintain indentation
@@ -18,8 +19,10 @@ if [ -f "$vsfile" ] && ! grep -q '"category":' "$vsfile"; then
         }
         { print }
     ' "$vsfile" > "${vsfile}.tmp" && mv "${vsfile}.tmp" "$vsfile"
+    # do the icon
+    awk '{ gsub(/code-server\.svg/, "vscode.svg"); print }' "$vsfile" > "${vsfile}.tmp" && mv "${vsfile}.tmp" "$vsfile"
     
-    echo "Patched category in vs-code extension."
+    echo "Patched category and icon in vs-code extension."
 fi
 ## -------------------------------------------------------- ##
 
