@@ -1,60 +1,87 @@
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
 # mypy: ignore-errors
+import importlib.metadata
 import os
 import socket
 import stat
 import subprocess
+import sys
 import time
 from pathlib import Path
 
 from jupyter_core.paths import jupyter_data_dir
-from jupyter_server.extension.manager import ExtensionManager
+from jupyter_server.extension.manager import ExtensionManager, ExtensionPackage
 from jupyter_server.serverapp import ServerApp
 
 c = get_config()  # noqa: F821
 
 
 _last_ns = None
+_phase = "server_init"
 
 
-def _emit(phase, total=False, ms=None, **tags):
-    global _last_ns
+def _send(metric, value, kind="g", **tags):
     host = os.environ.get("HOSTIP")
+    if not host:
+        return
+    line = (
+        f"jupyter.startup.{metric}"
+        + "".join(f",{k}={v}" for k, v in tags.items())
+        + f",pod_uid={os.environ.get('POD_UID', '')}"
+        + f",node={os.environ.get('NODE_NAME', '')}"
+        + f",user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
+        + f":{value}|{kind}\n"
+    )
+    try:
+        socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(line.encode(), (host, 8125))
+    except OSError:
+        pass
+
+
+def _emit(metric, total=False, ms=None, **tags):
+    global _last_ns
     start = os.environ.get("JUPYTER_START_NS")
-    if not host or not start:
+    if not start:
         return
     try:
         now = time.time_ns()
         if ms is None:
             ms = (now - int(start if total else _last_ns or os.environ.get("JUPYTER_LAST_NS") or start)) // 1_000_000
             _last_ns = now
-        line = (
-            f"jupyter.startup.{phase}.duration,"
-            f"pod_uid={os.environ.get('POD_UID', '')},"
-            f"node={os.environ.get('NODE_NAME', '')},"
-            f"user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
-            + "".join(f",{k}={v}" for k, v in tags.items())
-            + f":{ms}|g\n"
-        )
-        socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
-            line.encode(), (host, 8125)
-        )
-    except (OSError, ValueError):
-        pass
+    except ValueError:
+        return
+    _send(metric, ms, **tags)
 
 
-_emit("server.config")
+def _emit_phase(phase, next_phase):
+    global _phase
+    _emit("phase.duration_ms", phase=phase)
+    _phase = next_phase
 
 
-def timed(phase, name, fn, *args):
+_emit_phase("server_init", "extension_link")
+
+
+def timed(operation, name, fn, *args):
     t = time.perf_counter_ns()
     try:
         return fn(*args)
     finally:
         ms = (time.perf_counter_ns() - t) // 1_000_000
         if ms:
-            _emit(phase, ms=ms, ext=name)
+            _emit("extension.duration_ms", ms=ms, operation=operation, extension=name)
+
+
+def _count_failures(operation, fn):
+    def wrapper(self, *args):
+        try:
+            return fn(self, *args)
+        except Exception:
+            _send("extension.failures", 1, "c", operation=operation, extension=self.name)
+            raise
+
+    return wrapper
 
 
 _add_extension = ExtensionManager.add_extension
@@ -63,27 +90,32 @@ _load_extension = ExtensionManager.load_extension
 
 
 def _add_extension_emit(self, extension_name, enabled=False):
-    return timed("extension.import", extension_name, _add_extension, self, extension_name, enabled)
+    added = timed("import", extension_name, _add_extension, self, extension_name, enabled)
+    if added is False:
+        _send("extension.failures", 1, "c", operation="import", extension=extension_name)
+    return added
 
 
 def _link_extension_emit(self, name):
-    return timed("extension.link", name, _link_extension, self, name)
+    return timed("link", name, _link_extension, self, name)
 
 
 def _load_extension_emit(self, name):
-    return timed("extension.load", name, _load_extension, self, name)
+    return timed("load", name, _load_extension, self, name)
 
 
 ExtensionManager.add_extension = _add_extension_emit
 ExtensionManager.link_extension = _link_extension_emit
 ExtensionManager.load_extension = _load_extension_emit
+ExtensionPackage.link_all_points = _count_failures("link", ExtensionPackage.link_all_points)
+ExtensionPackage.load_all_points = _count_failures("load", ExtensionPackage.load_all_points)
 
 _load_all_extensions = ExtensionManager.load_all_extensions
 
 
 def _load_all_extensions_emit(self):
     result = _load_all_extensions(self)
-    _emit("extensions.loaded")
+    _emit_phase("extension_load", "server_start")
     return result
 
 
@@ -94,23 +126,61 @@ _init_server_extensions = ServerApp.init_server_extensions
 
 def _init_server_extensions_emit(self):
     result = _init_server_extensions(self)
-    _emit("extensions.linked")
+    _emit_phase("extension_link", "extension_load")
     return result
 
 
 ServerApp.init_server_extensions = _init_server_extensions_emit
 
+_excepthook = sys.excepthook
+
+
+def _excepthook_emit(*exc_info):
+    _send("failures", 1, "c", phase=_phase)
+    _excepthook(*exc_info)
+
+
+sys.excepthook = _excepthook_emit
+
 _post_start = ServerApp._post_start
 
 
 async def _post_start_emit(self):
-    _emit("server.ready", total=True)
+    _emit("duration_ms", total=True)
+    _send("completed", 1, "c")
+    sys.excepthook = _excepthook
     os.environ.pop("JUPYTER_START_NS", None)
     os.environ.pop("JUPYTER_LAST_NS", None)
     await _post_start(self)
 
 
 ServerApp._post_start = _post_start_emit
+
+_entry_points = importlib.metadata.entry_points
+_static_entry_points = {
+    group: importlib.metadata.EntryPoints(
+        importlib.metadata.EntryPoint(name=name, value=value, group=group) for name, value in entries
+    )
+    for group, entries in {
+        "jupyter_serverproxy_servers": [
+            ("vscode", "jupyter_vscode_proxy:setup_vscode"),
+            ("fviewer", "fviewer_labextension:start_viewer"),
+        ],
+        "jupyterlab.extension_manager_v1": [
+            ("pypi", "jupyterlab.extensions:get_pypi_manager"),
+            ("readonly", "jupyterlab.extensions:get_readonly_manager"),
+        ],
+    }.items()
+}
+
+
+def _entry_points_static(**params):
+    if list(params) == ["group"] and params["group"] in _static_entry_points:
+        return _static_entry_points[params["group"]]
+    return _entry_points(**params)
+
+
+importlib.metadata.entry_points = _entry_points_static
 
 # Listen on all interfaces (ipv4 and ipv6)
 c.ServerApp.ip = ""

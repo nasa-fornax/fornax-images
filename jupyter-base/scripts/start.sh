@@ -23,13 +23,20 @@ _emit () {
     [ -n "${HOSTIP}" ] || return 0
     local now
     now="$(date +%s%N)"
-    { printf 'jupyter.startup.%s.duration,pod_uid=%s,node=%s,user=%s:%s|g\n' \
+    { printf 'jupyter.startup.phase.duration_ms,phase=%s,pod_uid=%s,node=%s,user=%s:%s|g\n' \
         "$1" "${POD_UID}" "${NODE_NAME}" "${JUPYTERHUB_USER//[,= :]/_}" "$(( (now - JUPYTER_LAST_NS) / 1000000 ))" > "/dev/udp/${HOSTIP}/8125"; } 2>/dev/null || true
     export JUPYTER_LAST_NS="${now}"
 }
 
+_emit_failure () {
+    [ -n "${HOSTIP}" ] || return 0
+    { printf 'jupyter.startup.failures,phase=%s,pod_uid=%s,node=%s,user=%s:1|c\n' \
+        "$1" "${POD_UID}" "${NODE_NAME}" "${JUPYTERHUB_USER//[,= :]/_}" > "/dev/udp/${HOSTIP}/8125"; } 2>/dev/null || true
+}
+
+trap '[ $? -eq 0 ] || _emit_failure user_setup' EXIT
+
 _log "Entered start.sh with args:" "$@"
-_emit script.start
 
 # A helper function to unset env vars listed in the value of the env var
 # JUPYTER_ENV_VARS_TO_UNSET.
@@ -160,8 +167,6 @@ if [ "$(id -u)" == 0 ]; then
         done
     fi
 
-    _emit config.refit
-
     # Prepend ${CONDA_DIR}/bin to sudo secure_path
     sed -r "s#Defaults\s+secure_path\s*=\s*\"?([^\"]+)\"?#Defaults secure_path=\"${CONDA_DIR}/bin:\1\"#" /etc/sudoers | grep secure_path > /etc/sudoers.d/path
 
@@ -175,7 +180,7 @@ if [ "$(id -u)" == 0 ]; then
     # shellcheck source=images/docker-stacks-foundation/run-hooks.sh
     source /usr/local/bin/run-hooks.sh /usr/local/bin/before-notebook.d
     unset_explicit_env_vars
-    _emit hooks.done
+    _emit user_setup
 
     _log "Running as ${NB_USER}:" "${cmd[@]}"
     if [ "${NB_USER}" = "root" ] && [ "${NB_UID}" = "$(id -u "${NB_USER}")" ] && [ "${NB_GID}" = "$(id -g "${NB_USER}")" ]; then
