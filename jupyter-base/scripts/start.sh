@@ -5,7 +5,7 @@
 set -e
 
 # Setting variables to calibrate timing data
-export JUPYTER_START_NS="$(date +%s%N)"
+export JUPYTER_START_NS="${EPOCHREALTIME/./}000"
 export JUPYTER_LAST_NS="${JUPYTER_START_NS}"
 
 # The _log function is used for everything this script wants to log.
@@ -22,7 +22,7 @@ _log () {
 _emit () {
     [ -n "${HOSTIP}" ] || return 0
     local now
-    now="$(date +%s%N)"
+    now="${EPOCHREALTIME/./}000"
     { printf 'jupyter.startup.phase.duration_ms,phase=%s,pod_uid=%s,node=%s,user=%s:%s|g\n' \
         "$1" "${POD_UID}" "${NODE_NAME}" "${JUPYTERHUB_USER//[,= :]/_}" "$(( (now - JUPYTER_LAST_NS) / 1000000 ))" > "/dev/udp/${HOSTIP}/8125"; } 2>/dev/null || true
     export JUPYTER_LAST_NS="${now}"
