@@ -135,6 +135,7 @@ def _api_version_get_emit(self):
     #this phase covers everything from after all extensions are loaded until the server app is ready for user input
     _phase_end("post_extension_load")
     #This is the measurement from the start of start.sh until this point (Server ready for user input)
+    #Some values are not included in individual phases, but they are included in the start to end time
     _startup_end()
     os.environ.pop("JUPYTER_START_NS", None)
     os.environ.pop("JUPYTER_PHASE_START_NS", None)
