@@ -109,17 +109,18 @@ def _init_server_extensions_emit(self):
 
 ServerApp.init_server_extensions = _init_server_extensions_emit
 
-_post_start = ServerApp._post_start
+_load_all_extensions = ExtensionManager.load_all_extensions
 
 
-async def _post_start_emit(self):
-    """End the extension_load phase once the server is listening, and start hub_ready."""
+def _load_all_extensions_emit(self):
+    _phase_start()
+    result = _load_all_extensions(self)
     _phase_end("extension_load")
     _phase_start()
-    await _post_start(self)
+    return result
 
 
-ServerApp._post_start = _post_start_emit
+ExtensionManager.load_all_extensions = _load_all_extensions_emit
 
 _api_version_get = APIVersionHandler.get
 
@@ -128,7 +129,7 @@ _api_version_get = APIVersionHandler.get
 def _api_version_get_emit(self):
     """Handle the hub's readiness check on {base_url}api: end hub_ready, emit the total, and clear the timing variables so this only fires once. 
     Stays unauthenticated like the original handler. """
-    _phase_end("hub_ready")
+    _phase_end("post_extension_load")
     _startup_end()
     os.environ.pop("JUPYTER_START_NS", None)
     os.environ.pop("JUPYTER_PHASE_START_NS", None)
