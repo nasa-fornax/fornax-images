@@ -131,6 +131,7 @@ def _api_version_get_emit(self):
     Stays unauthenticated like the original handler. """
     #this phase covers everything from after all extensions are loaded until the server app is ready for user input
     _phase_end("post_extension_load")
+    #This is the measurement from the start of start.sh until this point (Server ready for user input)
     _startup_end()
     os.environ.pop("JUPYTER_START_NS", None)
     os.environ.pop("JUPYTER_PHASE_START_NS", None)
