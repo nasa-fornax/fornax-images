@@ -129,6 +129,7 @@ _api_version_get = APIVersionHandler.get
 def _api_version_get_emit(self):
     """Handle the hub's readiness check on {base_url}api: end hub_ready, emit the total, and clear the timing variables so this only fires once. 
     Stays unauthenticated like the original handler. """
+    #this phase covers everything from after all extensions are loaded until the server app is ready for user input
     _phase_end("post_extension_load")
     _startup_end()
     os.environ.pop("JUPYTER_START_NS", None)
