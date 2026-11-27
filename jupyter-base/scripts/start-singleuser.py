@@ -20,10 +20,6 @@ if "NOTEBOOK_ARGS" in os.environ:
 # Pass any other args we have been passed through
 command += sys.argv[1:]
 
-if not os.environ.get("HOSTIP"):
-    os.environ.pop("JUPYTER_START_NS", None)
-    os.environ.pop("JUPYTER_PHASE_START_NS", None)
-
 # Execute the command!
 print("Executing: " + " ".join(command), flush=True)
 os.execvp(command[0], command)
