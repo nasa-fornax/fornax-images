@@ -96,6 +96,7 @@ ExtensionManager.add_extension = _add_extension_emit
 ExtensionManager.link_extension = _link_extension_emit
 ExtensionManager.load_extension = _load_extension_emit
 
+# Monkey patching to time importing and linking all extensions as one phase
 _init_server_extensions = ServerApp.init_server_extensions
 
 
@@ -109,6 +110,7 @@ def _init_server_extensions_emit(self):
 
 ServerApp.init_server_extensions = _init_server_extensions_emit
 
+# Monkey patching to time loading all extensions as one phase, then start post_extension_load
 _load_all_extensions = ExtensionManager.load_all_extensions
 
 
@@ -122,6 +124,7 @@ def _load_all_extensions_emit(self):
 
 ExtensionManager.load_all_extensions = _load_all_extensions_emit
 
+# Monkey patching the hub's readiness check to end the last phase and emit the total
 _api_version_get = APIVersionHandler.get
 
 
@@ -140,6 +143,7 @@ def _api_version_get_emit(self):
 
 APIVersionHandler.get = _api_version_get_emit
 
+# Monkey patching entry_points so jupyter_server_proxy skips scanning every installed package
 _entry_points = importlib.metadata.entry_points
 _server_proxy_entry_points = importlib.metadata.EntryPoints(
     importlib.metadata.EntryPoint(name=name, value=value, group="jupyter_serverproxy_servers")
