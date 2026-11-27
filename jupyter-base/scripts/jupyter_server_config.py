@@ -45,7 +45,7 @@ def _emit(metric, total=False, ms=None, **tags):
         pass
 
 
-_emit("phase.duration_ms", phase="server_init")
+_emit("phase.duration_ms", phase="server_config")
 
 
 def timed(operation, name, fn, *args):

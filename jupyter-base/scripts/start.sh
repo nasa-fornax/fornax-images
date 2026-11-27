@@ -172,7 +172,7 @@ if [ "$(id -u)" == 0 ]; then
     # shellcheck source=images/docker-stacks-foundation/run-hooks.sh
     source /usr/local/bin/run-hooks.sh /usr/local/bin/before-notebook.d
     unset_explicit_env_vars
-    _emit user_setup
+    _emit environment_setup
 
     _log "Running as ${NB_USER}:" "${cmd[@]}"
     if [ "${NB_USER}" = "root" ] && [ "${NB_UID}" = "$(id -u "${NB_USER}")" ] && [ "${NB_GID}" = "$(id -g "${NB_USER}")" ]; then
