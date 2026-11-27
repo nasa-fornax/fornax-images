@@ -128,30 +128,22 @@ def _api_version_get_emit(self):
 APIVersionHandler.get = _api_version_get_emit
 
 _entry_points = importlib.metadata.entry_points
-_static_entry_points = {
-    group: importlib.metadata.EntryPoints(
-        importlib.metadata.EntryPoint(name=name, value=value, group=group) for name, value in entries
-    )
-    for group, entries in {
-        "jupyter_serverproxy_servers": [
-            ("vscode", "jupyter_vscode_proxy:setup_vscode"),
-            ("fviewer", "fviewer_labextension:start_viewer"),
-        ],
-        "jupyterlab.extension_manager_v1": [
-            ("pypi", "jupyterlab.extensions:get_pypi_manager"),
-            ("readonly", "jupyterlab.extensions:get_readonly_manager"),
-        ],
-    }.items()
-}
+_server_proxy_entry_points = importlib.metadata.EntryPoints(
+    importlib.metadata.EntryPoint(name=name, value=value, group="jupyter_serverproxy_servers")
+    for name, value in [
+        ("vscode", "jupyter_vscode_proxy:setup_vscode"),
+        ("fviewer", "fviewer_labextension:start_viewer"),
+    ]
+)
 
 
-def _entry_points_static(**params):
-    if list(params) == ["group"] and params["group"] in _static_entry_points:
-        return _static_entry_points[params["group"]]
+def _entry_points_static_server_proxy(**params):
+    if params == {"group": "jupyter_serverproxy_servers"}:
+        return _server_proxy_entry_points
     return _entry_points(**params)
 
 
-importlib.metadata.entry_points = _entry_points_static
+importlib.metadata.entry_points = _entry_points_static_server_proxy
 
 # Listen on all interfaces (ipv4 and ipv6)
 c.ServerApp.ip = ""
