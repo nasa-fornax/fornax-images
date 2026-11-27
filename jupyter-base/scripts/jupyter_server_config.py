@@ -10,6 +10,8 @@ import time
 from pathlib import Path
 
 from jupyter_core.paths import jupyter_data_dir
+from jupyter_server.auth.decorator import allow_unauthenticated
+from jupyter_server.base.handlers import APIVersionHandler
 from jupyter_server.extension.manager import ExtensionManager
 from jupyter_server.serverapp import ServerApp
 
@@ -100,28 +102,30 @@ def _init_server_extensions_emit(self):
 
 ServerApp.init_server_extensions = _init_server_extensions_emit
 
-_load_all_extensions = ExtensionManager.load_all_extensions
-
-
-def _load_all_extensions_emit(self):
-    result = _load_all_extensions(self)
-    _phase_end("extension_load")
-    return result
-
-
-ExtensionManager.load_all_extensions = _load_all_extensions_emit
-
 _post_start = ServerApp._post_start
 
 
 async def _post_start_emit(self):
-    _startup_end()
-    os.environ.pop("JUPYTER_START_NS", None)
-    os.environ.pop("JUPYTER_PHASE_START_NS", None)
+    _phase_end("extension_load")
+    _phase_start()
     await _post_start(self)
 
 
 ServerApp._post_start = _post_start_emit
+
+_api_version_get = APIVersionHandler.get
+
+
+@allow_unauthenticated
+def _api_version_get_emit(self):
+    _phase_end("hub_ready")
+    _startup_end()
+    os.environ.pop("JUPYTER_START_NS", None)
+    os.environ.pop("JUPYTER_PHASE_START_NS", None)
+    return _api_version_get(self)
+
+
+APIVersionHandler.get = _api_version_get_emit
 
 _entry_points = importlib.metadata.entry_points
 _static_entry_points = {
