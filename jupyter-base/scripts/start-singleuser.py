@@ -22,27 +22,42 @@ if "NOTEBOOK_ARGS" in os.environ:
 # Pass any other args we have been passed through
 command += sys.argv[1:]
 
-if os.environ.get("HOSTIP"):
+def _emit(metric, value, **tags):
+    host = os.environ.get("HOSTIP")
+    if not host:
+        return
+    line = (
+        f"jupyter.startup.{metric}"
+        + "".join(f",{k}={v}" for k, v in tags.items())
+        + f",pod_uid={os.environ.get('POD_UID', '')}"
+        + f",node={os.environ.get('NODE_NAME', '')}"
+        + f",user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
+        + f":{value}|g\n"
+    )
     try:
-        now = time.time_ns()
-        elapsed_ms = (now - int(os.environ.get("JUPYTER_LAST_NS") or now)) // 1_000_000
-        line = (
-            f"jupyter.startup.phase.duration_ms,phase=server_launch,"
-            f"pod_uid={os.environ.get('POD_UID', '')},"
-            f"node={os.environ.get('NODE_NAME', '')},"
-            f"user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
-            f":{elapsed_ms}|g\n"
-        )
-        socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
-            line.encode(), (os.environ["HOSTIP"], 8125)
-        )
-        os.environ["JUPYTER_LAST_NS"] = str(now)
-    except (OSError, ValueError):
+        socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(line.encode(), (host, 8125))
+    except OSError:
         pass
+
+
+def _phase_start():
+    os.environ["JUPYTER_PHASE_START_NS"] = str(time.time_ns())
+
+
+def _phase_end(phase):
+    try:
+        elapsed_ms = (time.time_ns() - int(os.environ["JUPYTER_PHASE_START_NS"])) // 1_000_000
+    except (KeyError, ValueError):
+        return
+    _emit("phase.duration_ms", elapsed_ms, phase=phase)
+
+
+_phase_end("server_launch")
+_phase_start()
 
 if not os.environ.get("HOSTIP"):
     os.environ.pop("JUPYTER_START_NS", None)
-    os.environ.pop("JUPYTER_LAST_NS", None)
+    os.environ.pop("JUPYTER_PHASE_START_NS", None)
 
 # Execute the command!
 print("Executing: " + " ".join(command), flush=True)

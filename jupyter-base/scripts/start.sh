@@ -6,7 +6,6 @@ set -e
 
 # Setting variables to calibrate timing data
 export JUPYTER_START_NS="${EPOCHREALTIME/./}000"
-export JUPYTER_LAST_NS="${JUPYTER_START_NS}"
 
 # The _log function is used for everything this script wants to log.
 # It will always log errors and warnings but can be silenced for other messages
@@ -18,15 +17,23 @@ _log () {
     fi
 }
 
-# A function to emit timing data about the notebook startup process to telegraf
+# A function to emit a startup metric to telegraf
 _emit () {
     [ -n "${HOSTIP}" ] || return 0
-    local now
-    now="${EPOCHREALTIME/./}000"
-    { printf 'jupyter.startup.phase.duration_ms,phase=%s,pod_uid=%s,node=%s,user=%s:%s|g\n' \
-        "$1" "${POD_UID}" "${NODE_NAME}" "${JUPYTERHUB_USER//[,= :]/_}" "$(( (now - JUPYTER_LAST_NS) / 1000000 ))" > "/dev/udp/${HOSTIP}/8125"; } 2>/dev/null || true
-    export JUPYTER_LAST_NS="${now}"
+    { printf 'jupyter.startup.%s,pod_uid=%s,node=%s,user=%s:%s|g\n' \
+        "$1" "${POD_UID}" "${NODE_NAME}" "${JUPYTERHUB_USER//[,= :]/_}" "$2" > "/dev/udp/${HOSTIP}/8125"; } 2>/dev/null || true
 }
+
+_phase_start () {
+    export JUPYTER_PHASE_START_NS="${EPOCHREALTIME/./}000"
+}
+
+_phase_end () {
+    local now="${EPOCHREALTIME/./}000"
+    _emit "phase.duration_ms,phase=$1" "$(( (now - JUPYTER_PHASE_START_NS) / 1000000 ))"
+}
+
+_phase_start
 
 _log "Entered start.sh with args:" "$@"
 
@@ -172,7 +179,8 @@ if [ "$(id -u)" == 0 ]; then
     # shellcheck source=images/docker-stacks-foundation/run-hooks.sh
     source /usr/local/bin/run-hooks.sh /usr/local/bin/before-notebook.d
     unset_explicit_env_vars
-    _emit environment_setup
+    _phase_end environment_setup
+    _phase_start
 
     _log "Running as ${NB_USER}:" "${cmd[@]}"
     if [ "${NB_USER}" = "root" ] && [ "${NB_UID}" = "$(id -u "${NB_USER}")" ] && [ "${NB_GID}" = "$(id -g "${NB_USER}")" ]; then

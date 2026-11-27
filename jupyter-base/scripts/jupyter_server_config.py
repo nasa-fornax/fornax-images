@@ -16,47 +16,56 @@ from jupyter_server.serverapp import ServerApp
 c = get_config()  # noqa: F821
 
 
-_last_ns = None
-
-
-def _emit(metric, total=False, ms=None, **tags):
-    global _last_ns
+def _emit(metric, value, **tags):
     host = os.environ.get("HOSTIP")
-    start = os.environ.get("JUPYTER_START_NS")
-    if not host or not start:
+    if not host:
         return
+    line = (
+        f"jupyter.startup.{metric}"
+        + "".join(f",{k}={v}" for k, v in tags.items())
+        + f",pod_uid={os.environ.get('POD_UID', '')}"
+        + f",node={os.environ.get('NODE_NAME', '')}"
+        + f",user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
+        + f":{value}|g\n"
+    )
     try:
-        now = time.time_ns()
-        if ms is None:
-            ms = (now - int(start if total else _last_ns or os.environ.get("JUPYTER_LAST_NS") or start)) // 1_000_000
-            _last_ns = now
-        line = (
-            f"jupyter.startup.{metric}"
-            + "".join(f",{k}={v}" for k, v in tags.items())
-            + f",pod_uid={os.environ.get('POD_UID', '')}"
-            + f",node={os.environ.get('NODE_NAME', '')}"
-            + f",user={os.environ.get('JUPYTERHUB_USER', '').translate(str.maketrans(',= :', '____'))}"
-            + f":{ms}|g\n"
-        )
-        socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(
-            line.encode(), (host, 8125)
-        )
-    except (OSError, ValueError):
+        socket.socket(socket.AF_INET, socket.SOCK_DGRAM).sendto(line.encode(), (host, 8125))
+    except OSError:
         pass
 
 
-_emit("phase.duration_ms", phase="server_config")
+def _phase_start():
+    os.environ["JUPYTER_PHASE_START_NS"] = str(time.time_ns())
 
 
-def timed(operation, name, fn, *args):
-    t = time.perf_counter_ns()
+def _phase_end(phase):
+    try:
+        elapsed_ms = (time.time_ns() - int(os.environ["JUPYTER_PHASE_START_NS"])) // 1_000_000
+    except (KeyError, ValueError):
+        return
+    _emit("phase.duration_ms", elapsed_ms, phase=phase)
+
+
+def _startup_end():
+    try:
+        elapsed_ms = (time.time_ns() - int(os.environ["JUPYTER_START_NS"])) // 1_000_000
+    except (KeyError, ValueError):
+        return
+    _emit("duration_ms", elapsed_ms)
+
+
+def _time_extension(operation, name, fn, *args):
+    started = time.perf_counter_ns()
     try:
         return fn(*args)
     finally:
-        ms = (time.perf_counter_ns() - t) // 1_000_000
-        if ms:
-            _emit("extension.duration_ms", ms=ms, operation=operation, extension=name)
+        elapsed_ms = (time.perf_counter_ns() - started) // 1_000_000
+        if elapsed_ms:
+            _emit("extension.duration_ms", elapsed_ms, operation=operation, extension=name)
 
+
+_phase_end("server_config")
+_phase_start()
 
 _add_extension = ExtensionManager.add_extension
 _link_extension = ExtensionManager.link_extension
@@ -64,50 +73,51 @@ _load_extension = ExtensionManager.load_extension
 
 
 def _add_extension_emit(self, extension_name, enabled=False):
-    return timed("import", extension_name, _add_extension, self, extension_name, enabled)
+    return _time_extension("import", extension_name, _add_extension, self, extension_name, enabled)
 
 
 def _link_extension_emit(self, name):
-    return timed("link", name, _link_extension, self, name)
+    return _time_extension("link", name, _link_extension, self, name)
 
 
 def _load_extension_emit(self, name):
-    return timed("load", name, _load_extension, self, name)
+    return _time_extension("load", name, _load_extension, self, name)
 
 
 ExtensionManager.add_extension = _add_extension_emit
 ExtensionManager.link_extension = _link_extension_emit
 ExtensionManager.load_extension = _load_extension_emit
 
-_load_all_extensions = ExtensionManager.load_all_extensions
-
-
-def _load_all_extensions_emit(self):
-    result = _load_all_extensions(self)
-    _emit("phase.duration_ms", phase="extension_load")
-    return result
-
-
-ExtensionManager.load_all_extensions = _load_all_extensions_emit
-
 _init_server_extensions = ServerApp.init_server_extensions
 
 
 def _init_server_extensions_emit(self):
     result = _init_server_extensions(self)
-    _emit("phase.duration_ms", phase="extension_link")
+    _phase_end("extension_link")
+    _phase_start()
     return result
 
 
 ServerApp.init_server_extensions = _init_server_extensions_emit
 
+_load_all_extensions = ExtensionManager.load_all_extensions
+
+
+def _load_all_extensions_emit(self):
+    result = _load_all_extensions(self)
+    _phase_end("extension_load")
+    return result
+
+
+ExtensionManager.load_all_extensions = _load_all_extensions_emit
+
 _post_start = ServerApp._post_start
 
 
 async def _post_start_emit(self):
-    _emit("duration_ms", total=True)
+    _startup_end()
     os.environ.pop("JUPYTER_START_NS", None)
-    os.environ.pop("JUPYTER_LAST_NS", None)
+    os.environ.pop("JUPYTER_PHASE_START_NS", None)
     await _post_start(self)
 
 
