@@ -23,6 +23,7 @@ if "NOTEBOOK_ARGS" in os.environ:
 command += sys.argv[1:]
 
 def _emit(metric, value, **tags):
+    """ Send one startup metric to telegraf's StatsD listener as a gauge. """
     host = os.environ.get("HOSTIP")
     if not host:
         return
@@ -41,10 +42,12 @@ def _emit(metric, value, **tags):
 
 
 def _phase_start():
+    """Mark the start of a startup phase. Stores the current time in JUPYTER_PHASE_START_NS. """
     os.environ["JUPYTER_PHASE_START_NS"] = str(time.time_ns())
 
 
 def _phase_end(phase):
+    """Emit the duration of the current startup phase. Does nothing if that start time is missing. """
     try:
         elapsed_ms = (time.time_ns() - int(os.environ["JUPYTER_PHASE_START_NS"])) // 1_000_000
     except (KeyError, ValueError):

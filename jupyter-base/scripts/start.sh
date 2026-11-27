@@ -24,10 +24,12 @@ _emit () {
         "$1" "${POD_UID}" "${NODE_NAME}" "${JUPYTERHUB_USER//[,= :]/_}" "$2" > "/dev/udp/${HOSTIP}/8125"; } 2>/dev/null || true
 }
 
+# A function to start a timing phase, which will break down the startup time for a later message
 _phase_start () {
     export JUPYTER_PHASE_START_NS="${EPOCHREALTIME/./}000"
 }
 
+# Ends the current timing phase and emits the value to telegraf
 _phase_end () {
     local now="${EPOCHREALTIME/./}000"
     _emit "phase.duration_ms,phase=$1" "$(( (now - JUPYTER_PHASE_START_NS) / 1000000 ))"

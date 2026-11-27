@@ -19,6 +19,7 @@ c = get_config()  # noqa: F821
 
 
 def _emit(metric, value, **tags):
+    """ Send one startup metric to telegraf's StatsD listener as a gauge. """
     host = os.environ.get("HOSTIP")
     if not host:
         return
@@ -37,10 +38,12 @@ def _emit(metric, value, **tags):
 
 
 def _phase_start():
+    """Mark the start of a startup phase. Stores the current time in JUPYTER_PHASE_START_NS. """
     os.environ["JUPYTER_PHASE_START_NS"] = str(time.time_ns())
 
 
 def _phase_end(phase):
+    """Emit the duration of the current startup phase. Does nothing if that start time is missing. """
     try:
         elapsed_ms = (time.time_ns() - int(os.environ["JUPYTER_PHASE_START_NS"])) // 1_000_000
     except (KeyError, ValueError):
@@ -49,6 +52,7 @@ def _phase_end(phase):
 
 
 def _startup_end():
+    """ Emit the total startup time: milliseconds since JUPYTER_START_NS, set at the top of start.sh."""
     try:
         elapsed_ms = (time.time_ns() - int(os.environ["JUPYTER_START_NS"])) // 1_000_000
     except (KeyError, ValueError):
@@ -57,6 +61,7 @@ def _startup_end():
 
 
 def _time_extension(operation, name, fn, *args):
+    """ Run one extension operation and emit its duration as extension.duration_ms (calls under 1 ms are not emitted). """
     started = time.perf_counter_ns()
     try:
         return fn(*args)
@@ -69,6 +74,7 @@ def _time_extension(operation, name, fn, *args):
 _phase_end("server_config")
 _phase_start()
 
+# get timing data out of the extension importing, linking, and loading.
 _add_extension = ExtensionManager.add_extension
 _link_extension = ExtensionManager.link_extension
 _load_extension = ExtensionManager.load_extension
@@ -106,6 +112,7 @@ _post_start = ServerApp._post_start
 
 
 async def _post_start_emit(self):
+    """ End the extension_load phase once the server is listening, and start hub_ready."""
     _phase_end("extension_load")
     _phase_start()
     await _post_start(self)
@@ -118,6 +125,8 @@ _api_version_get = APIVersionHandler.get
 
 @allow_unauthenticated
 def _api_version_get_emit(self):
+    """Handle the hub's readiness check on {base_url}api: end hub_ready, emit the total, and clear the timing variables so this only fires once. 
+    Stays unauthenticated like the original handler. """
     _phase_end("hub_ready")
     _startup_end()
     os.environ.pop("JUPYTER_START_NS", None)
@@ -138,6 +147,8 @@ _server_proxy_entry_points = importlib.metadata.EntryPoints(
 
 
 def _entry_points_static_server_proxy(**params):
+    """ Return a fixed list of jupyter_server_proxy entry points (vscode, fviewer) instead of scanning every installed package;
+      other lookups are unchanged. """
     if params == {"group": "jupyter_serverproxy_servers"}:
         return _server_proxy_entry_points
     return _entry_points(**params)
