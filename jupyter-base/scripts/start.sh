@@ -35,6 +35,7 @@ _phase_end () {
     _emit "phase.duration_ms,phase=$1" "$(( (now - JUPYTER_PHASE_START_NS) / 1000000 ))"
 }
 
+# start the environment_setup statsd timing
 _phase_start
 
 _log "Entered start.sh with args:" "$@"
@@ -181,13 +182,17 @@ if [ "$(id -u)" == 0 ]; then
     # shellcheck source=images/docker-stacks-foundation/run-hooks.sh
     source /usr/local/bin/run-hooks.sh /usr/local/bin/before-notebook.d
     unset_explicit_env_vars
+
     _phase_end environment_setup
-    _phase_start
 
     _log "Running as ${NB_USER}:" "${cmd[@]}"
     if [ "${NB_USER}" = "root" ] && [ "${NB_UID}" = "$(id -u "${NB_USER}")" ] && [ "${NB_GID}" = "$(id -g "${NB_USER}")" ]; then
         HOME="/home/root" exec "${cmd[@]}"
     else
+        # this is always the path in fornax jupyterhub
+        # start the server_initialization statsd timing
+        _phase_start
+
         exec sudo --preserve-env --set-home --user "${NB_USER}" \
             LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" \
             PATH="${PATH}" \

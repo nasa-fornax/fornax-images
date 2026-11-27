@@ -71,10 +71,10 @@ def _time_extension(operation, name, fn, *args):
             _emit("extension.duration_ms", elapsed_ms, operation=operation, extension=name)
 
 
+# Root startup: from the end of start.sh environment setup to this point in
 _phase_end("server_config")
-_phase_start()
 
-# get timing data out of the extension importing, linking, and loading.
+# Monkey patching to get timing data for all the extentions indvidually
 _add_extension = ExtensionManager.add_extension
 _link_extension = ExtensionManager.link_extension
 _load_extension = ExtensionManager.load_extension
@@ -100,9 +100,10 @@ _init_server_extensions = ServerApp.init_server_extensions
 
 
 def _init_server_extensions_emit(self):
-    result = _init_server_extensions(self)
-    _phase_end("extension_link")
+    """This only covers adding and linking server extentions"""
     _phase_start()
+    result = _init_server_extensions(self)
+    _phase_end("init_server_extensions")
     return result
 
 
@@ -112,7 +113,7 @@ _post_start = ServerApp._post_start
 
 
 async def _post_start_emit(self):
-    """ End the extension_load phase once the server is listening, and start hub_ready."""
+    """End the extension_load phase once the server is listening, and start hub_ready."""
     _phase_end("extension_load")
     _phase_start()
     await _post_start(self)
